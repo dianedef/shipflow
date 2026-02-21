@@ -1515,7 +1515,21 @@ list_github_repos() {
         return 1
     fi
 
-    gh repo list --limit "$BUILDFLOWZ_GITHUB_REPO_LIMIT" --json name,description --jq '.[] | "\(.name): \(.description)"' 2>/dev/null
+    local all_repos
+    all_repos=$(gh repo list --limit "$BUILDFLOWZ_GITHUB_REPO_LIMIT" --json name,description --jq '.[] | "\(.name): \(.description)"' 2>/dev/null)
+
+    if [ -z "$all_repos" ]; then
+        return 0
+    fi
+
+    # Filter out repos already deployed (directory exists in PROJECTS_DIR)
+    while IFS= read -r line; do
+        local repo_name="${line%%:*}"
+        local repo_name_lower="${repo_name,,}"
+        if [ ! -d "$PROJECTS_DIR/$repo_name_lower" ] && [ ! -d "$PROJECTS_DIR/$repo_name" ]; then
+            echo "$line"
+        fi
+    done <<< "$all_repos"
 }
 
 # Validate GitHub repo name

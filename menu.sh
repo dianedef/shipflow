@@ -31,17 +31,13 @@ show_menu() {
     echo -e "  ${CYAN}4)${NC} Stop - Stop an environment"
     echo -e "  ${CYAN}5)${NC} Remove - Delete an environment"
     echo ""
-    echo -e "${BLUE}🌐 PUBLISHING${NC}"
-    echo -e "  ${CYAN}6)${NC} Publish to Web - Configure HTTPS (Caddy + DuckDNS)"
-    echo ""
     echo -e "${BLUE}⚡ BATCH${NC}"
-    echo -e "  ${CYAN}7)${NC} Batch Operations - Stop All, Start All, Restart All"
+    echo -e "  ${CYAN}6)${NC} Stop All - Stop all environments"
+    echo -e "  ${CYAN}7)${NC} Start All - Start all environments"
+    echo -e "  ${CYAN}8)${NC} Restart All - Restart all environments"
     echo ""
     echo -e "${BLUE}⚙️  ADVANCED${NC}"
-    echo -e "  ${CYAN}8)${NC} More Options - Logs, Navigate, Settings..."
-    echo ""
-    echo -e "${BLUE}📖 DOCUMENTATION${NC}"
-    echo -e "  ${CYAN}9)${NC} Help - How BuildFlowz works"
+    echo -e "  ${CYAN}9)${NC} More Options - Publish, Logs, Help..."
     echo ""
     echo -e "  ${CYAN}0)${NC} Exit"
     echo ""
@@ -79,12 +75,13 @@ show_help() {
                 echo -e "         Check the Dashboard (${YELLOW}1${NC}) to see the port"
                 echo ""
                 echo -e "  ${CYAN}Step 4:${NC} ${GREEN}Publish to web (optional)${NC}"
-                echo -e "         Press ${YELLOW}6${NC} to configure HTTPS with DuckDNS"
+                echo -e "         Press ${YELLOW}9${NC} (Advanced) to configure HTTPS with DuckDNS"
                 echo ""
                 echo -e "${BLUE}┌───────────────────────────────────────────────────────────────┐${NC}"
                 echo -e "${BLUE}│${NC} ${YELLOW}Quick Reference:${NC}                                              ${BLUE}│${NC}"
                 echo -e "${BLUE}│${NC}   ${CYAN}1${NC} Dashboard  ${CYAN}2${NC} Start  ${CYAN}3${NC} Restart  ${CYAN}4${NC} Stop  ${CYAN}5${NC} Remove      ${BLUE}│${NC}"
-                echo -e "${BLUE}│${NC}   ${CYAN}6${NC} Publish    ${CYAN}7${NC} Batch  ${CYAN}8${NC} Advanced ${CYAN}9${NC} Help  ${CYAN}0${NC} Exit        ${BLUE}│${NC}"
+                echo -e "${BLUE}│${NC}   ${CYAN}6${NC} StopAll  ${CYAN}7${NC} StartAll  ${CYAN}8${NC} RestartAll              ${BLUE}│${NC}"
+                echo -e "${BLUE}│${NC}   ${CYAN}9${NC} Advanced  ${CYAN}0${NC} Exit                                ${BLUE}│${NC}"
                 echo -e "${BLUE}└───────────────────────────────────────────────────────────────┘${NC}"
                 ;;
             2)
@@ -212,48 +209,6 @@ show_help() {
     done
 }
 
-# Batch operations submenu
-show_batch_menu() {
-    while true; do
-        clear
-        echo -e "${CYAN}══════════════════════════════════════════════════${NC}"
-        echo -e "              ${YELLOW}Batch Operations${NC}"
-        echo -e "${CYAN}══════════════════════════════════════════════════${NC}"
-        echo ""
-        echo -e "  ${CYAN}1)${NC} 🛑 Stop All - Stop all environments"
-        echo -e "  ${CYAN}2)${NC} 🚀 Start All - Start all environments"
-        echo -e "  ${CYAN}3)${NC} 🔄 Restart All - Restart all environments"
-        echo ""
-        echo -e "  ${CYAN}0)${NC} ← Back to Main Menu"
-        echo ""
-
-        echo -e "${YELLOW}Your choice:${NC} \c"
-        read -r batch_choice
-
-        case $batch_choice in
-            1)
-                batch_stop_all
-                ;;
-            2)
-                batch_start_all
-                ;;
-            3)
-                batch_restart_all
-                ;;
-            0)
-                return 0
-                ;;
-            *)
-                echo -e "${RED}❌ Invalid option${NC}"
-                ;;
-        esac
-
-        echo ""
-        echo -e "${YELLOW}Press Enter to continue...${NC}"
-        read -r
-    done
-}
-
 # Submenu "More Options"
 show_advanced_menu() {
     while true; do
@@ -269,6 +224,8 @@ show_advanced_menu() {
         echo -e "  ${CYAN}3)${NC} 📂 Open Code Directory - cd into project"
         echo -e "  ${CYAN}4)${NC} 🔍 Toggle Web Inspector - Enable/disable browser inspector"
         echo -e "  ${CYAN}5)${NC} 🔐 Session Identity - View or reset session"
+        echo -e "  ${CYAN}6)${NC} 🌐 Publish to Web - Configure HTTPS (Caddy + DuckDNS)"
+        echo -e "  ${CYAN}7)${NC} 📖 Help - How BuildFlowz works"
         echo ""
         echo -e "  ${CYAN}0)${NC} ← Back to Main Menu"
         echo ""
@@ -364,204 +321,6 @@ show_advanced_menu() {
                         ;;
                 esac
                 ;;
-            0)
-                return 0
-                ;;
-            *)
-                echo -e "${RED}❌ Invalid option${NC}"
-                ;;
-        esac
-
-        echo ""
-        echo -e "${YELLOW}Press Enter to continue...${NC}"
-        read -r
-    done
-}
-
-# Main function
-main() {
-    # Check prerequisites on first run
-    if ! check_prerequisites; then
-        exit 1
-    fi
-
-    # Clean up orphan projects at startup
-    cleanup_orphan_projects
-
-    while true; do
-        clear
-        print_header
-        show_menu
-
-        echo -e "${YELLOW}Your choice:${NC} \c"
-        read -r CHOICE
-
-        case $CHOICE in
-            1)
-                # Dashboard
-                show_dashboard
-                ;;
-
-            2)
-                # Start/Deploy
-                echo -e "${GREEN}🚀 Start/Deploy Environment${NC}"
-                echo ""
-                echo -e "${BLUE}Choose source:${NC}"
-                echo ""
-                echo -e "  ${CYAN}1)${NC} 🔍 Auto-detect project in /root"
-                echo -e "  ${CYAN}2)${NC} 📁 Custom local path"
-                echo -e "  ${CYAN}3)${NC} 🚀 Deploy from GitHub"
-                echo -e "  ${CYAN}0)${NC} Cancel"
-                echo ""
-                echo -e "${YELLOW}Your choice:${NC} \c"
-                read -r deploy_choice
-
-                case $deploy_choice in
-                    1)
-                        # Auto-detect projects
-                        echo -e "${BLUE}🔍 Scanning $PROJECTS_DIR for projects...${NC}"
-
-                        EXISTING_ENVS=$(find "$PROJECTS_DIR" -maxdepth 4 \
-                            \( -name "node_modules" -o -name ".git" -o -name "venv" -o -name ".venv" \
-                               -o -name "__pycache__" -o -name "target" -o -name ".next" -o -name ".nuxt" \
-                               -o -name "dist" -o -name ".cache" -o -name ".pnpm" -o -name ".yarn" \) -prune \
-                            -o -type d -name ".flox" -print 2>/dev/null | while read -r flox_dir; do
-                            proj_dir=$(dirname "$flox_dir")
-                            case "$proj_dir" in
-                                "$PROJECTS_DIR"/.*) continue ;;
-                                *) echo "$proj_dir" ;;
-                            esac
-                        done | sort -u)
-
-                        NEW_PROJECTS=$(find "$PROJECTS_DIR" -maxdepth 4 \
-                            \( -name "node_modules" -o -name ".git" -o -name "venv" -o -name ".venv" \
-                               -o -name "__pycache__" -o -name "target" -o -name ".next" -o -name ".nuxt" \
-                               -o -name "dist" -o -name ".cache" -o -name ".pnpm" -o -name ".yarn" \) -prune \
-                            -o -type f \( -name "package.json" -o -name "requirements.txt" -o -name "Cargo.toml" -o -name "go.mod" \) -print 2>/dev/null | while read -r manifest; do
-                            proj_dir=$(dirname "$manifest")
-                            case "$proj_dir" in
-                                "$PROJECTS_DIR"/.*) continue ;;
-                            esac
-                            if [ ! -d "$proj_dir/.flox" ]; then
-                                echo "$proj_dir"
-                            fi
-                        done | sort -u)
-
-                        PROJECTS=$(printf "%s\n%s" "$EXISTING_ENVS" "$NEW_PROJECTS" | grep -v "^$" | sort -u)
-
-                        if [ -z "$PROJECTS" ]; then
-                            echo -e "${YELLOW}⚠️  No projects detected${NC}"
-                            echo -e "${BLUE}💡 Tip: Use option 2 for custom path or option 3 for GitHub${NC}"
-                        else
-                            SELECTED_PROJECT=$(echo "$PROJECTS" | ui_choose "Detected projects:")
-                            if [ -n "$SELECTED_PROJECT" ]; then
-                                log INFO "Menu: starting project $SELECTED_PROJECT"
-                                echo -e "${GREEN}✅ Starting: $SELECTED_PROJECT${NC}"
-                                env_start "$SELECTED_PROJECT"
-                            fi
-                        fi
-                        ;;
-                    2)
-                        # Custom path
-                        CUSTOM_PATH=$(ui_input "Path (absolute):" "/root/my-project")
-
-                        if [ -z "$CUSTOM_PATH" ]; then
-                            echo -e "${RED}❌ Path required${NC}"
-                        elif ! validate_project_path "$CUSTOM_PATH"; then
-                            echo -e "${RED}❌ Invalid or unsafe path${NC}"
-                        else
-                            env_start "$CUSTOM_PATH"
-                        fi
-                        ;;
-                    3)
-                        # Deploy from GitHub
-                        echo -e "${GREEN}🚀 Deploy from GitHub${NC}"
-                        echo ""
-                        echo -e "${BLUE}🔍 Fetching your GitHub repos...${NC}"
-                        echo ""
-
-                        GITHUB_REPOS=$(list_github_repos)
-
-                        if [ -z "$GITHUB_REPOS" ]; then
-                            continue
-                        fi
-
-                        SELECTED_REPO=$(echo "$GITHUB_REPOS" | cut -d':' -f1 | ui_choose "Available repos:")
-
-                        if [ -n "$SELECTED_REPO" ]; then
-                            if ! validate_repo_name "$SELECTED_REPO"; then
-                                echo -e "${RED}❌ Invalid repository name${NC}"
-                                continue
-                            fi
-
-                            echo ""
-                            echo -e "${GREEN}📦 Selected repo: $SELECTED_REPO${NC}"
-                            echo -e "${BLUE}🚀 Deploying...${NC}"
-                            echo ""
-
-                            deploy_github_project "$SELECTED_REPO"
-                        fi
-                        ;;
-                    0)
-                        echo -e "${BLUE}Cancelled${NC}"
-                        ;;
-                    *)
-                        echo -e "${RED}❌ Invalid option${NC}"
-                        ;;
-                esac
-                ;;
-
-            3)
-                # Restart
-                echo -e "${GREEN}🔄 Restart Environment${NC}"
-                ENV_NAME=$(select_environment "Select environment to restart")
-
-                if [ -n "$ENV_NAME" ]; then
-                    log INFO "Menu: restarting $ENV_NAME"
-                    env_restart "$ENV_NAME"
-                fi
-                ;;
-
-            4)
-                # Stop
-                echo -e "${GREEN}🛑 Stop Environment${NC}"
-                ENV_NAME=$(select_environment "Select environment to stop")
-
-                if [ -n "$ENV_NAME" ]; then
-                    log INFO "Menu: stopping $ENV_NAME"
-                    echo -e "${YELLOW}🛑 Stopping $ENV_NAME...${NC}"
-                    env_stop "$ENV_NAME"
-                    echo -e "${GREEN}✅ Environment $ENV_NAME stopped!${NC}"
-                fi
-                ;;
-
-            5)
-                # Remove
-                echo -e "${GREEN}🗑️  Remove Environment${NC}"
-                echo ""
-                echo -e "${YELLOW}⚠️  WARNING: This will permanently delete the project!${NC}"
-                echo ""
-                ENV_NAME=$(select_environment "Select environment to remove")
-
-                if [ -n "$ENV_NAME" ]; then
-                    PROJECT_DIR=$(resolve_project_path "$ENV_NAME")
-
-                    echo ""
-                    echo -e "${RED}⚠️  You are about to delete:${NC}"
-                    echo -e "${YELLOW}   Environment: $ENV_NAME${NC}"
-                    echo -e "${YELLOW}   Directory: $PROJECT_DIR${NC}"
-                    echo ""
-
-                    if ui_confirm "Type 'yes' to confirm deletion"; then
-                        log INFO "Menu: removing environment $ENV_NAME (dir: $PROJECT_DIR)"
-                        env_remove "$ENV_NAME"
-                        echo -e "${GREEN}✅ Environment removed!${NC}"
-                    else
-                        echo -e "${BLUE}Cancelled - nothing was deleted${NC}"
-                    fi
-                fi
-                ;;
-
             6)
                 # Publish to Web with credential cache
                 echo -e "${GREEN}🌐 Publish to Web (HTTPS via Caddy + DuckDNS)${NC}"
@@ -724,23 +483,233 @@ EOF
                     echo -e "${YELLOW}Check logs with: sudo journalctl -u caddy -n 50${NC}"
                 fi
                 ;;
+            7)
+                # Help
+                show_help
+                ;;
+            0)
+                return 0
+                ;;
+            *)
+                echo -e "${RED}❌ Invalid option${NC}"
+                ;;
+        esac
+
+        echo ""
+        echo -e "${YELLOW}Press Enter to continue...${NC}"
+        read -r
+    done
+}
+
+# Main function
+main() {
+    # Check prerequisites on first run
+    if ! check_prerequisites; then
+        exit 1
+    fi
+
+    # Clean up orphan projects at startup
+    cleanup_orphan_projects
+
+    while true; do
+        clear
+        print_header
+        show_menu
+
+        echo -e "${YELLOW}Your choice:${NC} \c"
+        read -r CHOICE
+
+        case $CHOICE in
+            1)
+                # Dashboard
+                show_dashboard
+                ;;
+
+            2)
+                # Start/Deploy
+                echo -e "${GREEN}🚀 Start/Deploy Environment${NC}"
+                echo ""
+                echo -e "${BLUE}Choose source:${NC}"
+                echo ""
+                echo -e "  ${CYAN}1)${NC} 🔍 Auto-detect project in /root"
+                echo -e "  ${CYAN}2)${NC} 📁 Custom local path"
+                echo -e "  ${CYAN}3)${NC} 🚀 Deploy from GitHub"
+                echo -e "  ${CYAN}0)${NC} Cancel"
+                echo ""
+                echo -e "${YELLOW}Your choice:${NC} \c"
+                read -r deploy_choice
+
+                case $deploy_choice in
+                    1)
+                        # Auto-detect projects
+                        echo -e "${BLUE}🔍 Scanning $PROJECTS_DIR for projects...${NC}"
+
+                        EXISTING_ENVS=$(find "$PROJECTS_DIR" -maxdepth 4 \
+                            \( -name "node_modules" -o -name ".git" -o -name "venv" -o -name ".venv" \
+                               -o -name "__pycache__" -o -name "target" -o -name ".next" -o -name ".nuxt" \
+                               -o -name "dist" -o -name ".cache" -o -name ".pnpm" -o -name ".yarn" \) -prune \
+                            -o -type d -name ".flox" -print 2>/dev/null | while read -r flox_dir; do
+                            proj_dir=$(dirname "$flox_dir")
+                            case "$proj_dir" in
+                                "$PROJECTS_DIR"/.*) continue ;;
+                                *) echo "$proj_dir" ;;
+                            esac
+                        done | sort -u)
+
+                        NEW_PROJECTS=$(find "$PROJECTS_DIR" -maxdepth 4 \
+                            \( -name "node_modules" -o -name ".git" -o -name "venv" -o -name ".venv" \
+                               -o -name "__pycache__" -o -name "target" -o -name ".next" -o -name ".nuxt" \
+                               -o -name "dist" -o -name ".cache" -o -name ".pnpm" -o -name ".yarn" \) -prune \
+                            -o -type f \( -name "package.json" -o -name "requirements.txt" -o -name "Cargo.toml" -o -name "go.mod" \) -print 2>/dev/null | while read -r manifest; do
+                            proj_dir=$(dirname "$manifest")
+                            case "$proj_dir" in
+                                "$PROJECTS_DIR"/.*) continue ;;
+                            esac
+                            if [ ! -d "$proj_dir/.flox" ]; then
+                                echo "$proj_dir"
+                            fi
+                        done | sort -u)
+
+                        PROJECTS=$(printf "%s\n%s" "$EXISTING_ENVS" "$NEW_PROJECTS" | grep -v "^$" | sort -u)
+
+                        if [ -z "$PROJECTS" ]; then
+                            echo -e "${YELLOW}⚠️  No projects detected${NC}"
+                            echo -e "${BLUE}💡 Tip: Use option 2 for custom path or option 3 for GitHub${NC}"
+                        else
+                            SELECTED_PROJECT=$(echo "$PROJECTS" | ui_choose "Detected projects:")
+                            if [ -n "$SELECTED_PROJECT" ]; then
+                                log INFO "Menu: starting project $SELECTED_PROJECT"
+                                echo -e "${GREEN}✅ Starting: $SELECTED_PROJECT${NC}"
+                                env_start "$SELECTED_PROJECT"
+                            fi
+                        fi
+                        ;;
+                    2)
+                        # Custom path
+                        CUSTOM_PATH=$(ui_input "Path (absolute):" "/root/my-project")
+
+                        if [ -z "$CUSTOM_PATH" ]; then
+                            echo -e "${RED}❌ Path required${NC}"
+                        elif ! validate_project_path "$CUSTOM_PATH"; then
+                            echo -e "${RED}❌ Invalid or unsafe path${NC}"
+                        else
+                            env_start "$CUSTOM_PATH"
+                        fi
+                        ;;
+                    3)
+                        # Deploy from GitHub
+                        echo -e "${GREEN}🚀 Deploy from GitHub${NC}"
+                        echo ""
+                        echo -e "${BLUE}🔍 Fetching your GitHub repos...${NC}"
+                        echo ""
+
+                        GITHUB_REPOS=$(list_github_repos)
+
+                        if [ -z "$GITHUB_REPOS" ]; then
+                            echo -e "${YELLOW}All your GitHub repos are already deployed (or no repos found).${NC}"
+                            continue
+                        fi
+
+                        SELECTED_REPO=$(echo "$GITHUB_REPOS" | cut -d':' -f1 | ui_choose "Available repos:")
+
+                        if [ -n "$SELECTED_REPO" ]; then
+                            if ! validate_repo_name "$SELECTED_REPO"; then
+                                echo -e "${RED}❌ Invalid repository name${NC}"
+                                continue
+                            fi
+
+                            echo ""
+                            echo -e "${GREEN}📦 Selected repo: $SELECTED_REPO${NC}"
+                            echo -e "${BLUE}🚀 Deploying...${NC}"
+                            echo ""
+
+                            deploy_github_project "$SELECTED_REPO"
+                        fi
+                        ;;
+                    0)
+                        echo -e "${BLUE}Cancelled${NC}"
+                        ;;
+                    *)
+                        echo -e "${RED}❌ Invalid option${NC}"
+                        ;;
+                esac
+                ;;
+
+            3)
+                # Restart
+                echo -e "${GREEN}🔄 Restart Environment${NC}"
+                ENV_NAME=$(select_environment "Select environment to restart")
+
+                if [ -n "$ENV_NAME" ]; then
+                    log INFO "Menu: restarting $ENV_NAME"
+                    env_restart "$ENV_NAME"
+                fi
+                ;;
+
+            4)
+                # Stop
+                echo -e "${GREEN}🛑 Stop Environment${NC}"
+                ENV_NAME=$(select_environment "Select environment to stop")
+
+                if [ -n "$ENV_NAME" ]; then
+                    log INFO "Menu: stopping $ENV_NAME"
+                    echo -e "${YELLOW}🛑 Stopping $ENV_NAME...${NC}"
+                    env_stop "$ENV_NAME"
+                    echo -e "${GREEN}✅ Environment $ENV_NAME stopped!${NC}"
+                fi
+                ;;
+
+            5)
+                # Remove
+                echo -e "${GREEN}🗑️  Remove Environment${NC}"
+                echo ""
+                echo -e "${YELLOW}⚠️  WARNING: This will permanently delete the project!${NC}"
+                echo ""
+                ENV_NAME=$(select_environment "Select environment to remove")
+
+                if [ -n "$ENV_NAME" ]; then
+                    PROJECT_DIR=$(resolve_project_path "$ENV_NAME")
+
+                    echo ""
+                    echo -e "${RED}⚠️  You are about to delete:${NC}"
+                    echo -e "${YELLOW}   Environment: $ENV_NAME${NC}"
+                    echo -e "${YELLOW}   Directory: $PROJECT_DIR${NC}"
+                    echo ""
+
+                    if ui_confirm "Type 'yes' to confirm deletion"; then
+                        log INFO "Menu: removing environment $ENV_NAME (dir: $PROJECT_DIR)"
+                        env_remove "$ENV_NAME"
+                        echo -e "${GREEN}✅ Environment removed!${NC}"
+                    else
+                        echo -e "${BLUE}Cancelled - nothing was deleted${NC}"
+                    fi
+                fi
+                ;;
+
+            6)
+                # Stop All
+                echo -e "${GREEN}🛑 Stop All Environments${NC}"
+                batch_stop_all
+                ;;
 
             7)
-                # Batch Operations
-                show_batch_menu
+                # Start All
+                echo -e "${GREEN}🚀 Start All Environments${NC}"
+                batch_start_all
                 ;;
 
             8)
+                # Restart All
+                echo -e "${GREEN}🔄 Restart All Environments${NC}"
+                batch_restart_all
+                ;;
+
+            9)
                 # Advanced Options Submenu
                 show_advanced_menu
                 ;;
 
-            9)
-                # Help
-                show_help
-                ;;
-
-            0|10)
+            0)
                 echo -e "${GREEN}👋 Goodbye!${NC}"
                 exit 0
                 ;;

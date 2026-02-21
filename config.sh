@@ -59,7 +59,7 @@ export BUILDFLOWZ_LOG_LEVEL="${BUILDFLOWZ_LOG_LEVEL:-INFO}"
 # ============================================================================
 
 # Number of repos to list from GitHub
-export BUILDFLOWZ_GITHUB_REPO_LIMIT=20
+export BUILDFLOWZ_GITHUB_REPO_LIMIT=500
 
 # ============================================================================
 # WEB INSPECTOR CONFIGURATION
