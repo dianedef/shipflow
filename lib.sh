@@ -434,6 +434,8 @@ UPDATE_CACHE_NPM=0
 UPDATE_CACHE_PIP=0
 UPDATE_CACHE_RUSTUP=0
 UPDATE_CACHE_TTL=300
+MENU_STATUS_CACHE_FILE="${BUILDFLOWZ_SECRETS_DIR}/menu-status.cache"
+MENU_STATUS_LOCK_FILE="${BUILDFLOWZ_SECRETS_DIR}/menu-status.lock"
 
 run_with_timeout() {
     if command -v timeout >/dev/null 2>&1; then
@@ -508,6 +510,110 @@ updates_refresh_cache() {
 updates_total_cached() {
     updates_refresh_cache
     echo "$UPDATE_CACHE_TOTAL"
+}
+
+# -----------------------------------------------------------------------------
+# read_menu_status_cache - Read cached header status values from disk
+#
+# Outputs (globals):
+#   MENU_STATUS_TS, MENU_STATUS_FREE_HUMAN, MENU_STATUS_UPDATES_TOTAL,
+#   MENU_STATUS_LOW_SPACE
+# -----------------------------------------------------------------------------
+read_menu_status_cache() {
+    MENU_STATUS_TS=0
+    MENU_STATUS_FREE_HUMAN=""
+    MENU_STATUS_UPDATES_TOTAL=""
+    MENU_STATUS_LOW_SPACE=0
+
+    [ -f "$MENU_STATUS_CACHE_FILE" ] || return 1
+
+    while IFS='=' read -r key value; do
+        case "$key" in
+            ts) MENU_STATUS_TS="$value" ;;
+            free_human) MENU_STATUS_FREE_HUMAN="$value" ;;
+            updates_total) MENU_STATUS_UPDATES_TOTAL="$value" ;;
+            low_space) MENU_STATUS_LOW_SPACE="$value" ;;
+        esac
+    done < "$MENU_STATUS_CACHE_FILE"
+
+    return 0
+}
+
+# -----------------------------------------------------------------------------
+# refresh_menu_status_cache_sync - Recompute and persist menu header status
+#
+# Returns:
+#   0 - Cache written
+#   1 - Failed to compute/write cache
+# -----------------------------------------------------------------------------
+refresh_menu_status_cache_sync() {
+    mkdir -p "$BUILDFLOWZ_SECRETS_DIR" 2>/dev/null || true
+
+    local now
+    now=$(date +%s)
+    local free_human
+    free_human=$(disk_free_human)
+    local updates_total
+    updates_total=$(updates_total_cached)
+    local low_space=0
+    if disk_is_low_space; then
+        low_space=1
+    fi
+
+    local tmp_file
+    tmp_file=$(mktemp "${MENU_STATUS_CACHE_FILE}.tmp.XXXXXX" 2>/dev/null) || return 1
+    register_temp_file "$tmp_file"
+
+    {
+        echo "ts=$now"
+        echo "free_human=$free_human"
+        echo "updates_total=$updates_total"
+        echo "low_space=$low_space"
+    } > "$tmp_file"
+
+    mv "$tmp_file" "$MENU_STATUS_CACHE_FILE" 2>/dev/null || return 1
+    chmod 600 "$MENU_STATUS_CACHE_FILE" 2>/dev/null || true
+    return 0
+}
+
+# -----------------------------------------------------------------------------
+# refresh_menu_status_cache_async_if_stale - Background cache refresh
+#
+# Behavior:
+#   - Returns immediately
+#   - Refreshes only when cache is missing/stale
+#   - Uses PID lock to avoid concurrent expensive refreshes
+# -----------------------------------------------------------------------------
+refresh_menu_status_cache_async_if_stale() {
+    local ttl="${BUILDFLOWZ_MENU_STATUS_CACHE_TTL:-120}"
+    if ! [[ "$ttl" =~ ^[0-9]+$ ]]; then
+        ttl=120
+    fi
+
+    local now cache_ts=0
+    now=$(date +%s)
+
+    if read_menu_status_cache && [ -n "$MENU_STATUS_TS" ]; then
+        cache_ts="$MENU_STATUS_TS"
+    fi
+
+    if [ $((now - cache_ts)) -lt "$ttl" ]; then
+        return 0
+    fi
+
+    if [ -f "$MENU_STATUS_LOCK_FILE" ]; then
+        local existing_pid
+        existing_pid=$(cat "$MENU_STATUS_LOCK_FILE" 2>/dev/null || true)
+        if [ -n "$existing_pid" ] && kill -0 "$existing_pid" 2>/dev/null; then
+            return 0
+        fi
+    fi
+
+    (
+        echo $$ > "$MENU_STATUS_LOCK_FILE"
+        refresh_menu_status_cache_sync >/dev/null 2>&1 || true
+        rm -f "$MENU_STATUS_LOCK_FILE" 2>/dev/null || true
+    ) >/dev/null 2>&1 &
 }
 
 updates_menu() {

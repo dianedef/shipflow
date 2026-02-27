@@ -91,6 +91,9 @@ export BUILDFLOWZ_PREFER_JQ="${BUILDFLOWZ_PREFER_JQ:-true}"
 # Low disk warning threshold in GB (shows alert in menu header)
 export BUILDFLOWZ_DISK_WARN_GB="${BUILDFLOWZ_DISK_WARN_GB:-5}"
 
+# Menu status cache TTL in seconds (free space + update counts)
+export BUILDFLOWZ_MENU_STATUS_CACHE_TTL="${BUILDFLOWZ_MENU_STATUS_CACHE_TTL:-120}"
+
 # ============================================================================
 # TOOL REQUIREMENTS
 # ============================================================================

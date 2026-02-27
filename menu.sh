@@ -10,27 +10,22 @@ source "$SCRIPT_DIR/lib.sh"
 
 # Header display
 print_header() {
-    local free_human
-    free_human=$(disk_free_human)
-    local updates_total
-    updates_total=$(updates_total_cached)
+    # Show cached status immediately, then refresh in background if stale.
+    read_menu_status_cache >/dev/null 2>&1 || true
+    refresh_menu_status_cache_async_if_stale
 
-    local status_left=""
-    local status_right=""
-    if [ -n "$free_human" ]; then
-        status_left="Free: $free_human"
+    local status_left="Free: ..."
+    local status_right="Up: ..."
+    if [ -n "$MENU_STATUS_FREE_HUMAN" ]; then
+        status_left="Free: $MENU_STATUS_FREE_HUMAN"
     fi
-    if [ -n "$updates_total" ]; then
-        status_right="Up: $updates_total"
-    fi
-
-    if [ -n "$status_left" ] || [ -n "$status_right" ]; then
-        ui_header "BuildFlowz DevServer" "Development Environment" "$status_left" "$status_right"
-    else
-        ui_header "BuildFlowz DevServer" "Development Environment"
+    if [ -n "$MENU_STATUS_UPDATES_TOTAL" ]; then
+        status_right="Up: $MENU_STATUS_UPDATES_TOTAL"
     fi
 
-    if disk_is_low_space; then
+    ui_header "BuildFlowz DevServer" "Development Environment" "$status_left" "$status_right"
+
+    if [ "${MENU_STATUS_LOW_SPACE:-0}" = "1" ]; then
         echo -e "${RED}⚠️  Low disk space. Consider running Disk Cleanup.${NC}"
     fi
 
@@ -514,10 +509,12 @@ EOF
             8)
                 # Disk Cleanup
                 disk_cleanup_menu
+                refresh_menu_status_cache_sync >/dev/null 2>&1 || true
                 ;;
             9)
                 # Updates
                 updates_menu
+                refresh_menu_status_cache_sync >/dev/null 2>&1 || true
                 ;;
             0)
                 return 0
