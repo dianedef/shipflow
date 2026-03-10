@@ -222,8 +222,25 @@ else
     success "Répertoire de configuration existe: $DOKPLOY_DIR"
 fi
 
-# Claude Code skills — symlinks individuels vers ShipFlow/.claude/skills/
+# Claude Code setup
 SHIPFLOW_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+mkdir -p "$HOME/.claude"
+
+# StatusLine — pointer vers le script ShipFlow
+if [ ! -f "$HOME/.claude/settings.json" ]; then
+    echo '{}' > "$HOME/.claude/settings.json"
+fi
+if command -v jq >/dev/null 2>&1; then
+    if ! jq -e '.statusLine' "$HOME/.claude/settings.json" &>/dev/null; then
+        jq --arg cmd "bash $SHIPFLOW_DIR/.claude/statusline-starship.sh" \
+            '.statusLine = {"type": "command", "command": $cmd}' \
+            "$HOME/.claude/settings.json" > "$HOME/.claude/settings.json.tmp" \
+            && mv "$HOME/.claude/settings.json.tmp" "$HOME/.claude/settings.json"
+        echo -e "  ${GREEN}✅ Claude Code statusLine configured${NC}"
+    fi
+fi
+
+# Claude Code skills — symlinks individuels vers ShipFlow/.claude/skills/
 if [ -d "$SHIPFLOW_DIR/.claude/skills" ]; then
     mkdir -p "$HOME/.claude/skills"
     for skill_dir in "$SHIPFLOW_DIR/.claude/skills"/*/; do

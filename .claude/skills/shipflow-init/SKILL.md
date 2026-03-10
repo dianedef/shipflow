@@ -70,9 +70,16 @@ Use **AskUserQuestion** to let the user review and confirm:
 
 ### Step 3: Create TASKS.md
 
-**Check first**: skip entirely if `TASKS.md` already exists.
+**Architecture**: TASKS.md lives in `~/shipflow_data/projects/[name]/TASKS.md` (personal data, not in git) and is symlinked into the project directory as `[project_dir]/TASKS.md`.
 
-If it does not exist, create it using the canonical ShipFlow format — never a bare placeholder:
+**Check first**: skip entirely if `TASKS.md` already exists (file or symlink) in the project directory.
+
+If it does not exist:
+1. Create directory `~/shipflow_data/projects/[name]/`
+2. Create `~/shipflow_data/projects/[name]/TASKS.md` with the canonical format below
+3. Create symlink: `ln -s ~/shipflow_data/projects/[name]/TASKS.md [project_dir]/TASKS.md`
+
+Never create a bare placeholder — populate with real tasks detected in Step 1:
 
 ```markdown
 # Tasks — [project name]
@@ -143,9 +150,27 @@ Read `/home/claude/shipflow_data/PROJECTS.md` and add a row to both tables:
 - Deps: ✓ if has package manager
 - Perf: ✓ (always)
 
-### Step 5: Add to master TASKS.md
+### Step 5: Create CHANGELOG.md + update master TASKS.md
 
-Add a section to `/home/claude/shipflow_data/TASKS.md`:
+**CHANGELOG.md** lives directly in the project directory (committed to git, visible to other devs).
+
+If `CHANGELOG.md` doesn't exist in the project dir, create it:
+
+```markdown
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/),
+and this project adheres to [Semantic Versioning](https://semver.org/).
+
+## [Unreleased] — [today's date]
+
+### Added
+- Initial project setup
+```
+
+**Master TASKS.md** — add a section to `/home/claude/shipflow_data/TASKS.md`:
 
 ```markdown
 ## [project name]

@@ -2494,6 +2494,11 @@ EOF
         success "Projet $env_name démarré sur le port $port"
         log INFO "Started environment: $env_name on port $port at $project_dir"
     fi
+
+    # Initialize ShipFlow tracking on first start (no TASKS.md yet)
+    if [ ! -e "$project_dir/TASKS.md" ]; then
+        shipflow_init_project "$env_name" "$project_dir"
+    fi
 }
 
 # -----------------------------------------------------------------------------
@@ -3224,6 +3229,120 @@ view_environment_logs() {
 }
 
 # -----------------------------------------------------------------------------
+# shipflow_init_project - Initialize ShipFlow tracking files for a project
+#
+# Description:
+#   Creates TASKS.md in shipflow_data/projects/[name]/ and symlinks it into
+#   the project directory. Creates CHANGELOG.md directly in the project dir.
+#   Safe to call multiple times — skips files that already exist.
+#
+# Arguments:
+#   $1 - project_name (e.g. "myapp")
+#   $2 - project_dir  (e.g. "/root/myapp")
+#
+# Side Effects:
+#   - Creates shipflow_data/projects/[name]/TASKS.md
+#   - Creates symlink [project_dir]/TASKS.md → shipflow_data/projects/[name]/TASKS.md
+#   - Creates [project_dir]/CHANGELOG.md (if missing)
+#   - Adds entry to shipflow_data/PROJECTS.md (if missing)
+# -----------------------------------------------------------------------------
+shipflow_init_project() {
+    local project_name="$1"
+    local project_dir="$2"
+    local shipflow_data="${SHIPFLOW_DATA_DIR:-$HOME/shipflow_data}"
+    local project_data_dir="$shipflow_data/projects/$project_name"
+
+    # Ensure shipflow_data/projects/[name]/ exists
+    mkdir -p "$project_data_dir"
+
+    # Create TASKS.md in shipflow_data (if not already there)
+    if [ ! -f "$project_data_dir/TASKS.md" ]; then
+        cat > "$project_data_dir/TASKS.md" << TASKS_EOF
+# Tasks — $project_name
+
+> **Priority:** 🔴 P0 blocker · 🟠 P1 high · 🟡 P2 normal · 🟢 P3 low · ⚪ deferred
+> **Status:** 📋 todo · 🔄 in progress · ✅ done · ⛔ blocked · 💤 deferred
+
+---
+
+## Setup
+
+| Pri | Task | Status |
+|-----|------|--------|
+| 🟠 | Review project structure and configure environment | 📋 todo |
+
+---
+
+## Backlog
+
+| Pri | Task | Status |
+|-----|------|--------|
+
+---
+
+## Audit Findings
+<!-- Populated by /shipflow-audit — dated sections added automatically -->
+TASKS_EOF
+        log INFO "Created TASKS.md for $project_name in shipflow_data"
+    fi
+
+    # Create symlink in project dir (only if TASKS.md is not already there)
+    if [ ! -e "$project_dir/TASKS.md" ]; then
+        ln -s "$project_data_dir/TASKS.md" "$project_dir/TASKS.md"
+        log INFO "Linked $project_dir/TASKS.md → $project_data_dir/TASKS.md"
+    elif [ ! -L "$project_dir/TASKS.md" ]; then
+        # A real file exists (not a symlink) — move it to shipflow_data and replace with symlink
+        mv "$project_dir/TASKS.md" "$project_data_dir/TASKS.md"
+        ln -s "$project_data_dir/TASKS.md" "$project_dir/TASKS.md"
+        log INFO "Migrated existing TASKS.md to shipflow_data and replaced with symlink"
+    fi
+
+    # Create CHANGELOG.md directly in project dir (lives in git repo)
+    if [ ! -f "$project_dir/CHANGELOG.md" ]; then
+        local today
+        today=$(date +%Y-%m-%d)
+        cat > "$project_dir/CHANGELOG.md" << CHANGELOG_EOF
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/),
+and this project adheres to [Semantic Versioning](https://semver.org/).
+
+## [Unreleased] — $today
+
+### Added
+- Initial project setup
+CHANGELOG_EOF
+        log INFO "Created CHANGELOG.md for $project_name"
+    fi
+
+    # Register project in shipflow_data/PROJECTS.md (if not already listed)
+    local projects_file="$shipflow_data/PROJECTS.md"
+    if [ -f "$projects_file" ] && ! grep -q "| $project_name |" "$projects_file"; then
+        # Detect basic stack info
+        local stack="unknown"
+        if [ -f "$project_dir/package.json" ]; then
+            stack="Node.js"
+            grep -q '"next"' "$project_dir/package.json" 2>/dev/null && stack="Next.js"
+            grep -q '"astro"' "$project_dir/package.json" 2>/dev/null && stack="Astro"
+            grep -q '"nuxt"' "$project_dir/package.json" 2>/dev/null && stack="Nuxt"
+            grep -q '"vite"' "$project_dir/package.json" 2>/dev/null && stack="Vite"
+        elif [ -f "$project_dir/requirements.txt" ]; then
+            stack="Python"
+        elif ls "$project_dir"/*.sh >/dev/null 2>&1; then
+            stack="Bash"
+        fi
+        # Append row to Project Registry table
+        sed -i "/^| Name | Path | Stack |/,/^$/{/^$/i | $project_name | $project_dir | $stack |
+}" "$projects_file" 2>/dev/null || \
+            echo "| $project_name | $project_dir | $stack |" >> "$projects_file"
+    fi
+
+    echo -e "${GREEN}📋 ShipFlow tracking initialized for $project_name${NC}"
+}
+
+# -----------------------------------------------------------------------------
 # deploy_github_project - Deploy a project from GitHub repository
 #
 # Description:
@@ -3346,6 +3465,9 @@ deploy_github_project() {
         echo -e "  flox activate"
         return 1
     fi
+
+    # Initialize ShipFlow tracking (TASKS.md + CHANGELOG.md)
+    shipflow_init_project "$project_name" "$project_dir"
 
     # Get port and display success
     local port=$(get_port_from_pm2 "$project_name")
