@@ -85,6 +85,32 @@ export SHIPFLOW_PM2_CACHE_TTL="${SHIPFLOW_PM2_CACHE_TTL:-5}"
 export SHIPFLOW_PREFER_JQ="${SHIPFLOW_PREFER_JQ:-true}"
 
 # ============================================================================
+# HEALTH MONITORING CONFIGURATION
+# ============================================================================
+
+# Enable crash loop detection in dashboard
+export SHIPFLOW_HEALTH_CHECK_ENABLED="${SHIPFLOW_HEALTH_CHECK_ENABLED:-true}"
+
+# Restart count above which an app is considered in a crash loop
+export SHIPFLOW_CRASH_LOOP_THRESHOLD="${SHIPFLOW_CRASH_LOOP_THRESHOLD:-10}"
+
+# Uptime (seconds) below which a running app is considered unstable
+export SHIPFLOW_UNSTABLE_UPTIME_SECS="${SHIPFLOW_UNSTABLE_UPTIME_SECS:-30}"
+
+# Known error patterns to auto-diagnose (pipe-separated)
+# Each entry: "pattern|human-readable label|auto-fix hint"
+export SHIPFLOW_KNOWN_ERROR_PATTERNS=(
+    "Unable to acquire lock|Stale lock file (.next/dev/lock)|Remove .next/dev/lock and restart"
+    "EADDRINUSE|Port already in use|Kill process on port or change PORT"
+    "Cannot find module|Missing dependency|Run npm install / pnpm install"
+    "not found$|Command not found (missing dependency or PATH)|Run npm install / pnpm install in project dir"
+    "ENOSPC|Disk full or inotify limit|Free disk space or increase fs.inotify.max_user_watches"
+    "content collection.*frontmatter\|zod.*validation\|ZodError|Invalid content file (empty or bad frontmatter)|Fix or rename file with _ prefix"
+    "SyntaxError|Syntax error in source code|Check recent file changes"
+    "ExperimentalWarning.*fetch|Node.js fetch warning (non-fatal)|Ignorable — upgrade Node.js if persistent"
+)
+
+# ============================================================================
 # DISK SPACE CONFIGURATION
 # ============================================================================
 

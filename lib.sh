@@ -2846,6 +2846,332 @@ get_status_icon() {
 }
 
 # ============================================================================
+# HEALTH MONITORING FUNCTIONS
+# ============================================================================
+
+# -----------------------------------------------------------------------------
+# get_pm2_health_data - Get restart count and uptime for all PM2 apps
+#
+# Description:
+#   Fetches extended PM2 data including restart_time and pm_uptime fields
+#   that are not included in the standard cached data. This is a separate
+#   call from get_pm2_data_cached() because it needs additional fields.
+#
+# Returns:
+#   0 - Success
+#   1 - PM2 not available
+#
+# Outputs:
+#   Lines of: name|status|restarts|uptime_ms|error_log_path
+# -----------------------------------------------------------------------------
+get_pm2_health_data() {
+    if ! command -v pm2 >/dev/null 2>&1; then
+        return 1
+    fi
+
+    if [ "$SHIPFLOW_PREFER_JQ" = "true" ] && command -v jq >/dev/null 2>&1; then
+        pm2 jlist 2>/dev/null | jq -r '.[] | "\(.name)|\(.pm2_env.status // "unknown")|\(.pm2_env.restart_time // 0)|\(.pm2_env.pm_uptime // 0)|\(.pm2_env.pm_err_log_path // "")"' 2>/dev/null
+    elif command -v python3 >/dev/null 2>&1; then
+        pm2 jlist 2>/dev/null | python3 -c "
+import sys, json
+try:
+    apps = json.load(sys.stdin)
+    for app in apps:
+        name = app.get('name', '')
+        env = app.get('pm2_env', {})
+        status = env.get('status', 'unknown')
+        restarts = env.get('restart_time', 0)
+        uptime = env.get('pm_uptime', 0)
+        err_log = env.get('pm_err_log_path', '')
+        print(f'{name}|{status}|{restarts}|{uptime}|{err_log}')
+except Exception:
+    pass
+" 2>/dev/null
+    else
+        return 1
+    fi
+}
+
+# -----------------------------------------------------------------------------
+# detect_crash_loop - Check if a specific app is in a crash loop
+#
+# Arguments:
+#   $1 - App name
+#   $2 - Restart count
+#   $3 - Uptime in milliseconds
+#   $4 - Status
+#
+# Returns:
+#   0 - App is in a crash loop
+#   1 - App is healthy
+#
+# Outputs:
+#   "crash_loop" | "unstable" | "healthy"
+# -----------------------------------------------------------------------------
+detect_crash_loop() {
+    local name=$1
+    local restarts=$2
+    local uptime_ms=$3
+    local status=$4
+
+    local threshold=${SHIPFLOW_CRASH_LOOP_THRESHOLD:-10}
+    local unstable_secs=${SHIPFLOW_UNSTABLE_UPTIME_SECS:-30}
+    local unstable_ms=$((unstable_secs * 1000))
+
+    # Errored with high restarts = crash loop
+    if [ "$status" = "errored" ] && [ "$restarts" -gt "$threshold" ]; then
+        echo "crash_loop"
+        return 0
+    fi
+
+    # Online but high restarts + low uptime = crash loop (just restarted again)
+    if [ "$restarts" -gt "$threshold" ] && [ "$uptime_ms" -lt "$unstable_ms" ]; then
+        echo "crash_loop"
+        return 0
+    fi
+
+    # Online but high restarts (recovered but was looping)
+    if [ "$restarts" -gt "$threshold" ]; then
+        echo "unstable"
+        return 0
+    fi
+
+    echo "healthy"
+    return 1
+}
+
+# -----------------------------------------------------------------------------
+# diagnose_app_errors - Analyze error logs for known patterns
+#
+# Description:
+#   Reads the last 50 lines of an app's PM2 error log and matches
+#   against known error patterns from config.
+#
+# Arguments:
+#   $1 - Path to PM2 error log
+#
+# Returns:
+#   0 - Known error found
+#   1 - No known error matched
+#
+# Outputs:
+#   "label|hint" for the first matching pattern
+# -----------------------------------------------------------------------------
+diagnose_app_errors() {
+    local err_log=$1
+
+    if [ ! -f "$err_log" ] || [ ! -s "$err_log" ]; then
+        return 1
+    fi
+
+    local recent_errors
+    recent_errors=$(tail -50 "$err_log" 2>/dev/null)
+
+    for pattern_entry in "${SHIPFLOW_KNOWN_ERROR_PATTERNS[@]}"; do
+        local pattern label hint
+        pattern=$(echo "$pattern_entry" | cut -d'|' -f1)
+        label=$(echo "$pattern_entry" | cut -d'|' -f2)
+        hint=$(echo "$pattern_entry" | cut -d'|' -f3)
+
+        if echo "$recent_errors" | grep -qiE "$pattern"; then
+            echo "${label}|${hint}"
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+# -----------------------------------------------------------------------------
+# health_check_all - Run health checks on all PM2 apps
+#
+# Description:
+#   Scans all PM2 apps for crash loops and known error patterns.
+#   Outputs a formatted health report. Used by dashboard and
+#   standalone health check command.
+#
+# Arguments:
+#   $1 - "quiet" for machine-readable, "verbose" for full report (default)
+#
+# Returns:
+#   0 - All apps healthy
+#   1 - One or more apps unhealthy
+#
+# Outputs:
+#   Formatted health report
+# -----------------------------------------------------------------------------
+health_check_all() {
+    local mode=${1:-verbose}
+    local health_data
+    health_data=$(get_pm2_health_data)
+
+    if [ -z "$health_data" ]; then
+        if [ "$mode" = "verbose" ]; then
+            echo -e "${YELLOW}⚠️  No PM2 apps found or PM2 unavailable${NC}"
+        fi
+        return 0
+    fi
+
+    local unhealthy_count=0
+    local crash_loop_count=0
+    local total_count=0
+    local alerts=""
+
+    while IFS='|' read -r name status restarts uptime_ms err_log; do
+        [ -z "$name" ] && continue
+        ((total_count++))
+
+        # Skip stopped apps (they're intentionally stopped)
+        [ "$status" = "stopped" ] && continue
+
+        local health
+        health=$(detect_crash_loop "$name" "$restarts" "$uptime_ms" "$status")
+
+        if [ "$health" = "crash_loop" ]; then
+            ((crash_loop_count++))
+            ((unhealthy_count++))
+
+            local diagnosis=""
+            if [ -n "$err_log" ]; then
+                diagnosis=$(diagnose_app_errors "$err_log")
+            fi
+
+            local diag_label diag_hint
+            if [ -n "$diagnosis" ]; then
+                diag_label=$(echo "$diagnosis" | cut -d'|' -f1)
+                diag_hint=$(echo "$diagnosis" | cut -d'|' -f2)
+            fi
+
+            if [ "$mode" = "verbose" ]; then
+                alerts+="  🔴 ${RED}${name}${NC} — crash loop (${restarts} restarts)\n"
+                if [ -n "$diag_label" ]; then
+                    alerts+="     ${YELLOW}Cause:${NC} ${diag_label}\n"
+                    alerts+="     ${CYAN}Fix:${NC}   ${diag_hint}\n"
+                else
+                    alerts+="     ${YELLOW}Cause:${NC} Unknown — check: ${CYAN}pm2 logs ${name} --lines 30${NC}\n"
+                fi
+                alerts+="\n"
+            else
+                echo "CRASH_LOOP|${name}|${restarts}|${diag_label:-unknown}"
+            fi
+
+            log WARNING "Crash loop detected: $name ($restarts restarts) — ${diag_label:-unknown cause}"
+
+        elif [ "$health" = "unstable" ]; then
+            ((unhealthy_count++))
+
+            if [ "$mode" = "verbose" ]; then
+                alerts+="  🟠 ${YELLOW}${name}${NC} — unstable (${restarts} restarts, now running)\n"
+            else
+                echo "UNSTABLE|${name}|${restarts}"
+            fi
+
+            log WARNING "Unstable app: $name ($restarts restarts, currently online)"
+        fi
+
+    done <<< "$health_data"
+
+    if [ "$mode" = "verbose" ]; then
+        if [ "$unhealthy_count" -gt 0 ]; then
+            echo -e "${RED}⚠️  Health Issues Detected ($unhealthy_count/$total_count apps):${NC}"
+            echo ""
+            echo -e "$alerts"
+        else
+            echo -e "${GREEN}✅ All $total_count app(s) healthy${NC}"
+        fi
+    fi
+
+    [ "$unhealthy_count" -eq 0 ]
+}
+
+# -----------------------------------------------------------------------------
+# auto_fix_known_issues - Attempt automatic fixes for common crash causes
+#
+# Description:
+#   For each app in crash loop, checks for known fixable issues:
+#   - Stale .next/dev/lock files (Next.js)
+#   - Empty content files in Astro collections
+#   Prompts before applying fixes.
+#
+# Arguments:
+#   None (scans all PM2 apps)
+#
+# Returns:
+#   0 - Fixes applied or nothing to fix
+#   1 - Errors during fix
+# -----------------------------------------------------------------------------
+auto_fix_known_issues() {
+    local health_data
+    health_data=$(get_pm2_health_data)
+    local fixed=0
+
+    while IFS='|' read -r name status restarts uptime_ms err_log; do
+        [ -z "$name" ] && continue
+
+        local health
+        health=$(detect_crash_loop "$name" "$restarts" "$uptime_ms" "$status")
+        [ "$health" = "healthy" ] && continue
+
+        local cwd
+        cwd=$(get_pm2_app_data "$name" "cwd")
+        [ -z "$cwd" ] && continue
+
+        # --- Fix 1: Stale Next.js lock file ---
+        if [ -f "${cwd}/.next/dev/lock" ]; then
+            echo -e "  ${YELLOW}🔧 ${name}:${NC} Stale .next/dev/lock found"
+            echo -e "     Removing lock file and restarting..."
+            pm2 stop "$name" 2>/dev/null || true
+            rm -f "${cwd}/.next/dev/lock"
+            pm2 start "$name" 2>/dev/null
+            pm2 save 2>/dev/null
+            invalidate_pm2_cache
+            ((fixed++))
+            log INFO "Auto-fix: removed stale .next/dev/lock for $name"
+            echo -e "     ${GREEN}✅ Fixed${NC}"
+            echo ""
+        fi
+
+        # --- Fix 2: Check for empty .md files in Astro content dirs ---
+        if [ -d "${cwd}/src/data" ] || [ -d "${cwd}/src/content" ]; then
+            local content_dir
+            for content_dir in "${cwd}/src/data" "${cwd}/src/content"; do
+                [ ! -d "$content_dir" ] && continue
+                local empty_files
+                empty_files=$(find "$content_dir" -name "*.md" -empty ! -name "_*" 2>/dev/null)
+                if [ -n "$empty_files" ]; then
+                    echo -e "  ${YELLOW}🔧 ${name}:${NC} Empty .md file(s) in content collection"
+                    while IFS= read -r empty_file; do
+                        local dir_name base_name new_name
+                        dir_name=$(dirname "$empty_file")
+                        base_name=$(basename "$empty_file")
+                        new_name="${dir_name}/_${base_name}"
+                        mv "$empty_file" "$new_name"
+                        echo -e "     Renamed: ${base_name} → _${base_name}"
+                        log INFO "Auto-fix: renamed empty content file $empty_file → $new_name for $name"
+                    done <<< "$empty_files"
+                    pm2 restart "$name" 2>/dev/null
+                    pm2 save 2>/dev/null
+                    invalidate_pm2_cache
+                    ((fixed++))
+                    echo -e "     ${GREEN}✅ Fixed — restarted $name${NC}"
+                    echo ""
+                fi
+            done
+        fi
+
+    done <<< "$health_data"
+
+    if [ "$fixed" -eq 0 ]; then
+        echo -e "${YELLOW}No auto-fixable issues found.${NC}"
+        echo -e "Run ${CYAN}pm2 logs <app> --lines 30${NC} to investigate manually."
+    else
+        echo -e "${GREEN}✅ Applied $fixed fix(es). Waiting for apps to stabilize...${NC}"
+        sleep 3
+        invalidate_pm2_cache
+    fi
+}
+
+# ============================================================================
 # BATCH OPERATIONS
 # ============================================================================
 
@@ -3035,11 +3361,18 @@ show_dashboard() {
         return 1
     fi
 
+    # Pre-fetch health data for restart counts (one PM2 call)
+    local health_data=""
+    if [ "${SHIPFLOW_HEALTH_CHECK_ENABLED:-true}" = "true" ]; then
+        health_data=$(get_pm2_health_data 2>/dev/null)
+    fi
+
     # Display environments with status
     echo -e "${GREEN}📊 Active Environments:${NC}"
     echo ""
 
     local count=0
+    local unhealthy_names=""
     while IFS= read -r name; do
         ((count++))
         local status=$(get_pm2_status "$name")
@@ -3048,6 +3381,28 @@ show_dashboard() {
 
         # Status indicator
         local status_icon=$(get_status_icon "$status")
+
+        # Check for crash loop via pre-fetched health data
+        local restart_tag=""
+        if [ -n "$health_data" ]; then
+            local app_health_line
+            app_health_line=$(echo "$health_data" | grep "^${name}|")
+            if [ -n "$app_health_line" ]; then
+                local h_restarts h_uptime h_status
+                h_restarts=$(echo "$app_health_line" | cut -d'|' -f3)
+                h_uptime=$(echo "$app_health_line" | cut -d'|' -f4)
+                h_status=$(echo "$app_health_line" | cut -d'|' -f2)
+                local health_state
+                health_state=$(detect_crash_loop "$name" "$h_restarts" "$h_uptime" "$h_status")
+                if [ "$health_state" = "crash_loop" ]; then
+                    restart_tag=" ${RED}⚠ CRASH LOOP (${h_restarts}x)${NC}"
+                    unhealthy_names+="$name "
+                elif [ "$health_state" = "unstable" ]; then
+                    restart_tag=" ${YELLOW}⚠ ${h_restarts} restarts${NC}"
+                    unhealthy_names+="$name "
+                fi
+            fi
+        fi
 
         # Display environment info
         printf "  %s %-20s" "$status_icon" "$name"
@@ -3059,11 +3414,24 @@ show_dashboard() {
             printf "${YELLOW}No port${NC}"
         fi
 
+        # Append crash loop tag
+        if [ -n "$restart_tag" ]; then
+            printf "%b" "$restart_tag"
+        fi
+
         echo ""
     done <<< "$all_envs"
 
     echo ""
     echo -e "${BLUE}Total: $count environment(s)${NC}"
+
+    # Health alert banner
+    if [ -n "$unhealthy_names" ]; then
+        echo ""
+        echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo -e "${RED}⚠️  Unhealthy apps detected!${NC} Run ${CYAN}health check${NC} (option ${CYAN}h${NC}) for diagnostics & auto-fix."
+        echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    fi
 
     # Check for web URLs (Caddyfile)
     if [ -f "/etc/caddy/Caddyfile" ]; then

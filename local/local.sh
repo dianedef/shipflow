@@ -267,6 +267,69 @@ except:
 \"" 2>/dev/null
 }
 
+# Fonction pour récupérer uniquement les vrais processus de tunnel
+get_tunnel_processes() {
+    ps -eo pid=,args= | while IFS= read -r line; do
+        case "$line" in
+            *autossh*" $REMOTE_HOST"*"-L "*":localhost:"*|*ssh*" $REMOTE_HOST"*"-N "*"-L "*":localhost:"*)
+                echo "$line"
+                ;;
+        esac
+    done
+}
+
+# Fonction pour récupérer uniquement les PIDs des vrais tunnels
+get_tunnel_pids() {
+    get_tunnel_processes | awk '{print $1}'
+}
+
+# Fonction pour vérifier qu'un port local répond
+is_local_tunnel_ready() {
+    local port="$1"
+
+    if command -v nc &> /dev/null && nc -z localhost "$port" 2>/dev/null; then
+        return 0
+    fi
+
+    if command -v lsof &> /dev/null && lsof -i :"$port" &> /dev/null; then
+        return 0
+    fi
+
+    curl -s --connect-timeout 1 "http://localhost:${port}" &> /dev/null
+}
+
+# Fonction pour attendre que les tunnels soient bien levés
+verify_tunnels_ready() {
+    local ports_data="$1"
+    local max_attempts=5
+    local attempt=1
+    local pending="$ports_data"
+
+    while [ $attempt -le $max_attempts ] && [ -n "$pending" ]; do
+        local next_pending=""
+
+        while IFS= read -r line; do
+            [ -n "$line" ] || continue
+            local port name
+            port=$(echo "$line" | cut -d':' -f1)
+            name=$(echo "$line" | cut -d':' -f2)
+
+            if ! is_local_tunnel_ready "$port"; then
+                next_pending="${next_pending}${line}"$'\n'
+            fi
+        done <<< "$pending"
+
+        pending=$(printf "%s" "$next_pending" | sed '/^$/d')
+        [ -z "$pending" ] && return 0
+
+        sleep 1
+        attempt=$((attempt + 1))
+    done
+
+    echo "$pending"
+    return 1
+}
+
 # Fonction pour démarrer les tunnels
 start_tunnels() {
     echo -e "${BLUE}🚇 Démarrage des tunnels SSH${NC}"
@@ -314,8 +377,19 @@ start_tunnels() {
     
     echo ""
     echo -e "${YELLOW}⏳ Attente de l'établissement des tunnels...${NC}"
-    sleep 3
-    
+    FAILED_TUNNELS=$(verify_tunnels_ready "$PORTS")
+
+    if [ -n "$FAILED_TUNNELS" ]; then
+        echo -e "${YELLOW}⚠ Certains tunnels ne répondent pas encore :${NC}"
+        while IFS= read -r line; do
+            [ -n "$line" ] || continue
+            port=$(echo "$line" | cut -d':' -f1)
+            name=$(echo "$line" | cut -d':' -f2)
+            echo -e "  ${RED}✗${NC} localhost:${port} ${YELLOW}(${name})${NC}"
+        done <<< "$FAILED_TUNNELS"
+        return 1
+    fi
+
     echo -e "${GREEN}✅ Tunnels actifs !${NC}"
 }
 
@@ -356,10 +430,10 @@ stop_tunnels() {
     # Afficher les processus avant de les tuer
     echo -e "${YELLOW}🔍 Recherche des processus SSH...${NC}"
     
-    PIDS=$(pgrep -f "ssh.*$REMOTE_HOST" 2>/dev/null)
+    PIDS=$(get_tunnel_pids)
     
     if [ -z "$PIDS" ]; then
-        echo -e "${YELLOW}⚠ Aucun processus SSH trouvé avec le pattern 'ssh.*$REMOTE_HOST'${NC}"
+        echo -e "${YELLOW}⚠ Aucun tunnel actif trouvé pour $REMOTE_HOST${NC}"
         echo ""
         echo -e "${BLUE}💡 Processus SSH en cours:${NC}"
         ps aux | grep ssh | grep -v grep | grep -v ssh-agent
@@ -386,7 +460,7 @@ stop_tunnels() {
         sleep 1
         
         # Vérifier qu'ils sont bien arrêtés
-        REMAINING=$(pgrep -f "ssh.*$REMOTE_HOST" 2>/dev/null)
+        REMAINING=$(get_tunnel_pids)
         if [ -n "$REMAINING" ]; then
             echo ""
             echo -e "${YELLOW}⚠ Processus restants, utilisation de kill -9...${NC}"
@@ -404,7 +478,7 @@ show_status() {
     echo ""
     
     # Chercher les processus autossh OU ssh avec le remote host
-    PROCESSES=$(ps aux | grep -E "(autossh|ssh).*$REMOTE_HOST" | grep -v grep | grep -v "ssh-agent")
+    PROCESSES=$(get_tunnel_processes)
     
     if [ -z "$PROCESSES" ]; then
         echo -e "${YELLOW}⚠ Aucun tunnel actif${NC}"
@@ -479,9 +553,12 @@ main() {
             5)
                 echo -e "${BLUE}🔄 Redémarrage des tunnels${NC}"
                 echo ""
-                stop_tunnels
+                stop_tunnels || true
                 sleep 2
-                start_tunnels
+                if ! start_tunnels; then
+                    echo ""
+                    echo -e "${YELLOW}⚠ Redémarrage incomplet : vérifiez le statut des tunnels${NC}"
+                fi
                 pause
                 ;;
             7)

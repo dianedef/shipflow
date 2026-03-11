@@ -56,6 +56,7 @@ show_menu() {
     echo -e "${BLUE}⚙️  ADVANCED${NC}"
     echo -e "  ${CYAN}9)${NC} More Options - Publish, Logs, Help..."
     echo -e "  ${CYAN}m)${NC} Mobile Guide - Setup Android + Expo pas à pas"
+    echo -e "  ${CYAN}h)${NC} Health Check - Detect crash loops & auto-fix"
     echo ""
     echo -e "  ${CYAN}x)${NC} Exit"
     echo ""
@@ -897,6 +898,32 @@ main() {
             m|M)
                 # Mobile Guide
                 show_mobile_guide
+                ;;
+
+            h|H)
+                # Health Check
+                echo -e "${CYAN}╔══════════════════════════════════════════════════╗${NC}"
+                echo -e "${CYAN}║${NC}              ${YELLOW}Health Check${NC}                      ${CYAN}║${NC}"
+                echo -e "${CYAN}╚══════════════════════════════════════════════════╝${NC}"
+                echo ""
+                health_check_all verbose
+                echo ""
+                echo -e "${BLUE}Options:${NC}"
+                echo -e "  ${CYAN}f)${NC} Auto-fix known issues"
+                echo -e "  ${CYAN}*)${NC} Back to menu"
+                echo ""
+                echo -e "${YELLOW}Your choice:${NC} \c"
+                read -r health_choice
+                case $health_choice in
+                    f|F)
+                        echo ""
+                        auto_fix_known_issues
+                        echo ""
+                        echo -e "${BLUE}Updated health status:${NC}"
+                        echo ""
+                        health_check_all verbose
+                        ;;
+                esac
                 ;;
 
             x|X)
