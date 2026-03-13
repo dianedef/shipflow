@@ -15,6 +15,18 @@ argument-hint: [roundup|review|comparison|informational|howto] [topic] (required
 - Site framework: !`cat package.json 2>/dev/null | grep -E '"(astro|next|nuxt|gatsby|vite)"' || echo "unknown framework"`
 - Content style: !`find . -maxdepth 3 -type f \( -name "*.md" -o -name "*.mdx" \) 2>/dev/null | grep -vi changelog | head -1 | xargs head -40 2>/dev/null || echo "no existing content to reference"`
 
+## Pipeline position
+
+```
+/shipflow-keyword-research --> /shipflow-product-discovery[-digital] --> /shipflow-content-gen
+                                                                         (you are here — articles)
+                                                                         /shipflow-copywriter (conversion copy)
+```
+
+**Prerequisite check:** This skill checks for keyword data (`seo/keywords-*.json`) and product data (`seo/products-*.json`). If missing, it suggests running the upstream skills first. You can skip if you have your own topic and product list.
+
+**For conversion copy** (landing pages, emails, CTAs, headlines): use `/shipflow-copywriter` instead.
+
 ## Mode detection
 
 Parse `$ARGUMENTS` for article type and topic:

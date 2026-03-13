@@ -13,6 +13,17 @@ argument-hint: [keyword/niche | "match" keywords-file] (required)
 - Existing product data: !`find . -path "*/products*" -name "*.json" 2>/dev/null | grep -v node_modules | head -10 || echo "no product files"`
 - Affiliate config: !`cat affiliate.config.json 2>/dev/null || cat .env 2>/dev/null | grep -i "affiliate\|amazon\|awin\|cj\|rakuten" || echo "no affiliate config"`
 
+## Pipeline position
+
+```
+/shipflow-keyword-research --> /shipflow-product-discovery --> /shipflow-content-gen
+                               (you are here — physical)       /shipflow-copywriter
+```
+
+**Prerequisite check:** This skill checks for `seo/keywords-*.json` files. If none exist, it suggests running `/shipflow-keyword-research` first. You can skip this if you already know your topic.
+
+**For digital products** (SaaS, courses, ebooks, templates): use `/shipflow-product-discovery-digital` instead.
+
 ## Mode detection
 
 - **`$ARGUMENTS` is a keyword/niche** --> DISCOVERY MODE: find products for that keyword.

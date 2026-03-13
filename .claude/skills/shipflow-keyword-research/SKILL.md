@@ -14,6 +14,15 @@ argument-hint: [topic/niche | "bulk" | "calendar"] (required)
 - Site config: !`cat astro.config.* next.config.* nuxt.config.* 2>/dev/null | head -30 || echo "no site config"`
 - Package.json: !`cat package.json 2>/dev/null | head -20 || echo "no package.json"`
 
+## Pipeline position
+
+```
+/shipflow-keyword-research --> /shipflow-product-discovery         --> /shipflow-content-gen
+(you are here)                 /shipflow-product-discovery-digital      /shipflow-copywriter
+```
+
+**You are at the START of the pipeline.** This skill's output (`seo/keywords-*.json`) feeds into product discovery and content generation. No prerequisites needed.
+
 ## Mode detection
 
 - **`$ARGUMENTS` starts with a topic/niche** --> TOPIC MODE: deep keyword research for one topic.
