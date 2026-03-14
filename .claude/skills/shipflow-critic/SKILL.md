@@ -1,41 +1,41 @@
 ---
 name: shipflow-critic
-description: Critic agent — reviews verify/review findings and makes decisions. Fix the code, update the spec, or accept as-is. Bridges the gap between finding issues and resolving them. The agent that decides what's worth fixing.
+description: Critic agent — reviews audit/review findings and makes decisions. Fix the code, update docs, or accept as-is. Bridges the gap between finding issues and resolving them. The agent that decides what's worth fixing.
 disable-model-invocation: true
-argument-hint: [change-name | file-path | "auto"] (auto = review most recent verify output)
+argument-hint: [file-path | "auto"] (auto = review most recent audit or git diff)
 ---
 
 ## Context
 
 - Current directory: !`pwd`
-- Active changes: !`ls openspec/changes/ 2>/dev/null || echo "no active changes"`
-- Recent verify output: !`find . -name "VERIFY_REPORT.md" -o -name "verify-*.md" 2>/dev/null | head -5 || echo "no verify reports"`
+- Tasks: !`cat TASKS.md 2>/dev/null | head -30 || echo "no TASKS.md"`
 - Recent audit output: !`find . -name "AUDIT_LOG.md" 2>/dev/null | head -3 || echo "no audit logs"`
 - Git recent: !`git log --oneline -5 2>/dev/null`
+- Recent changes: !`git diff --stat HEAD~3 2>/dev/null | tail -10 || echo "no recent changes"`
 
 ## What This Skill Does
 
 The Critic sits between **finding issues** and **fixing them**. It answers the question every team avoids: *"Is this actually worth fixing, or are we gold-plating?"*
 
 ```
-/opsx:verify or /shipflow-audit-*
+/shipflow-audit-* or code review or error report
     │
     ▼ issues found
 /shipflow-critic  ◄── you are here
     │
-    ├── FIX CODE: issue is real, code is wrong → launch fix
-    ├── UPDATE SPEC: code is right, spec was wrong → update artifacts
+    ├── FIX CODE: issue is real, code is wrong → fix it or delegate to /shipflow-debug
+    ├── UPDATE DOCS: code is right, docs were wrong → update README/CLAUDE.md/TASKS.md
     ├── ACCEPT AS-IS: issue is theoretical, not practical → document decision
     └── ESCALATE: needs human judgment → present options with tradeoffs
 ```
 
 ## When to Use This
 
-- After `/opsx:verify` flags WARNINGS or SUGGESTIONS
 - After any `/shipflow-audit-*` finds issues
 - After a code review (human or agent) raises concerns
 - When you're unsure if something is a real problem or noise
-- When implementation revealed that the original spec was incomplete
+- When you want to triage a long list of findings before acting
+- After `/shipflow-debug` identifies multiple issues to prioritize
 
 ## How It Works
 
@@ -43,8 +43,8 @@ The Critic sits between **finding issues** and **fixing them**. It answers the q
 
 Load the issues to evaluate. Sources (check in order):
 
-1. **OpenSpec verify output**: Read `openspec/changes/[name]/` artifacts + any verify report
-2. **Audit log**: Read `AUDIT_LOG.md` for recent audit findings
+1. **Audit log**: Read `AUDIT_LOG.md` for recent audit findings
+2. **TASKS.md**: Check for audit findings or flagged issues
 3. **Specific file**: If `$ARGUMENTS` is a file path, review that file's issues
 4. **Git diff**: Check recent changes for review context
 
@@ -86,21 +86,12 @@ Based on the classification, decide:
 - If small: describe the fix, ask user to approve, then apply
 - If large: create a task in TASKS.md, suggest running `/opsx:apply` or `/shipflow-debug`
 
-**UPDATE SPEC (Living Spec):**
-This is the critical capability Intent has that serial OpenSpec doesn't:
-- Read the current artifact (specs.md, design.md, or proposal.md)
-- Add the new insight/requirement discovered during implementation
-- Mark the update with a `> [LIVING SPEC UPDATE — date]: ...` callout
-- Log the decision: what changed, why, and what triggered it
-
-Example living spec update:
-```markdown
-> [LIVING SPEC UPDATE — 2026-03-13]: Added error handling for
-> rate-limited API responses. Discovered during implementation
-> that the upstream API returns 429 with Retry-After header.
-> Original spec didn't account for this. Added retry logic
-> requirement to API integration section.
-```
+**UPDATE DOCS:**
+When the code is right but documentation is outdated or incomplete:
+- Update `CLAUDE.md` if architectural understanding changed
+- Update `README.md` if user-facing behavior changed
+- Update `TASKS.md` if priorities shifted based on findings
+- Add a note in the relevant file: `> [UPDATE — date]: [what changed and why]`
 
 **ACCEPT AS-IS:**
 - Document WHY the issue is acceptable
@@ -176,18 +167,17 @@ NEEDS YOUR INPUT
 
 | Trigger | What happens |
 |---------|-------------|
-| `/opsx:verify` finds issues | Run `/shipflow-critic` to decide what to fix |
 | `/shipflow-audit-*` finds issues | Run `/shipflow-critic` to triage findings |
-| `/opsx:parallel` Phase 7 | Coordinator auto-triggers Critic for non-critical issues |
-| `/shipflow-debug` fixes a bug | Critic reviews if the fix needs a spec update |
+| `/shipflow-debug` fixes a bug | Critic reviews if docs need updating |
 | Manual review raises concerns | Run `/shipflow-critic` with the file or issue |
+| Large TASKS.md backlog | Critic prioritizes what's worth doing vs accepting |
 
 ---
 
 ## Important
 
 - **The Critic never says "fix everything."** That's a junior reviewer. A senior reviewer knows what matters and what doesn't. The Critic prioritizes ruthlessly.
-- **Living specs are the point.** The most valuable output of the Critic is updating specs to match reality. A spec that doesn't reflect the code is worse than no spec.
+- **Keep docs honest.** If the code diverged from what CLAUDE.md or README says, update the docs. Outdated docs are worse than no docs.
 - **Document acceptance decisions.** "Accept as-is" without reasoning is just ignoring the problem. Always explain WHY it's acceptable.
 - **Don't gold-plate.** A LOW severity + UNCERTAIN confidence issue that takes LARGE effort to fix? Accept it. Move on. Ship.
 - **The Critic is opinionated.** It doesn't present every option neutrally — it makes a recommendation. The user can override, but the Critic takes a stance.

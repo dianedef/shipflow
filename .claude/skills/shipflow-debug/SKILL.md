@@ -11,7 +11,7 @@ argument-hint: [error-description | file-path | "auto"] (auto = diagnose most re
 - Git status: !`git status --short 2>/dev/null | head -10`
 - Recent errors: !`git log --oneline -5 2>/dev/null`
 - Test output: !`find . -name "*.log" -newer /tmp -type f 2>/dev/null | head -5; cat test-output.log 2>/dev/null | tail -20 || echo "no recent test output"`
-- Active changes: !`ls openspec/changes/ 2>/dev/null || echo "no active changes"`
+- Tasks: !`cat TASKS.md 2>/dev/null | head -30 || echo "no TASKS.md"`
 - CI status: !`gh run list --limit 3 2>/dev/null || echo "no gh cli"`
 
 ## What This Skill Does
@@ -255,12 +255,12 @@ ESCALATION
 
 | Trigger | What happens |
 |---------|-------------|
-| `/opsx:apply` task fails | Auto-suggest `/shipflow-debug` with error context |
-| `/opsx:verify` CRITICAL issue | `/opsx:parallel` Phase 7 triggers Debugger |
+| Something breaks during work | Run `/shipflow-debug` with the error |
 | `/shipflow-audit-code` finds bugs | Run Debugger to fix critical security/reliability issues |
 | Test suite fails | Run Debugger with test output |
 | CI breaks | Run Debugger with `gh run view` output |
 | `/shipflow-critic` decides FIX CODE | Critic can delegate complex fixes to Debugger |
+| ShipFlow PM2/Caddy/Flox errors | Run Debugger for infrastructure issues |
 
 ---
 

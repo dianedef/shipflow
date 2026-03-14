@@ -4194,3 +4194,447 @@ deploy_github_project() {
     log INFO "Successfully deployed GitHub project: $repo_name"
     return 0
 }
+
+# ============================================================================
+# SHARED MENU FUNCTIONS (used by all menu frontends)
+# ============================================================================
+
+# -----------------------------------------------------------------------------
+# show_shipflow_menu - ShipFlow overview: Tasks, Priorities, Changelog, Audit
+# -----------------------------------------------------------------------------
+show_shipflow_menu() {
+    local SHIPFLOW_DATA="${SHIPFLOW_DATA_DIR:-/home/claude/shipflow_data}"
+    local TASKS_FILE="$SHIPFLOW_DATA/TASKS.md"
+    local AUDIT_FILE="$SHIPFLOW_DATA/AUDIT_LOG.md"
+
+    # First-run: create data directory with starter files if missing
+    if [ ! -d "$SHIPFLOW_DATA" ]; then
+        mkdir -p "$SHIPFLOW_DATA"
+        cat > "$SHIPFLOW_DATA/TASKS.md" << 'TASKS_EOF'
+# Master Project Tracker
+
+> **Priority:** 🔴 P0 blocker · 🟠 P1 high · 🟡 P2 normal · 🟢 P3 low · ⚪ deferred
+> **Status:** 📋 todo · 🔄 in progress · ✅ done · ⛔ blocked · 💤 deferred
+
+---
+
+## Dashboard
+
+| # | Project | Phase | Status | Top Priority |
+|---|---------|-------|--------|--------------|
+
+**Legend:** 🟢 Stable · 🟡 Active · 🟠 Planning · 🔴 Blocked · ⚪ Empty
+
+---
+
+## Backlog
+
+| Pri | Task | Status |
+|-----|------|--------|
+| 🟡 | Add first project with /shipflow-init | 📋 todo |
+TASKS_EOF
+        cat > "$SHIPFLOW_DATA/AUDIT_LOG.md" << 'AUDIT_EOF'
+# Audit Log
+
+> Populated by `/shipflow-audit` skills. Each entry follows the format:
+> `### Audit: [Domain] — [Project] (YYYY-MM-DD)`
+
+---
+AUDIT_EOF
+        cat > "$SHIPFLOW_DATA/PROJECTS.md" << 'PROJECTS_EOF'
+# Projects
+
+## Project Registry
+
+| Name | Path | Stack |
+|------|------|-------|
+
+## Domain Applicability
+
+| Project | Code | Design | Copy | SEO | GTM | Translate | Deps | Perf |
+|---------|------|--------|------|-----|-----|-----------|------|------|
+PROJECTS_EOF
+        echo -e "${GREEN}✅ Created data directory: $SHIPFLOW_DATA${NC}"
+        sleep 1
+    fi
+    local CHANGELOG_FILE="$SCRIPT_DIR/CHANGELOG.md"
+
+    while true; do
+        clear
+        echo -e "${CYAN}══════════════════════════════════════════════════${NC}"
+        echo -e "               ${YELLOW}⚡ ShipFlow Overview${NC}"
+        echo -e "${CYAN}══════════════════════════════════════════════════${NC}"
+        echo ""
+
+        # Mini dashboard: show project table from TASKS.md
+        if [ -f "$TASKS_FILE" ]; then
+            grep -E "^\| [0-9]+" "$TASKS_FILE" 2>/dev/null | head -12 | while IFS= read -r line; do
+                echo -e "  $line"
+            done
+            echo ""
+        fi
+
+        echo -e "${GREEN}Choisis :${NC}"
+        echo ""
+        echo -e "  ${CYAN}1)${NC} 📋 Tâches      — Parcourir tous les projets"
+        echo -e "  ${CYAN}2)${NC} 🔴 Priorités   — Afficher P0 & P1 uniquement"
+        echo -e "  ${CYAN}3)${NC} 📝 Changelog   — Voir les changements récents"
+        echo -e "  ${CYAN}4)${NC} 📊 Audit Log   — Scores de qualité"
+        echo ""
+        echo -e "  ${CYAN}x)${NC} ← Retour"
+        echo ""
+        echo -e "${YELLOW}Ton choix :${NC} \c"
+        read -r sf_choice
+
+        case $sf_choice in
+            1)
+                if [ -f "$TASKS_FILE" ]; then
+                    less -R "$TASKS_FILE"
+                else
+                    echo -e "${RED}❌ TASKS.md introuvable : $TASKS_FILE${NC}"
+                    sleep 2
+                fi
+                ;;
+            2)
+                if [ -f "$TASKS_FILE" ]; then
+                    clear
+                    echo -e "${CYAN}══════════════════════════════════════════════════${NC}"
+                    echo -e "       ${RED}🔴 P0 Bloquants${NC}  &  ${YELLOW}🟠 P1 Haute priorité${NC}"
+                    echo -e "${CYAN}══════════════════════════════════════════════════${NC}"
+                    echo ""
+                    local current_project=""
+                    while IFS= read -r line; do
+                        if echo "$line" | grep -qE "^## [0-9]+\."; then
+                            current_project=$(echo "$line" | sed 's/^## //')
+                        fi
+                        if echo "$line" | grep -qE "^\| (🔴|🟠)"; then
+                            if [ -n "$current_project" ]; then
+                                echo -e "${BLUE}── $current_project${NC}"
+                                current_project=""
+                            fi
+                            echo "  $line"
+                        fi
+                    done < "$TASKS_FILE"
+                    echo ""
+                    echo -e "${YELLOW}Appuie sur Entrée pour continuer...${NC}"
+                    read -r
+                else
+                    echo -e "${RED}❌ TASKS.md introuvable${NC}"
+                    sleep 2
+                fi
+                ;;
+            3)
+                if [ -f "$CHANGELOG_FILE" ]; then
+                    less -R "$CHANGELOG_FILE"
+                else
+                    echo -e "${RED}❌ CHANGELOG.md introuvable : $CHANGELOG_FILE${NC}"
+                    sleep 2
+                fi
+                ;;
+            4)
+                if [ -f "$AUDIT_FILE" ]; then
+                    less -R "$AUDIT_FILE"
+                else
+                    echo -e "${RED}❌ AUDIT_LOG.md introuvable : $AUDIT_FILE${NC}"
+                    sleep 2
+                fi
+                ;;
+            x|X|q|Q)
+                return 0
+                ;;
+            *)
+                echo -e "${RED}❌ Choix invalide${NC}"
+                sleep 1
+                ;;
+        esac
+    done
+}
+
+# -----------------------------------------------------------------------------
+# show_help - Paginated help documentation
+# -----------------------------------------------------------------------------
+show_help() {
+    local page=1
+    local total_pages=4
+
+    while true; do
+        clear
+        echo -e "${CYAN}══════════════════════════════════════════════════${NC}"
+        echo -e "              ${YELLOW}Aide ShipFlow${NC} (Page $page/$total_pages)"
+        echo -e "${CYAN}══════════════════════════════════════════════════${NC}"
+        echo ""
+
+        case $page in
+            1)
+                echo -e "${GREEN}🚀 GUIDE DE DEMARRAGE${NC}"
+                echo ""
+                echo -e "  ${CYAN}Étape 1 :${NC} ${GREEN}Prépare ton projet${NC}"
+                echo -e "           Place ton projet dans ${YELLOW}/root/${NC}"
+                echo -e "           (ou clone depuis GitHub via Déployer → GitHub)"
+                echo ""
+                echo -e "  ${CYAN}Étape 2 :${NC} ${GREEN}Démarre ton projet${NC}"
+                echo -e "           Depuis le menu principal, choisis ${YELLOW}Déployer${NC}"
+                echo -e "           Puis ${YELLOW}Auto-detect${NC} et sélectionne ton projet"
+                echo ""
+                echo -e "  ${CYAN}Étape 3 :${NC} ${GREEN}Accède à ton app${NC}"
+                echo -e "           Ton app tourne sur ${YELLOW}http://localhost:<port>${NC}"
+                echo -e "           Vérifie le port dans le ${YELLOW}Dashboard${NC}"
+                echo ""
+                echo -e "  ${CYAN}Étape 4 :${NC} ${GREEN}Publie sur le web (optionnel)${NC}"
+                echo -e "           Va dans ${YELLOW}Options avancées → Publier${NC}"
+                ;;
+            2)
+                echo -e "${GREEN}📐 COMMENT SHIPFLOW FONCTIONNE${NC}"
+                echo ""
+                echo -e "  ${BLUE}1.${NC} Tu sélectionnes un projet"
+                echo -e "  ${BLUE}2.${NC} ShipFlow vérifie s'il a un répertoire ${CYAN}.flox${NC}"
+                echo -e "     ${GREEN}Oui${NC} → utilise l'existant   ${YELLOW}Non${NC} → crée et configure"
+                echo -e "  ${BLUE}3.${NC} Auto-détection du type de projet et commande dev"
+                echo -e "     ${CYAN}package.json${NC} → npm/yarn/pnpm dev"
+                echo -e "     ${CYAN}requirements.txt${NC} → python"
+                echo -e "     ${CYAN}Cargo.toml${NC} → cargo run"
+                echo -e "  ${BLUE}4.${NC} Crée ${CYAN}ecosystem.config.cjs${NC} pour PM2"
+                echo -e "  ${BLUE}5.${NC} PM2 gère le processus :"
+                echo -e "     ${GREEN}• Redémarrage auto en cas de crash${NC}"
+                echo -e "     ${GREEN}• Logs capturés${NC}"
+                echo -e "     ${GREEN}• Gestion des ports${NC}"
+                ;;
+            3)
+                echo -e "${GREEN}🛠️  TECHNOLOGIES SUPPORTEES${NC}"
+                echo ""
+                echo -e "  ${CYAN}Node.js${NC}    package.json → npm/yarn/pnpm dev"
+                echo -e "  ${CYAN}Python${NC}     requirements.txt → venv + pip + python"
+                echo -e "  ${CYAN}Rust${NC}       Cargo.toml → cargo run"
+                echo -e "  ${CYAN}Go${NC}         go.mod → go run ."
+                echo ""
+                echo -e "${GREEN}📦 FRAMEWORKS AUTO-DETECTES${NC}"
+                echo ""
+                echo -e "  ${CYAN}Next.js${NC}       npm dev (PORT via env)"
+                echo -e "  ${CYAN}Astro${NC}         npm dev -- --port \$PORT --host"
+                echo -e "  ${CYAN}Vite${NC}          npm dev -- --port \$PORT --host"
+                echo -e "  ${CYAN}Nuxt${NC}          npm dev --port \$PORT"
+                echo -e "  ${CYAN}Expo${NC}          npx expo start --dev-client --tunnel"
+                echo -e "  ${CYAN}Django${NC}        python manage.py runserver 0.0.0.0:\$PORT"
+                echo -e "  ${CYAN}Flask/FastAPI${NC}  python app.py"
+                ;;
+            4)
+                echo -e "${GREEN}🔍 INSPECTEUR WEB (Sélection visuelle)${NC}"
+                echo ""
+                echo -e "  Injecte un sélecteur visuel dans ton app web :"
+                echo ""
+                echo -e "  ${CYAN}•${NC} Active/désactive via ${YELLOW}Options avancées → Outils Dev${NC}"
+                echo -e "  ${CYAN}•${NC} Affiche des boutons numérotés sur chaque ${YELLOW}<div>${NC}"
+                echo -e "  ${CYAN}•${NC} ${GREEN}Clic${NC} → Copie le XPath"
+                echo -e "  ${CYAN}•${NC} ${GREEN}Appui long${NC} → Menu capture d'écran"
+                echo ""
+                echo -e "${GREEN}🖥️  CONSOLE ERUDA${NC}"
+                echo ""
+                echo -e "  Console de dev mobile (activable par projet) :"
+                echo ""
+                echo -e "  ${CYAN}•${NC} console.log, requêtes réseau, DOM, erreurs JS"
+                echo -e "  ${CYAN}•${NC} localStorage, cookies"
+                echo ""
+                echo -e "${YELLOW}💡 Les deux outils sont configurables indépendamment${NC}"
+                echo -e "   ${CYAN}Options avancées → Outils Dev → choisis un projet${NC}"
+                ;;
+        esac
+
+        echo ""
+        echo -e "${CYAN}──────────────────────────────────────────────────${NC}"
+        echo -e "  ${CYAN}p${NC} Précédent   ${CYAN}Entrée/n${NC} Suivant   ${CYAN}1-4${NC} Aller à   ${CYAN}x${NC} Retour"
+        echo -e "${CYAN}──────────────────────────────────────────────────${NC}"
+        echo ""
+        echo -e "${YELLOW}[$page/$total_pages] :${NC} \c"
+        read -r help_choice
+
+        case $help_choice in
+            ""|n|N)
+                [ $page -lt $total_pages ] && page=$((page + 1))
+                ;;
+            p|P|b|B)
+                [ $page -gt 1 ] && page=$((page - 1))
+                ;;
+            x|X|q|Q)
+                return
+                ;;
+            [1-4])
+                page=$help_choice
+                ;;
+        esac
+    done
+}
+
+# -----------------------------------------------------------------------------
+# show_mobile_guide - Step-by-step guide for Expo + Android
+# -----------------------------------------------------------------------------
+show_mobile_guide() {
+    clear
+    echo -e "${CYAN}══════════════════════════════════════════════════${NC}"
+    echo -e "          ${YELLOW}📱 Guide Mobile — Expo + Android${NC}"
+    echo -e "${CYAN}══════════════════════════════════════════════════${NC}"
+    echo ""
+    echo -e "Ce guide configure ton téléphone Android pour le dev en live."
+    echo -e "Suis les étapes dans l'ordre. Ce qui est déjà fait sera ignoré."
+    echo ""
+    echo -e "${YELLOW}Appuie sur Entrée pour commencer...${NC}"
+    read -r
+
+    # ── ÉTAPE 1 : EAS CLI ──────────────────────────────────────────────────
+    clear
+    echo -e "${CYAN}══════════════════════════════════════════════════${NC}"
+    echo -e "  ${YELLOW}ÉTAPE 1/4${NC} — Installation de EAS CLI"
+    echo -e "${CYAN}══════════════════════════════════════════════════${NC}"
+    echo ""
+    if command -v eas >/dev/null 2>&1; then
+        local eas_ver
+        eas_ver=$(eas --version 2>/dev/null | head -1)
+        echo -e "  ${GREEN}✅ EAS CLI déjà installé${NC} ($eas_ver)"
+    else
+        echo -e "  ${YELLOW}⚠️  EAS CLI non trouvé. Installation...${NC}"
+        echo ""
+        npm install -g eas-cli
+        if command -v eas >/dev/null 2>&1; then
+            echo -e "  ${GREEN}✅ EAS CLI installé${NC}"
+        else
+            echo -e "  ${RED}❌ Échec de l'installation. Vérifie que npm est dispo.${NC}"
+            echo ""
+            echo -e "${YELLOW}Appuie sur Entrée pour quitter le guide...${NC}"
+            read -r
+            return 1
+        fi
+    fi
+    echo ""
+    echo -e "${YELLOW}Appuie sur Entrée pour l'étape suivante...${NC}"
+    read -r
+
+    # ── ÉTAPE 2 : Connexion EAS ────────────────────────────────────────────
+    clear
+    echo -e "${CYAN}══════════════════════════════════════════════════${NC}"
+    echo -e "  ${YELLOW}ÉTAPE 2/4${NC} — Connexion à ton compte Expo"
+    echo -e "${CYAN}══════════════════════════════════════════════════${NC}"
+    echo ""
+    local eas_user
+    eas_user=$(eas whoami 2>/dev/null)
+    if [ -n "$eas_user" ] && [[ "$eas_user" != *"Not logged"* ]]; then
+        echo -e "  ${GREEN}✅ Connecté en tant que: $eas_user${NC}"
+    else
+        echo -e "  ${YELLOW}⚠️  Pas connecté à Expo. Lance la connexion...${NC}"
+        echo ""
+        eas login
+        eas_user=$(eas whoami 2>/dev/null)
+        if [ -n "$eas_user" ] && [[ "$eas_user" != *"Not logged"* ]]; then
+            echo -e "  ${GREEN}✅ Connecté en tant que: $eas_user${NC}"
+        else
+            echo -e "  ${RED}❌ Connexion échouée. Réessaie depuis le guide.${NC}"
+            echo ""
+            echo -e "${YELLOW}Appuie sur Entrée pour quitter...${NC}"
+            read -r
+            return 1
+        fi
+    fi
+    echo ""
+    echo -e "${YELLOW}Appuie sur Entrée pour l'étape suivante...${NC}"
+    read -r
+
+    # ── ÉTAPE 3 : Build APK ────────────────────────────────────────────────
+    clear
+    echo -e "${CYAN}══════════════════════════════════════════════════${NC}"
+    echo -e "  ${YELLOW}ÉTAPE 3/4${NC} — Build de l'APK de développement"
+    echo -e "${CYAN}══════════════════════════════════════════════════${NC}"
+    echo ""
+    echo -e "  ${BLUE}ℹ️  C'est la seule étape longue (10-15 min).${NC}"
+    echo -e "  ${BLUE}   Le build tourne sur les serveurs Expo, pas sur ce serveur.${NC}"
+    echo -e "  ${BLUE}   Tu fais ça UNE SEULE FOIS. Ensuite, l'APK reste sur ton tel.${NC}"
+    echo ""
+
+    local expo_projects=""
+    for d in /root/*/; do
+        [ -f "${d}package.json" ] || continue
+        if grep -q '"expo"' "${d}package.json" 2>/dev/null || grep -q '"expo-router"' "${d}package.json" 2>/dev/null; then
+            expo_projects="$expo_projects$(basename "$d")\n"
+        fi
+    done
+    expo_projects=$(printf "%b" "$expo_projects" | grep -v "^$")
+
+    if [ -z "$expo_projects" ]; then
+        echo -e "  ${YELLOW}⚠️  Aucun projet Expo trouvé dans /root/${NC}"
+        echo -e "  ${BLUE}   Déploie d'abord ton projet depuis le menu principal.${NC}"
+        echo ""
+        echo -e "${YELLOW}Appuie sur Entrée pour quitter...${NC}"
+        read -r
+        return 0
+    fi
+
+    local selected_project
+    selected_project=$(echo "$expo_projects" | ui_choose "Sélectionne ton projet Expo :")
+
+    if [ -z "$selected_project" ]; then
+        echo -e "${BLUE}Annulé${NC}"
+        return 0
+    fi
+
+    local project_dir="/root/$selected_project"
+    echo ""
+    echo -e "  ${GREEN}Projet: $selected_project${NC}"
+    echo ""
+    echo -e "  ${YELLOW}Lancer le build Android? (o/N):${NC} \c"
+    read -r build_confirm
+
+    if [[ "$build_confirm" =~ ^[oOyY]$ ]]; then
+        echo ""
+        echo -e "  ${BLUE}🔨 Build en cours... (ne ferme pas ce terminal)${NC}"
+        echo ""
+        cd "$project_dir" && eas build --profile development --platform android
+        echo ""
+        echo -e "  ${GREEN}✅ Build terminé ! Télécharge l'APK depuis le lien ci-dessus.${NC}"
+        echo -e "  ${BLUE}   Installe-le sur ton téléphone Android.${NC}"
+    else
+        echo -e "  ${BLUE}Build ignoré — si tu as déjà l'APK sur ton tel, c'est bon.${NC}"
+    fi
+    echo ""
+    echo -e "${YELLOW}Appuie sur Entrée pour l'étape suivante...${NC}"
+    read -r
+
+    # ── ÉTAPE 4 : Démarrer le serveur Metro ───────────────────────────────
+    clear
+    echo -e "${CYAN}══════════════════════════════════════════════════${NC}"
+    echo -e "  ${YELLOW}ÉTAPE 4/4${NC} — Démarrer le serveur de développement"
+    echo -e "${CYAN}══════════════════════════════════════════════════${NC}"
+    echo ""
+    echo -e "  ${BLUE}Démarrage de $selected_project avec tunnel Expo...${NC}"
+    echo ""
+    env_start "$selected_project"
+    echo ""
+
+    echo -e "  ${BLUE}⏳ Attente de l'URL du tunnel (15 sec)...${NC}"
+    sleep 15
+
+    local tunnel_url
+    tunnel_url=$(pm2 logs "$selected_project" --lines 50 --nostream 2>/dev/null \
+        | grep -oE 'https?://[a-zA-Z0-9._-]+\.exp\.direct[^ ]*' \
+        | tail -1)
+
+    echo ""
+    echo -e "${CYAN}══════════════════════════════════════════════════${NC}"
+    echo -e "  ${GREEN}✅ Tout est prêt !${NC}"
+    echo -e "${CYAN}══════════════════════════════════════════════════${NC}"
+    echo ""
+    if [ -n "$tunnel_url" ]; then
+        echo -e "  ${YELLOW}URL du tunnel :${NC}"
+        echo -e "  ${CYAN}$tunnel_url${NC}"
+        echo ""
+        echo -e "  ${BLUE}1. Ouvre l'APK dev build sur ton téléphone${NC}"
+        echo -e "  ${BLUE}2. Entre cette URL ou scanne le QR${NC}"
+        echo -e "  ${BLUE}3. Modifie ton code → l'app se recharge automatiquement 🎉${NC}"
+    else
+        echo -e "  ${YELLOW}URL pas encore visible — vérifie les logs :${NC}"
+        echo -e "  ${CYAN}pm2 logs $selected_project --lines 30${NC}"
+        echo ""
+        echo -e "  ${BLUE}1. Ouvre l'APK dev build sur ton téléphone${NC}"
+        echo -e "  ${BLUE}2. Entre l'URL exp:// depuis les logs${NC}"
+        echo -e "  ${BLUE}3. Modifie ton code → l'app se recharge automatiquement 🎉${NC}"
+    fi
+    echo ""
+    echo -e "${YELLOW}Appuie sur Entrée pour revenir au menu...${NC}"
+    read -r
+}
