@@ -128,6 +128,12 @@ export SHIPFLOW_DISK_WARN_GB="${SHIPFLOW_DISK_WARN_GB:-5}"
 # Menu status cache TTL in seconds (free space + update counts)
 export SHIPFLOW_MENU_STATUS_CACHE_TTL="${SHIPFLOW_MENU_STATUS_CACHE_TTL:-120}"
 
+# PM2 log rotation: max size per log file before rotation (default 10M)
+export SHIPFLOW_PM2_LOG_MAX_SIZE="${SHIPFLOW_PM2_LOG_MAX_SIZE:-10M}"
+
+# PM2 max restarts before giving up (prevents infinite restart loops)
+export SHIPFLOW_PM2_MAX_RESTARTS="${SHIPFLOW_PM2_MAX_RESTARTS:-50}"
+
 # ============================================================================
 # TOOL REQUIREMENTS
 # ============================================================================

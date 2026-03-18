@@ -344,28 +344,136 @@ format_bytes() {
     fi
 }
 
+# -----------------------------------------------------------------------------
+# _cleanup_pm2_logs - Flush PM2 logs for current user (and root if accessible)
+#
+# Description:
+#   PM2 logs can grow to tens of GB if never flushed. This cleans both the
+#   main pm2.log and per-app logs. Handles both current user's PM2 and
+#   root's PM2 (if we have permission or are root).
+# -----------------------------------------------------------------------------
+_cleanup_pm2_logs() {
+    # Flush current user's PM2 logs
+    if command -v pm2 >/dev/null 2>&1; then
+        pm2 flush 2>/dev/null || true
+    fi
+    # Truncate the main pm2.log (pm2 flush doesn't always clear it)
+    if [ -f "$HOME/.pm2/pm2.log" ]; then
+        cat /dev/null > "$HOME/.pm2/pm2.log" 2>/dev/null || true
+    fi
+    # If not root, also clean root's PM2 logs (where ShipFlow usually runs)
+    if [ "$(id -u)" != "0" ] && [ -w "/root/.pm2/pm2.log" ] 2>/dev/null; then
+        cat /dev/null > /root/.pm2/pm2.log 2>/dev/null || true
+    fi
+    if [ "$(id -u)" != "0" ] && [ -d "/root/.pm2/logs" ]; then
+        for logfile in /root/.pm2/logs/*.log; do
+            cat /dev/null > "$logfile" 2>/dev/null || true
+        done
+    fi
+}
+
+# -----------------------------------------------------------------------------
+# _cleanup_for_home - Run cache cleanup for a given home directory
+#
+# Arguments:
+#   $1 - Home directory to clean (e.g., /home/claude or /root)
+#   $2 - Level: "light" or "aggressive"
+# -----------------------------------------------------------------------------
+_cleanup_for_home() {
+    local target_home="$1"
+    local level="${2:-light}"
+    [ -d "$target_home" ] || return 0
+
+    # Light: safe caches that are always regenerated
+    rm -rf "$target_home/.cache/yarn" \
+        "$target_home/.cache/pip" \
+        "$target_home/.cache/pnpm" \
+        "$target_home/.cache/node" \
+        "$target_home/.cache/nix" \
+        "$target_home/.cache/dotslash" \
+        "$target_home/.npm/_cacache" \
+        "$target_home/.chromium-browser-snapshots" \
+        "$target_home/.rustup/tmp"/* 2>/dev/null || true
+
+    # Clean rotated logs in PM2
+    find "$target_home/.pm2/logs/" -name "*.log" -size +10M -exec sh -c 'cat /dev/null > "$1"' _ {} \; 2>/dev/null || true
+
+    if [ "$level" = "aggressive" ]; then
+        rm -rf "$target_home/.npm" \
+            "$target_home/.cache" \
+            "$target_home/.local/share/pnpm" 2>/dev/null || true
+        # Rust/Tauri build artifacts
+        local dir
+        for dir in "$target_home"/*/src-tauri/target "$target_home"/*/target; do
+            if [ -d "$dir" ] && [ -f "${dir%/target}/Cargo.toml" ]; then
+                echo -e "  ${CYAN}Cleaning${NC} $dir"
+                rm -rf "$dir" 2>/dev/null || true
+            fi
+        done
+        # node_modules in projects that have no running PM2 process
+        local project_dir
+        for project_dir in "$target_home"/*/node_modules; do
+            [ -d "$project_dir" ] || continue
+            local project_name
+            project_name=$(basename "$(dirname "$project_dir")")
+            # Skip if PM2 is running this project
+            if command -v pm2 >/dev/null 2>&1 && pm2 jlist 2>/dev/null | grep -q "\"name\":\"$project_name\""; then
+                continue
+            fi
+            echo -e "  ${CYAN}Cleaning${NC} $project_dir"
+            rm -rf "$project_dir" 2>/dev/null || true
+        done
+    fi
+}
+
 cleanup_disk_light() {
-    rm -rf "$HOME/.cache/yarn" \
-        "$HOME/.cache/pip" \
-        "$HOME/.cache/pnpm" \
-        "$HOME/.npm/_cacache" \
-        "$HOME/.chromium-browser-snapshots" \
-        "$HOME/.rustup/tmp"/* 2>/dev/null || true
+    # 1. PM2 logs (biggest offender - can be 20+ GB)
+    echo -e "  ${CYAN}Flushing PM2 logs...${NC}"
+    _cleanup_pm2_logs
+
+    # 2. Clean caches for current user
+    _cleanup_for_home "$HOME" "light"
+
+    # 3. If not root, also clean root's caches (ShipFlow often runs as root)
+    if [ "$(id -u)" != "0" ] && [ -d "/root" ]; then
+        _cleanup_for_home "/root" "light"
+    fi
+
+    # 4. System temp files
+    rm -rf /tmp/node-compile-cache /tmp/v8-compile-cache-* \
+        /tmp/metro-file-map-* /tmp/jest_* /tmp/pip-unpack-* \
+        /tmp/claude-* 2>/dev/null || true
+
+    # 5. Rotated system logs
+    rm -f /var/log/btmp.1 /var/log/wtmp.1 \
+        /var/log/syslog.*.gz /var/log/auth.log.*.gz 2>/dev/null || true
+    cat /dev/null > /var/log/btmp 2>/dev/null || true
 }
 
 cleanup_disk_aggressive() {
     cleanup_disk_light
-    rm -rf "$HOME/.npm" \
-        "$HOME/.local/share/pnpm" \
-        "$HOME/.cache" 2>/dev/null || true
-    # Clean Rust/Tauri build artifacts (target/ dirs)
-    local dir
-    for dir in "$HOME"/*/src-tauri/target "$HOME"/*/target; do
-        if [ -d "$dir" ] && [ -f "${dir%/target}/Cargo.toml" ]; then
-            echo -e "  ${CYAN}Cleaning${NC} $dir"
-            rm -rf "$dir" 2>/dev/null || true
-        fi
-    done
+
+    # 1. Aggressive cache cleanup for current user (and root if accessible)
+    _cleanup_for_home "$HOME" "aggressive"
+    if [ "$(id -u)" != "0" ] && [ -d "/root" ]; then
+        _cleanup_for_home "/root" "aggressive"
+    fi
+
+    # 2. apt cache (can be 100+ MB)
+    if command -v apt >/dev/null 2>&1; then
+        apt clean 2>/dev/null || true
+    fi
+
+    # 3. Journal vacuum (can be 300+ MB)
+    if command -v journalctl >/dev/null 2>&1; then
+        journalctl --vacuum-size=50M 2>/dev/null || true
+    fi
+
+    # 4. ShipFlow log rotation
+    local shipflow_log="/var/log/shipflow/shipflow.log"
+    if [ -f "$shipflow_log" ] && [ "$(stat -c%s "$shipflow_log" 2>/dev/null || echo 0)" -gt 5242880 ]; then
+        cat /dev/null > "$shipflow_log" 2>/dev/null || true
+    fi
 }
 
 disk_cleanup_menu() {
@@ -394,12 +502,11 @@ disk_cleanup_menu() {
     echo ""
     if [ "$choice" = "Light (safe caches only)" ]; then
         echo -e "${YELLOW}This will remove:${NC}"
-        echo -e "  ${CYAN}•${NC} ~/.cache/yarn"
-        echo -e "  ${CYAN}•${NC} ~/.cache/pip"
-        echo -e "  ${CYAN}•${NC} ~/.cache/pnpm"
-        echo -e "  ${CYAN}•${NC} ~/.npm/_cacache"
-        echo -e "  ${CYAN}•${NC} ~/.chromium-browser-snapshots"
-        echo -e "  ${CYAN}•${NC} ~/.rustup/tmp/*"
+        echo -e "  ${CYAN}•${NC} PM2 logs (pm2.log + per-app logs)"
+        echo -e "  ${CYAN}•${NC} Package manager caches (npm, pnpm, yarn, pip)"
+        echo -e "  ${CYAN}•${NC} Node/Nix/dotslash caches"
+        echo -e "  ${CYAN}•${NC} Temp files (/tmp)"
+        echo -e "  ${CYAN}•${NC} Rotated system logs"
         echo ""
         if ! ui_confirm "Proceed with light cleanup?"; then
             echo -e "${BLUE}Cancelled${NC}"
@@ -407,13 +514,13 @@ disk_cleanup_menu() {
         fi
         cleanup_disk_light
     else
-        echo -e "${YELLOW}This will remove:${NC}"
-        echo -e "  ${CYAN}•${NC} ~/.cache (entire cache directory)"
-        echo -e "  ${CYAN}•${NC} ~/.npm"
-        echo -e "  ${CYAN}•${NC} ~/.local/share/pnpm"
-        echo -e "  ${CYAN}•${NC} ~/.chromium-browser-snapshots"
-        echo -e "  ${CYAN}•${NC} ~/.rustup/tmp/*"
+        echo -e "${YELLOW}This will remove (everything in Light plus):${NC}"
+        echo -e "  ${CYAN}•${NC} Entire ~/.cache directory"
+        echo -e "  ${CYAN}•${NC} ~/.npm + ~/.local/share/pnpm"
         echo -e "  ${CYAN}•${NC} Rust/Tauri target/ build artifacts"
+        echo -e "  ${CYAN}•${NC} node_modules of stopped projects"
+        echo -e "  ${CYAN}•${NC} apt cache + journal vacuum"
+        echo -e "  ${CYAN}•${NC} ShipFlow logs (if > 5MB)"
         echo ""
         if ! ui_confirm "Proceed with aggressive cleanup?"; then
             echo -e "${BLUE}Cancelled${NC}"
@@ -2430,6 +2537,10 @@ env_start() {
         inner_cmd="env PORT=$port $final_cmd"
     fi
 
+    # PM2 log settings from config
+    local pm2_max_size="${SHIPFLOW_PM2_LOG_MAX_SIZE:-10M}"
+    local pm2_max_restarts="${SHIPFLOW_PM2_MAX_RESTARTS:-50}"
+
     # Create persistent ecosystem file (Expo has no PORT)
     if [ "$is_expo" = "true" ]; then
         cat > "$pm2_config" <<EOF
@@ -2440,6 +2551,9 @@ module.exports = {
     script: "bash",
     args: ["-c", "flox activate -- $dev_cmd"],
     autorestart: false,
+    max_restarts: $pm2_max_restarts,
+    log_date_format: "YYYY-MM-DD HH:mm:ss",
+    max_size: "$pm2_max_size",
     watch: false
   }]
 };
@@ -2456,6 +2570,9 @@ module.exports = {
       PORT: $port
     },
     autorestart: true,
+    max_restarts: $pm2_max_restarts,
+    log_date_format: "YYYY-MM-DD HH:mm:ss",
+    max_size: "$pm2_max_size",
     watch: false
   }]
 };
