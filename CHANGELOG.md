@@ -1,5 +1,31 @@
 # ShipFlow Changelog
 
+## [2026-03-23] - Skills overhaul: absorb OpenSpec/BMAD, new workflow skills, business context
+
+### Added
+- `sf-explore` — mode réflexion avant action (inspiré OpenSpec explore)
+- `sf-spec` — spécification technique conversationnelle prête à implémenter (inspiré BMAD Quick-Flow)
+- `sf-verify` — vérification complétude/correctitude/cohérence/dépendances/risques avant ship (inspiré BMAD DoD + QA Gate)
+- `sf-prod` — vérification post-deploy via GitHub API + scraping logs Vercel/Netlify
+- `sf-docs audit` mode — vérifier cohérence code ↔ doc, conventions, fraîcheur
+- `sf-docs update` mode — harmoniser la doc existante + créer fichiers business/branding manquants
+- `sf-init` Step 5 — génération BUSINESS.md, BRANDING.md, GUIDELINES.md à l'initialisation
+- `sf-ship` Step 6 — pre-checks (typecheck, lint, build) avant commit
+- Pre-check contexte business/marque dans 8 skills de contenu (audit-copy, audit-copywriting, audit-gtm, audit-design, audit-seo, enrich, market-study, redact)
+- Chargement BUSINESS.md/BRANDING.md dans 9 skills de contenu
+
+### Changed
+- Skills déplacées de `.claude/skills/` vers `skills/` (visible, non caché)
+- `install.sh` adapté pour le nouveau chemin des skills
+- BMAD consolidé dans `/home/claude/bmad/` comme archive de référence
+
+### Removed
+- 10 skills OpenSpec (`openspec-*`) et commandes OPSX — workflow trop lourd pour solopreneur
+- `sf-deploy` — absorbé dans `sf-ship` (pre-checks) et `sf-prod` (vérification post-deploy)
+- `.kilocode/` — plus utilisé
+- `openspec/` (config, changes, specs)
+- BMAD de my-robots et winflowz (conservé dans `/home/claude/bmad/`)
+
 ## [2026-03-23] - RAM Monitoring, Dual-Mode Menus, Architecture Refactor
 
 ### Added

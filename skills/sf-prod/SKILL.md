@@ -49,12 +49,37 @@ gh api "repos/{owner}/{repo}/commits/$SHA/statuses" --jq '.[0:5] | .[] | {state,
 | State | Signification | Action |
 |-------|--------------|--------|
 | `success` | Deploy réussi | Continuer vers le health check |
-| `pending` | Build en cours | Attendre 30s et réessayer (max 3 fois) |
-| `failure` | Build échoué | Afficher l'erreur + lien vers les logs |
+| `pending` | Build en cours | Attendre et réessayer |
+| `failure` | Build échoué | Afficher l'erreur + récupérer les logs |
 | `error` | Erreur système | Afficher le lien vers le dashboard |
 | Aucun status | Pas de CI/CD détecté | Signaler et proposer un curl direct |
 
-**Si pending** : attendre 30 secondes, re-checker. Jusqu'à 3 tentatives (total ~90s). Si toujours pending après 3 essais, afficher le lien du dashboard pour suivi manuel.
+**Si pending — polling patient :**
+
+Boucle d'attente avec backoff progressif :
+1. Attendre 30s → re-check
+2. Attendre 45s → re-check
+3. Attendre 60s → re-check
+4. Attendre 60s → re-check (total ~3min15)
+5. Attendre 60s → re-check (total ~4min15)
+6. Attendre 60s → re-check (total ~5min15)
+7. Attendre 90s → re-check (total ~6min45)
+8. Attendre 90s → re-check (total ~8min15)
+9. Attendre 90s → re-check (total ~9min45)
+10. Attendre 90s → re-check (total ~11min15)
+
+**Pendant l'attente**, afficher un point de progression toutes les 30s pour montrer que c'est actif :
+```
+⏳ Build en cours... (30s)
+⏳ Build en cours... (1min15)
+⏳ Build en cours... (2min15)
+```
+
+**Si toujours pending après 10 tentatives (~11 min)** : arrêter le polling et proposer via **AskUserQuestion** :
+- Question : "Le build prend plus de 11 minutes. Que faire ?"
+- Options :
+  - **Continuer à attendre** — "Relancer 5 tentatives supplémentaires (~5 min)"
+  - **Abandonner** — "Afficher le lien du dashboard pour suivi manuel"
 
 ### Step 3 — Health check de l'URL live
 
@@ -78,46 +103,52 @@ curl -s -o /dev/null -w "%{http_code}" [URL] --max-time 10
 
 ### Step 4 — En cas d'erreur : accéder aux logs
 
-**Si le deploy a échoué (failure) ou le site ne répond pas :**
+**Quel que soit le résultat (success ou failure), récupérer les logs du build :**
 
-1. **Afficher le lien direct vers les logs** :
-   - Le `target_url` du commit status pointe vers le dashboard Vercel/Netlify
-   - Ex : `https://vercel.com/diane-ds-projects/winflowz/8eyp8qqwq1qcaZC9KkmzdEmQi5SM`
-
-2. **Récupérer le deployment via GitHub API** pour plus de contexte :
+1. **Récupérer l'URL du dashboard automatiquement** via GitHub API :
    ```bash
-   gh api "repos/{owner}/{repo}/deployments" --jq '.[0] | {id, environment, created_at}'
-   gh api "repos/{owner}/{repo}/deployments/{id}/statuses" --jq '.[0] | {state, description, target_url}'
+   # Le target_url pointe directement vers la page du build Vercel/Netlify
+   DASHBOARD_URL=$(gh api "repos/{owner}/{repo}/commits/$SHA/statuses" --jq '.[0].target_url')
    ```
+   Ex : `https://vercel.com/diane-ds-projects/winflowz/8eyp8qqwq1qcaZC9KkmzdEmQi5SM`
 
-3. **Si Playwright MCP est disponible** : naviguer vers le dashboard Vercel pour extraire les logs d'erreur directement :
-   - Ouvrir `target_url`
-   - Chercher les messages d'erreur dans la page
-   - Extraire et afficher les lignes pertinentes
+2. **Scraper les logs du build** avec Firecrawl ou Playwright MCP (dans cet ordre de préférence) :
 
-4. **Proposer des actions** via **AskUserQuestion** :
+   **Option A — Firecrawl** (plus rapide, pas besoin de browser) :
+   ```
+   mcp__firecrawl__firecrawl_scrape → URL du dashboard
+   ```
+   Extraire : messages d'erreur, warnings, durée du build, status final.
+
+   **Option B — Playwright** (si Firecrawl ne peut pas accéder à la page — auth requise) :
+   ```
+   mcp__playwright__browser_navigate → URL du dashboard
+   mcp__playwright__browser_snapshot → capturer le contenu de la page
+   ```
+   Chercher les éléments contenant les logs de build, erreurs, stack traces.
+
+   **Option C — Fallback** (si aucun MCP ne fonctionne) :
+   Afficher le lien et demander à l'utilisateur de copier-coller les logs.
+
+3. **Analyser les logs récupérés** :
+   - Identifier l'erreur principale (première erreur dans le build log)
+   - Extraire le fichier et la ligne si mentionnés
+   - Classifier : erreur de type (TypeScript, ESLint, import manquant, env var manquante, runtime error)
+
+4. **Si erreur détectée** — proposer des actions via **AskUserQuestion** :
    - "Le build a échoué. Que veux-tu faire ?"
    - Options :
-     - **Voir les logs** — "Ouvrir le dashboard dans le navigateur" (lance Playwright)
-     - **Corriger** — "Lancer /sf-check pour identifier et corriger les erreurs"
+     - **Corriger automatiquement** — "Je corrige l'erreur identifiée et je re-push" (Recommandé)
+     - **Lancer /sf-check** — "Diagnostic complet avant de corriger"
      - **Rollback** — "Reverter le dernier commit et re-push"
+     - **Ignorer** — "Je gère manuellement"
+
+5. **Si success** — résumer les infos du build :
+   - Durée du build (si visible dans les logs)
+   - Warnings éventuels (même si le build passe, les warnings sont utiles)
+   - URL de preview du déploiement
 
 ### Step 5 — Rapport
-
-```
-## Prod Check — [project name]
-
-**Dernier commit :** [short SHA] — "[message]"
-**Deploy :**        [✓ success / ⏳ pending / ✗ failure]
-**Temps de build :** [si disponible]
-**URL :**           [URL testée]
-**Health check :**  [✓ 200 OK / ✗ status code / ⏱ timeout]
-
-[Si erreur :]
-**Erreur :** [description du status]
-**Logs :**   [lien vers le dashboard]
-**Action recommandée :** [/sf-check pour corriger | rollback | voir les logs]
-```
 
 Si tout est OK :
 ```
@@ -125,10 +156,27 @@ Si tout est OK :
 
 **Dernier commit :** abc1234 — "feat: add payment flow"
 **Deploy :**        ✓ success (il y a 3 min)
+**Build :**         32s, 0 warnings
 **URL :**           https://winflowz.vercel.app
 **Health check :**  ✓ 200 OK (142ms)
 
 Tout est live.
+```
+
+Si erreur :
+```
+## Prod Check — [project name]
+
+**Dernier commit :** abc1234 — "feat: add payment flow"
+**Deploy :**        ✗ failure
+**Logs :**          [lien dashboard Vercel]
+
+**Erreur identifiée :**
+  Type: TypeScript error
+  Fichier: src/components/PaymentForm.tsx:42
+  Message: Property 'amount' does not exist on type 'Props'
+
+**Options :** Corriger automatiquement | /sf-check | Rollback | Ignorer
 ```
 
 ---
