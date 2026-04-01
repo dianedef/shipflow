@@ -23,6 +23,7 @@ _gum_run_menu() {
     local keys=()
     local actions=()
     local display_lines=()
+    local first_section=true
     for item in "${items[@]}"; do
         local key label action
         key=$(echo "$item" | cut -d'|' -f1)
@@ -30,19 +31,26 @@ _gum_run_menu() {
         action=$(echo "$item" | cut -d'|' -f3)
 
         if [ "$key" = "---" ]; then
-            display_lines+=("")
-            display_lines+=("  ${label}")
+            if [ "$first_section" = true ]; then
+                first_section=false
+            else
+                display_lines+=("")
+            fi
+            display_lines+=("${label}")
         else
-            display_lines+=("  $(gum style --foreground 212 "${key})")  ${label}")
+            display_lines+=("$(gum style --foreground 212 "${key})")  ${label}")
             keys+=("$key")
             actions+=("$action")
         fi
     done
 
     # Render items with gum style (box around the menu)
+    # Padding "0 3" ensures uniform left indent — piped content's
+    # leading whitespace can be stripped by gum on the first line,
+    # so we let --padding handle all indentation instead.
     printf '%s\n' "${display_lines[@]}" | gum style \
         --border rounded --border-foreground 240 \
-        --padding "0 1" --margin "0 2"
+        --padding "0 3" --margin "0 2"
 
     echo ""
 

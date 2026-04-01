@@ -2810,19 +2810,31 @@ detect_dev_command() {
     elif [ -f "pubspec.yaml" ]; then
         pubspec_kind=$(detect_pubspec_kind "$project_dir")
         if [ "$pubspec_kind" = "dart" ]; then
+            local db="dart"
+            if ! command -v dart >/dev/null 2>&1; then
+                for _p in "$HOME/.flutter-sdk/bin/dart" "/opt/flutter/bin/dart"; do
+                    if [ -x "$_p" ]; then db="$_p"; break; fi
+                done
+            fi
             local dart_entrypoint=""
             dart_entrypoint=$(detect_dart_entrypoint "$project_dir")
             if [ -n "$dart_entrypoint" ]; then
-                echo "dart pub get && dart run $dart_entrypoint"
+                echo "$db pub get && $db run $dart_entrypoint"
             else
-                echo "dart pub get && dart run"
+                echo "$db pub get && $db run"
             fi
         elif [ -x "./pm2-web.sh" ]; then
             echo "./pm2-web.sh"
         elif [ -x "./build.sh" ]; then
             echo "./build.sh --serve"
         elif [ -d "web" ]; then
-            echo "flutter config --enable-web >/dev/null 2>&1 || true && flutter pub get && flutter run -d web-server --web-hostname 0.0.0.0 --web-port \$PORT"
+            local fb="flutter"
+            if ! command -v flutter >/dev/null 2>&1; then
+                for _p in "$HOME/.flutter-sdk/bin/flutter" "/opt/flutter/bin/flutter"; do
+                    if [ -x "$_p" ]; then fb="$_p"; break; fi
+                done
+            fi
+            echo "$fb config --enable-web >/dev/null 2>&1 || true && $fb pub get && $fb run -d web-server --web-hostname 0.0.0.0 --web-port \$PORT"
         else
             echo "echo 'Flutter project detected but no web target or pm2 entrypoint found' && exit 1"
         fi
@@ -3512,6 +3524,110 @@ env_remove() {
     else
         warning "Répertoire $project_dir introuvable (peut-être déjà supprimé ou chemin incorrect)"
     fi
+
+    return 0
+}
+
+# -----------------------------------------------------------------------------
+# env_rename - Rename an environment (PM2 + Flox + directory)
+#
+# Description:
+#   Stops and deletes the PM2 process under the old name, cleans up Flox,
+#   renames the project directory, and re-initializes Flox under the new name.
+#   Project files are preserved. The environment is NOT restarted automatically.
+#
+# Arguments:
+#   $1 - Old environment identifier (name or path)
+#   $2 - New environment name
+#
+# Returns:
+#   0 - Environment renamed
+#   1 - Error occurred
+#
+# Example:
+#   env_rename "my-robots-app" "ContentFlowz-app"
+# -----------------------------------------------------------------------------
+env_rename() {
+    local old_identifier=$1
+    local new_name=$2
+
+    # Validate arguments
+    if [ -z "$old_identifier" ] || [ -z "$new_name" ]; then
+        error "Usage: env_rename <old_name> <new_name>"
+        return 1
+    fi
+
+    if ! validate_env_name "$new_name"; then
+        return 1
+    fi
+
+    local old_dir=$(resolve_project_path "$old_identifier")
+    if [ -z "$old_dir" ]; then
+        warning "Projet $old_identifier introuvable ou chemin invalide."
+        return 1
+    fi
+
+    local old_name=$(basename "$old_dir")
+    local parent_dir=$(dirname "$old_dir")
+    local new_dir="$parent_dir/$new_name"
+
+    # Check old and new are different
+    if [ "$old_name" = "$new_name" ]; then
+        warning "L'ancien et le nouveau nom sont identiques."
+        return 1
+    fi
+
+    # Check new directory doesn't already exist
+    if [ -d "$new_dir" ]; then
+        error "Le dossier $new_dir existe déjà."
+        return 1
+    fi
+
+    # Check new name not already used by another PM2 process
+    local existing_pm2=$(get_pm2_data_cached | awk -F'|' -v n="$new_name" '$1 == n {print $1}')
+    if [ -n "$existing_pm2" ]; then
+        error "Un process PM2 '$new_name' existe déjà."
+        return 1
+    fi
+
+    log INFO "Renaming environment: $old_name -> $new_name"
+
+    # 1. Stop & delete PM2 process (idempotent)
+    pm2 delete "$old_name" 2>/dev/null && {
+        echo -e "${YELLOW}🛑 Process PM2 $old_name supprimé${NC}"
+    }
+    invalidate_pm2_cache
+
+    # 2. Clean up Flox environment (registry + watchdog)
+    if [ -d "$old_dir/.flox" ] && command -v flox >/dev/null 2>&1; then
+        flox delete -f -d "$old_dir" 2>/dev/null && {
+            echo -e "${YELLOW}🧹 Environnement Flox nettoyé${NC}"
+        }
+    fi
+
+    # 3. Rename directory
+    mv "$old_dir" "$new_dir" || {
+        error "Impossible de renommer $old_dir -> $new_dir"
+        return 1
+    }
+    echo -e "${BLUE}📁 $old_name -> $new_name${NC}"
+
+    # 4. Remove old ecosystem.config.cjs (will be regenerated on next start)
+    rm -f "$new_dir/ecosystem.config.cjs"
+
+    # 5. Re-initialize Flox in new directory
+    if command -v flox >/dev/null 2>&1; then
+        init_flox_env "$new_dir" "$new_name" || {
+            warning "Flox init failed — you can re-init manually with env_start"
+        }
+    fi
+
+    # 6. Save PM2 state (old process removed from dump)
+    pm2 save >/dev/null 2>&1
+    invalidate_pm2_cache
+
+    success "Projet renommé: $old_name → $new_name"
+    info "Lance 'env_start \"$new_name\"' pour démarrer avec le nouveau nom"
 
     return 0
 }
@@ -4879,6 +4995,30 @@ action_remove() {
     fi
 }
 
+action_rename() {
+    echo -e "${GREEN}✏️  Rename Environment${NC}"
+    echo ""
+    ENV_NAME=$(select_environment "Select environment to rename")
+    if [ -n "$ENV_NAME" ]; then
+        PROJECT_DIR=$(resolve_project_path "$ENV_NAME")
+        echo ""
+        echo -e "${BLUE}   Current name: $ENV_NAME${NC}"
+        echo -e "${BLUE}   Directory: $PROJECT_DIR${NC}"
+        echo ""
+        echo -e "${YELLOW}Enter new name:${NC}"
+        local new_name
+        new_name=$(ui_input "New name" "$ENV_NAME")
+        if [ -n "$new_name" ]; then
+            if ui_confirm "Rename '$ENV_NAME' → '$new_name'?"; then
+                log INFO "Menu: renaming environment $ENV_NAME -> $new_name"
+                env_rename "$ENV_NAME" "$new_name"
+            else
+                echo -e "${BLUE}Cancelled${NC}"
+            fi
+        fi
+    fi
+}
+
 action_start_all() { echo -e "${GREEN}🚀 Start All Environments${NC}"; batch_start_all; }
 action_stop_all() { echo -e "${GREEN}🛑 Stop All Environments${NC}"; batch_stop_all; }
 action_restart_all() { echo -e "${GREEN}🔄 Restart All Environments${NC}"; batch_restart_all; }
@@ -4919,15 +5059,18 @@ action_view_logs() {
 }
 
 action_navigate() {
-    echo -e "${GREEN}📁 Navigate Projects in /root${NC}"
-    FOLDERS=$(find /root -maxdepth 1 -type d ! -name ".*" ! -path /root 2>/dev/null | sort)
+    echo -e "${GREEN}📁 Navigate Projects${NC}"
+    local HOME_DIR
+    HOME_DIR=$(eval echo "~")
+    local FOLDERS
+    FOLDERS=$(find "$HOME_DIR" -maxdepth 1 -type d ! -name ".*" ! -path "$HOME_DIR" 2>/dev/null | sort)
     if [ -z "$FOLDERS" ]; then
-        echo -e "${RED}❌ No folders found${NC}"
+        echo -e "${RED}❌ No folders found in $HOME_DIR${NC}"
     else
-        SELECTED=$(echo "$FOLDERS" | ui_choose "Available folders:")
+        local SELECTED
+        SELECTED=$(echo "$FOLDERS" | ui_choose "Select folder to open:")
         if [ -n "$SELECTED" ]; then
-            echo -e "${GREEN}📁 Selected folder: $SELECTED${NC}"
-            echo -e "${GREEN}Opening shell...${NC}"
+            echo -e "${GREEN}📁 Opening: $SELECTED${NC}"
             cd "$SELECTED" && exec $SHELL
         fi
     fi
@@ -4935,15 +5078,18 @@ action_navigate() {
 
 action_open_code() {
     echo -e "${GREEN}📂 Open Code Directory${NC}"
-    ENV_NAME=$(select_environment "Select environment to open")
-    if [ -n "$ENV_NAME" ]; then
-        PROJECT_DIR=$(resolve_project_path "$ENV_NAME")
-        if [ -z "$PROJECT_DIR" ]; then
-            echo -e "${RED}❌ Directory not found: $ENV_NAME${NC}"
-        else
-            echo -e "${GREEN}📂 Project directory: $PROJECT_DIR${NC}"
-            echo -e "${GREEN}Opening shell...${NC}"
-            cd "$PROJECT_DIR" && exec $SHELL
+    local HOME_DIR
+    HOME_DIR=$(eval echo "~")
+    local FOLDERS
+    FOLDERS=$(find "$HOME_DIR" -maxdepth 1 -type d ! -name ".*" ! -path "$HOME_DIR" 2>/dev/null | sort)
+    if [ -z "$FOLDERS" ]; then
+        echo -e "${RED}❌ No folders found in $HOME_DIR${NC}"
+    else
+        local SELECTED
+        SELECTED=$(echo "$FOLDERS" | ui_choose "Select folder to open:")
+        if [ -n "$SELECTED" ]; then
+            echo -e "${GREEN}📂 Opening: $SELECTED${NC}"
+            cd "$SELECTED" && exec $SHELL
         fi
     fi
 }
@@ -5107,29 +5253,30 @@ MAIN_MENU_ITEMS=(
     "r|Restart - Restart an environment|action_restart"
     "t|Stop - Stop an environment|action_stop"
     "w|Remove - Delete an environment|action_remove"
+    "y|Rename - Rename an environment|action_rename"
     "---|⚡ BATCH|"
     "a|Start All - Start all environments|action_start_all"
     "o|Stop All - Stop all environments|action_stop_all"
     "b|Restart All - Restart all environments|action_restart_all"
-    "---|⚙️  ADVANCED|"
-    "g|More Options - Publish, Logs, Help...|action_advanced"
-    "m|Mobile Guide - Setup Android + Expo|action_mobile"
+    "---|🔧 TOOLS|"
+    "l|Logs - Display application logs|action_view_logs"
+    "p|Publish - Configure HTTPS (Caddy + DuckDNS)|action_publish"
+    "i|Inspector - Toggle browser web inspector|action_inspector"
+    "n|Navigate - Open a project directory|action_navigate"
+    "---|⚙️ SYSTEM|"
     "h|Health Check - RAM, processes, crash loops|action_health"
+    "m|Mobile Guide - Setup Android + Expo|action_mobile"
+    "u|Updates - Check & update packages|action_updates"
+    "k|Cleanup - Free disk space (light/aggressive)|action_cleanup"
+    "f|Install SDK - Flutter, Dart...|action_install_sdk"
+    "v|Tools Status - Voir les outils installés|action_tools"
+    "j|Session Identity - View or reset session|action_session"
+    "?|Help - How ShipFlow works|action_adv_help"
     "x|Exit|action_exit"
 )
 
+# Legacy: ADVANCED_MENU_ITEMS kept for action_advanced fallback
 ADVANCED_MENU_ITEMS=(
-    "l|📝 View Logs - Display application logs|action_view_logs"
-    "n|📁 Navigate Projects - Browse /root directory|action_navigate"
-    "o|📂 Open Code Directory - cd into project|action_open_code"
-    "i|🔍 Toggle Web Inspector - Enable/disable browser inspector|action_inspector"
-    "e|🔐 Session Identity - View or reset session|action_session"
-    "p|🌐 Publish to Web - Configure HTTPS (Caddy + DuckDNS)|action_publish"
-    "?|📖 Help - How ShipFlow works|action_adv_help"
-    "c|🧹 CleanUp Space - Free space (light/aggressive)|action_cleanup"
-    "u|⬆️  Updates - Check & update packages|action_updates"
-    "t|🔧 Tools Status - Voir les outils installés|action_tools"
-    "f|📦 Install SDK - Flutter, Dart...|action_install_sdk"
     "x|← Back to Main Menu|__EXIT__"
 )
 

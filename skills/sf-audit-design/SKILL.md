@@ -114,6 +114,12 @@ Score each category **A/B/C/D** (A = excellent, D = critical issues). Be strict 
 - [ ] Max line width ~65-75 characters (measure/prose constraint)
 - [ ] Font pairing is intentional (max 2-3 families)
 - [ ] No font-size under 14px except legal/fine print
+- [ ] **Fluid typography**: text scales smoothly between viewports using `clamp()` instead of abrupt media-query breakpoints. Formula: `clamp(MIN, PREFERRED, MAX)` where PREFERRED is a `rem + vw` expression (e.g., `clamp(1rem, 0.5rem + 2vw, 2rem)`). Key rules:
+  - Use `rem` (not `px`) in clamp values so the font respects user browser zoom/font-size preferences (accessibility)
+  - The preferred value should combine a `rem` base + `vw` slope — pure `vw` ignores user settings
+  - MIN must be ≤ MAX (clamp fails silently otherwise)
+  - Apply to headings and hero text at minimum; body text benefits too
+  - Flag any media-query that only changes `font-size` — likely replaceable with a single `clamp()` declaration
 
 #### 3. Color & Contrast
 - [ ] WCAG AA contrast ratios (4.5:1 text, 3:1 large text/UI)
@@ -226,6 +232,7 @@ Read the Tailwind config, global styles, and 5-10 representative components. Doc
 
 1. **Color palette**: List all colors actually used (Tailwind classes + custom). Flag inconsistencies (e.g., `text-gray-600` AND `text-gray-500` for similar purposes).
 2. **Typography scale**: List all font sizes, weights, and line heights in use. Flag violations of the scale.
+   - **Fluid typography audit**: Check if headings/hero text use `clamp()` for smooth viewport scaling. If the project uses media-query stepping (different font-size at each breakpoint), flag as improvable — `clamp(MIN, calc-value, MAX)` provides smoother scaling in one declaration. Verify clamp values use `rem` (not `px`) so user zoom/font-size preferences are preserved. The preferred (middle) value should be `rem + vw` (e.g., `0.5rem + 2.27vw`), never pure `vw`. Formula to calculate: `slope = (max-size - min-size) / (max-vw - min-vw)`, `intercept = min-size - (min-vw × slope)`, then `clamp(min-size, intercept-rem + slope×100vw, max-size)`.
 3. **Spacing system**: Check if spacing is consistent (Tailwind scale) or has arbitrary values.
 4. **Component patterns**: Identify repeated patterns (cards, buttons, sections). Flag inconsistencies between instances.
 5. **Breakpoint usage**: Check if responsive breakpoints are consistent.
@@ -251,6 +258,9 @@ Search the entire codebase for legacy/outdated patterns:
 - [ ] Vendor prefixes without autoprefixer
 - [ ] Fixed pixel font sizes below `14px` for body text
 - [ ] `float` used for primary layout (use flexbox/grid)
+- [ ] Media-query font-size stepping — multiple `@media` blocks that only change `font-size` at breakpoints. Replace with `clamp(MIN, PREFERRED, MAX)` for smooth scaling. Use `rem`-based values (not `px`) to respect user zoom preferences
+- [ ] `clamp()` with `px` units — flag `clamp(Xpx, ...)` patterns; should use `rem` so font scales with user browser settings
+- [ ] `clamp()` with pure `vw` preferred value — e.g., `clamp(1rem, 4vw, 2rem)` ignores user font-size; preferred value must combine `rem + vw` (e.g., `0.5rem + 2vw`)
 
 **Legacy JS patterns**:
 - [ ] jQuery when using a modern framework
