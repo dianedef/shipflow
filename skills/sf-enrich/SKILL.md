@@ -75,6 +75,8 @@ For each piece of content, search the web for:
 3. **What the competition covers** — Search the same topic. Identify what the top 3 results include that this content doesn't. Fill those gaps.
 4. **Real examples & case studies** — Find concrete examples, real company stories, actual results. Generic advice is forgettable; specific examples stick.
 5. **Expert quotes or frameworks** — Find a relevant expert perspective, mental model, or methodology to reference (not just random quotes for decoration).
+6. **Primary source preference** — prefer `.edu` / `.gov` / peer-reviewed / official docs / original GitHub repos over blog summaries. AI platforms assign highest trust to primary sources.
+7. **Content decay scan** — flag any stat > 18 months old, any "recently/currently" phrasing, any reference to deprecated APIs/tools/versions in the existing content.
 
 Use `WebSearch` and `mcp__exa__web_search_exa` for research. Search in the **same language** as the content (French topics → French queries + English queries for technical depth).
 
@@ -126,14 +128,59 @@ Apply these principles to every piece of content:
 
 Where appropriate, add:
 
+- [ ] **Quick Answer / TL;DR box** at top — 40-60 words or 3-5 bullets answering the core query directly (the passage LLMs most often extract)
+- [ ] **Key Takeaways box** at end — recap for scanners who scrolled past
 - [ ] **Comparison tables** — for tool/framework/approach comparisons
 - [ ] **Step-by-step instructions** — numbered, with expected outcomes at each step
 - [ ] **Code snippets** — working, copy-paste ready, with comments explaining the "why"
 - [ ] **Callout boxes** — for warnings, pro tips, or "common mistakes"
-- [ ] **Internal links** — connect this content to other relevant pages on the same site
-- [ ] **Updated stats with sources** — inline links to authoritative sources
-- [ ] **FAQ section** — address the long-tail questions people actually search for
+- [ ] **Internal links** — 2-5 contextual body links per 1000 words (body links pass ~5x more equity than nav/footer). Each spoke links to its pillar + 2-3 sibling spokes. Total page links < 150.
+- [ ] **Updated stats with sources** — inline links to authoritative primary sources (.edu, .gov, peer-reviewed, official docs)
+- [ ] **FAQ section** — address the long-tail questions people actually search for (wrap in `FAQPage`/`QAPage` schema)
 - [ ] **Estimated reading time** — in frontmatter if the framework supports it
+- [ ] **Interactive element** where topic supports it: calculator (ROI, pricing, sizing), quiz, comparison slider, configurator. Data: +52.6% engagement, -18 to -32% bounce on pricing
+- [ ] **Mermaid diagram** for processes, architectures, decision trees (renders natively in most markdown pipelines, version-controllable)
+- [ ] **Annotated screenshot** for any UI-related claim (numbered callouts over raw screenshot)
+- [ ] **"Last updated" visible in body** ("Updated April 2026" line under H1) — over a third of AI citations go to content updated in the last 3 months
+- [ ] **Changelog section at end** — bullet list of substantive edits with dates ("Apr 2026: replaced Vercel pricing table, added Next.js 15 section")
+- [ ] **Sources section at end** — primary references listed explicitly, parallel to inline citations
+
+### PHASE 4.5: AI VISIBILITY LAYER
+
+Optimize the content to be found, extracted, and cited by ChatGPT, Perplexity, Claude, Google AI Overviews. Apply to all substantial pages:
+
+#### Structure for LLM extraction
+- [ ] **First 40-60 words answer the core query** in one self-contained, quotable sentence. No warm-up intro.
+- [ ] **Semantic chunking**: each H2/H3 = one atomic concept, 2-4 sentence paragraphs, ~256-512 tokens per logical block (matches how Perplexity/ChatGPT slice content)
+- [ ] **Inverted pyramid per section**: lead sentence of every H2 = the answer, then elaboration
+- [ ] **Question-shaped headings** where natural ("What is X?", "How does Y work?", "When should you use Z?")
+- [ ] **3-5 quotable sentences per article** — standalone claims that read cleanly when extracted (no "as mentioned above", no "in this article")
+- [ ] **Claim-source proximity**: every stat or fact cited in the same sentence or immediately after, not in a bibliography
+- [ ] **Fact density**: one statistic or specific number per 150-200 words
+- [ ] **Entity-rich language**: named tools, companies, standards, people, dates (15+ recognized entities → 4.8x citation rate)
+
+#### E-E-A-T concrete checklist (every article)
+- [ ] **Named author** with bio page (credentials, LinkedIn, years of experience on topic)
+- [ ] **First-person experience signal** — at least one "When I shipped X…", "In our audit of 40 sites…", "The mistake I made…" passage (March 2026 Google core update amplified Experience over Expertise)
+- [ ] **Original screenshot/chart/photo** (not stock) — insider-only visuals
+- [ ] **Before/after numbers with methodology**: "reduced p95 from 820ms to 310ms using X" (not "improved performance")
+- [ ] **Dated timestamps**: `datePublished` + `dateModified` in frontmatter AND visible in body
+- [ ] **Limitation / caveat statement**: one sentence acknowledging when the advice doesn't apply
+- [ ] **Reviewer line for YMYL topics**: "Reviewed by [name, credentials]"
+- [ ] **Editorial disclosure** where relevant (affiliate, sponsored)
+
+#### Schema.org matrix — inject the right JSON-LD per page type
+
+| Page type | Schema to inject | Notes |
+|---|---|---|
+| Blog post / article | `Article` + `author` (Person with `sameAs`, `hasCredential`) + `datePublished` + `dateModified` + `publisher` | Foundational |
+| Tutorial / step-by-step | `HowTo` with `HowToStep` array + images per step | Required for step extraction |
+| FAQ block | `FAQPage` | Google rich-result restricted since Aug 2023 to gov/health, but ChatGPT/Perplexity/Claude still parse as primary extraction format — keep injecting |
+| User-generated Q&A | `QAPage` (not FAQPage) | When a single question allows multiple answers |
+| Product / tool review | `Review` + `Rating` + `itemReviewed` | |
+| Voice / AI priority | `SpeakableSpecification` pointing to Quick Answer + Key Takeaways CSS selectors | 3.1x voice/AI citation boost |
+| Pillar page | `Article` + `mainEntityOfPage` + explicit `about` / `mentions` entities | Helps AI build entity map |
+| Comparison article | `Article` + embedded `Table` + `ItemList` | List structure extracts cleanly |
 
 ---
 
@@ -158,10 +205,16 @@ Before finishing, verify:
 - [ ] All added stats have a source link (no unattributed claims)
 - [ ] All code snippets are syntactically correct and up to date
 - [ ] No broken links or placeholder URLs
-- [ ] Frontmatter is complete (title, description, date updated, tags)
+- [ ] Frontmatter is complete (title, description, date updated, tags, author)
 - [ ] Meta description is rewritten to match the upgraded content
 - [ ] Reading flow is smooth when read top-to-bottom
 - [ ] The piece passes the "so what?" test — every section answers why the reader should care
+- [ ] **JSON-LD injected** per Schema.org matrix, validated via Schema Markup Validator
+- [ ] **Quick Answer block exists** and is self-contained (readable out of context)
+- [ ] **`dateModified` updated** in frontmatter AND body when substantive changes made
+- [ ] **At least one first-person experience passage** present
+- [ ] **Changelog updated** with dated bullet
+- [ ] **Content decay clean**: no year mentions > 18 months, no "recently" fossil, no deprecated tool names
 
 ---
 
@@ -171,14 +224,22 @@ For single files:
 ```
 ENRICHED: [article title]
 ─────────────────────────────────────
-Topic:           [subject]
-Audience:        [who + intent]
-Language:        [FR/EN]
-Sources added:   X (from Y web searches)
-Stats updated:   X
-Sections added:  [list]
-CTAs added:      X
-Word count:      before → after
+Topic:                 [subject]
+Audience:              [who + intent]
+Language:              [FR/EN]
+Sources added:         X (from Y web searches; Z primary)
+Stats updated:         X
+Sections added:        [list]
+CTAs added:            X
+Word count:            before → after
+─────────────────────────────────────
+AI VISIBILITY LAYER
+Quick Answer added:    [Y/N]
+Schema types injected: [Article, FAQPage, ...]
+Interactive elements:  [calculator, quiz, ...]
+Experience signals:    X first-person passages added
+Decay signals fixed:   [list]
+Changelog updated:     [Y/N]
 ─────────────────────────────────────
 Key changes:
 • [change 1]

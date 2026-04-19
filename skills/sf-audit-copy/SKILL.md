@@ -104,18 +104,21 @@ Audit ALL web projects in the workspace for copywriting quality.
 Score each category **A/B/C/D**. Be strict — professional copywriter standard.
 
 #### 1. Value Proposition & Messaging
-- [ ] Primary benefit is clear within 5 seconds of reading
+- [ ] Primary benefit is clear within 5 seconds of reading (5-second test: show hero to a cold reader; they must name the **job-to-be-done**, not the product category)
+- [ ] Headline names the customer's job ("Close books in 2 days not 2 weeks"), not the tool category
 - [ ] Headline answers "what's in it for me?" not "what is this?"
 - [ ] Subheadline adds specificity (numbers, outcomes, timeframe)
 - [ ] Copy speaks to a specific audience, not everyone
 - [ ] Features are framed as benefits (not just feature lists)
+- [ ] StoryBrand check: customer = hero, product = guide (not the reverse)
 
 #### 2. Clarity & Readability
-- [ ] Sentences average under 20 words
+- [ ] Sentences average under 20 words, with **variance** (SD > 6 words) — robotic uniformity is an AI-content tell
 - [ ] Paragraphs are 2-3 sentences max
 - [ ] No jargon without context (or jargon is intentional for the audience)
 - [ ] Active voice dominant (passive < 10%)
-- [ ] Flesch-Kincaid grade level appropriate for audience (typically 6-8)
+- [ ] Reading level: **FK grade 6-8 for consumer**, **8-10 for B2B technical**. Secondary: SMOG ≤ 9 (WCAG 3.0 draft alignment)
+- [ ] Pages > 400 words have a plain-language summary at top (WCAG 3 pattern)
 - [ ] No filler words ("very", "really", "just", "actually", "basically")
 
 #### 3. Persuasion & Psychology
@@ -126,11 +129,13 @@ Score each category **A/B/C/D**. Be strict — professional copywriter standard.
 - [ ] Emotional trigger matches audience's primary motivation
 
 #### 4. Calls to Action
-- [ ] Primary CTA uses action verb + benefit ("Start free trial" not "Submit")
+- [ ] Primary CTA uses **action verb + specific outcome + timeframe/quantity** ("Start your 14-day trial", not "Get started" — "Start Your" variant beat "Get started" +90% in Unbounce test)
 - [ ] One clear primary CTA per section (no competing CTAs)
 - [ ] CTA copy matches what actually happens next
 - [ ] Button text works standalone (makes sense without surrounding context)
 - [ ] Secondary CTAs provide a lower-commitment alternative
+- [ ] Mobile hero: headline readable without scroll; CTA above the fold on 390px viewport
+- [ ] Objection block near CTA (refund policy, no-card-required, data-ownership)
 
 #### 5. Microcopy & UX Writing
 - [ ] Form labels are clear, not clever
@@ -153,6 +158,60 @@ Score each category **A/B/C/D**. Be strict — professional copywriter standard.
 - [ ] Consistent capitalization (title case vs sentence case)
 - [ ] Consistent punctuation
 - [ ] No broken interpolation or placeholder text (`{name}`, `Lorem ipsum`)
+- [ ] No mixed smart/straight quotes (paste artifact)
+- [ ] French typography: `espace insécable` before `: ; ! ? »`, guillemets français `« »` not `" "`
+
+#### 8. AI-Voice Detection
+
+Flag each hit — these are 2026 "AI slop" patterns that erode trust.
+
+**EN blacklist — verbs:** delve, delve into, leverage, unlock, harness, navigate (the landscape/complexities), foster, empower, streamline, revolutionize, unleash, unveil, underscore, garner, boast.
+
+**EN blacklist — nouns:** tapestry, landscape, realm, journey, testament, interplay, intricacies, nuances, ecosystem, wealth (of), plethora, myriad, paradigm.
+
+**EN blacklist — adjectives:** seamless, robust, vibrant, meticulous, crucial, pivotal, comprehensive, cutting-edge, game-changing, transformative, intricate, invaluable, multifaceted, bespoke, unparalleled.
+
+**EN blacklist — phrases:** "It's important to note", "It's worth noting", "In today's fast-paced world", "In the ever-evolving landscape of", "In the realm of", "Furthermore" / "Moreover" / "Additionally" (as sentence openers), "In conclusion", "Ultimately", "As an AI", "I hope this helps", "Let's dive in", "At the heart of", "When it comes to", "The key takeaway is", "Whether you're a…or a…", "Not only…but also".
+
+**FR blacklist — expressions:** "il est important de noter", "il convient de souligner", "dans le monde d'aujourd'hui", "à l'ère du numérique", "au cœur de", "que vous soyez… ou…", "plongez dans", "découvrez", "élevez", "incontournable", "révolutionner" (dans le sens marketing), "dans un paysage en constante évolution", "tirez parti de", "libérez le potentiel", "sans couture" (calque), "robuste", "harmonieux", "tapisserie", "voyage" (métaphorique).
+
+**Structural tells:**
+- [ ] Em dash density < 1 per 300 words
+- [ ] No rule-of-three tricolons in every paragraph
+- [ ] No paragraph starting with "Furthermore/Moreover/Additionally/En outre/De plus" (max 1 per page)
+- [ ] Sentence length has variance (SD > 6 words)
+- [ ] No identical grammatical structure in every bullet of a list
+- [ ] No "As an AI" / "I hope this helps" residue
+
+#### 9. AI-era Trust Signals
+
+With AI-generated content saturation, human-verifiable signals are the primary differentiator — for both human trust AND LLM citation (Google E-E-A-T + GEO reward the same markers).
+
+- [ ] Named human author(s) with credentials on every long-form page
+- [ ] Dated timestamp visible ("Published", "Last updated", "Tested in April 2026")
+- [ ] First-person experience markers ("We tested X for 30 days", "In 47 customer interviews we…") — not generic "X is the best"
+- [ ] Specific numbers over vague intensifiers ("reduced p95 from 820ms to 310ms" beats "dramatically faster")
+- [ ] At least one verifiable external proof per key claim (case study, dated screenshot, named customer)
+- [ ] Author/team bio reachable in ≤ 1 click from the page
+- [ ] Schema.org `author` + `datePublished` present in source (verify in head)
+
+#### 10. LLM-Answer-Engine Readiness (AEO/GEO)
+
+Based on the Princeton GEO study — these structures lift LLM citation by 30-40%.
+
+- [ ] First 40-60 words contain a direct, quotable one-sentence answer to the page's implied question
+- [ ] Fact density: one statistic or specific number per 150-200 words
+- [ ] 2-3 expert quotes or named citations per 1000 words; 5-7 outbound links to authoritative domains
+- [ ] H2/H3 use question-form headings where appropriate ("How does X work?", "What is Y?")
+- [ ] Key claims phrased as standalone sentences (not buried in clauses) — extractable by LLM
+- [ ] Schema.org `Article`, `FAQPage`, or `HowTo` in source with `author` + `datePublished`
+
+#### 11. Conversion Copy (CRO 2025-2026)
+
+- [ ] **Message match**: landing hero mirrors the ad/referrer promise
+- [ ] **Trust sequencing**: social proof appears *before* price on pricing pages
+- [ ] **Hidden-cost transparency**: no "contact us" where a price range could exist; disclose add-ons, taxes, seats
+- [ ] **Conversational error pattern**: "That email doesn't look right — did you mean gmail.com?" beats "Invalid input"
 
 ### Step 3: Rewrite and fix
 
@@ -174,6 +233,10 @@ Calls to Action    [A/B/C/D] — one-line summary
 Microcopy          [A/B/C/D] — one-line summary
 Tone & Voice       [A/B/C/D] — one-line summary
 Grammar & Polish   [A/B/C/D] — one-line summary
+AI-Voice Detection [A/B/C/D] — X slop hits (list top 5)
+Trust Signals      [A/B/C/D] — named author, dates, first-person proof
+AEO/GEO Readiness  [A/B/C/D] — direct answer, question headings, fact density
+Conversion Copy    [A/B/C/D] — message match, trust sequencing
 ─────────────────────────────────────
 OVERALL            [A/B/C/D]
 
@@ -297,6 +360,19 @@ Create either file if missing.
 
 1. **Local TASKS.md** (project root): add/replace an `### Audit: Copy` subsection with critical (🔴), high (🟠), and medium (🟡) issues as task rows.
 2. **Master `/home/claude/shipflow_data/TASKS.md`**: find the project's section, add/replace an `### Audit: Copy` subsection with the same tasks.
+
+---
+
+## Framework Reference (2026 validated ranking)
+
+Choose the framework that best fits the page type before rewriting:
+
+1. **StoryBrand** (customer = hero, product = guide) — best for homepage / hero narrative. Rewrites typically cut bounce ~30%.
+2. **PAS** (Problem-Agitate-Solve) — best for ads, landing pages, pain-driven funnels.
+3. **JTBD headline** — best for B2B/SaaS hero + feature pages.
+4. **4Cs** (Clear, Concise, Compelling, Credible) — best for microcopy and forms.
+5. **AIDA** — fine for short ads/email subject lines; considered generic in 2025 for long-form.
+6. **Kennedy / direct-response** (problem → agitation → solution → offer → proof → guarantee → urgency → CTA) — dominant for long-form sales pages and info products; Tugan.ai codifies the edu-tainment variant.
 
 ---
 

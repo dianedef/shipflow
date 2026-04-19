@@ -154,9 +154,11 @@ Score each category **A/B/C/D** (A = excellent, D = critical issues). Be strict 
 - [ ] Skip navigation link present if applicable
 - [ ] Animations respect `prefers-reduced-motion`
 - [ ] **Focus Appearance (2.4.11)**: Focus indicator is at least 2px solid, contrasts 3:1 against adjacent colors — no `outline: none` without replacement
-- [ ] **Target Size Minimum (2.5.8)**: All interactive targets are at least 24×24px CSS (44×44px recommended on touch). Inline text links exempt
+- [ ] **Target Size Minimum (2.5.8)**: All interactive targets are at least 24×24px CSS with ≥8px spacing between adjacent targets (or 24px offset to neighbors) — 44×44px recommended on touch. Inline text links exempt. Icon buttons use padding (not fixed width) to hit 24×24 (e.g., 16px icon + 4px padding all sides)
 - [ ] **Dragging Movements (2.5.7)**: Any drag-to-operate control also has a non-dragging alternative (buttons, click-to-place)
 - [ ] **Consistent Help (3.2.6)**: Help/support mechanisms (contact, FAQ, chat) appear in the same relative position across pages
+- [ ] **WCAG 3.0 readiness**: plain-language check on instructions/errors — reading level ≤ 9th grade unless context forbids. WCAG 3.0 draft (March 2026) promotes plain language from AAA to foundational
+- [ ] **INP budget**: interaction handlers complete in <200ms at p75. Flag heavy `useEffect`-on-click, sync work in `onClick`. INP replaced FID as Core Web Vital March 2024
 - [ ] **Click target propagation**: Containers with a single action child (icon button, hamburger menu, link) should make the whole container clickable — add `onClick`/`role="button"`/`tabIndex={0}`/`onKeyDown` to parent, `cursor-pointer` + hover state for feedback, `e.stopPropagation()` on secondary actions. Skip if: multiple competing actions, destructive action (precise click = safety), drag surface, or form controls (use `<label>` instead)
 
 #### 7. Usability — NN/g Heuristics
@@ -225,6 +227,8 @@ Consistency        [A/B/C/D] — one-line summary
 Accessibility      [A/B/C/D] — one-line summary
 Usability (NN/g)   [A/B/C/D] — one-line summary
 Modern Patterns    [A/B/C/D] — one-line summary
+Modern CSS 2026    [A/B/C/D] — container queries, :has, view transitions, oklch
+AI-Gen Smells      [A/B/C/D] — Tailwind conflicts, missing states, div-as-button
 ─────────────────────────────────────
 OVERALL            [A/B/C/D]
 
@@ -290,6 +294,10 @@ Search the entire codebase for legacy/outdated patterns:
 - [ ] Media-query font-size stepping — multiple `@media` blocks that only change `font-size` at breakpoints. Replace with `clamp(MIN, PREFERRED, MAX)` for smooth scaling. Use `rem`-based values (not `px`) to respect user zoom preferences
 - [ ] `clamp()` with `px` units — flag `clamp(Xpx, ...)` patterns; should use `rem` so font scales with user browser settings
 - [ ] `clamp()` with pure `vw` preferred value — e.g., `clamp(1rem, 4vw, 2rem)` ignores user font-size; preferred value must combine `rem + vw` (e.g., `0.5rem + 2vw`)
+- [ ] `hex`/`hsl` in tokens where `oklch()` would be better (perceptual uniformity)
+- [ ] `@media` queries responding to viewport where `@container` would respond to actual component space
+- [ ] `<div role="dialog">` where native `<dialog>` would work
+- [ ] JS-toggled parent classes for child-state styling (replaceable by `:has()`)
 
 **Legacy JS patterns**:
 - [ ] jQuery when using a modern framework
@@ -299,6 +307,33 @@ Search the entire codebase for legacy/outdated patterns:
 **Undersized click targets & action propagation**:
 
 Look for containers where a small child element (icon button, hamburger, link, toggle) is the sole interactive element but the parent is not clickable. Flag when: container has descriptive content + exactly one primary action + container is NOT already interactive. Fix: propagate action to parent with `onClick`, `role="button"`, `tabIndex={0}`, `cursor-pointer` + hover state. Do NOT propagate when: multiple competing actions, destructive action, drag surface, or form controls.
+
+### Phase 2.5: Modern CSS Adoption Check
+
+Scan the codebase for modern CSS opportunities:
+
+- [ ] **Container queries**: do multi-context components (cards, sidebars) use `@container`? If not, flag — they'll break in nested layouts
+- [ ] **`:has()` adoption**: any `useEffect` toggling parent classes based on child state that could be replaced by `:has()`?
+- [ ] **View Transitions**: is the project on a framework supporting cross-document transitions (Astro, Next 15+)? Is `@view-transition { navigation: auto }` enabled?
+- [ ] **OKLCH tokens**: are design tokens in `oklch()`? If `hsl()` or `hex`, flag (perceptual uniformity benefit)
+- [ ] **`light-dark()` + `color-scheme`**: is dark mode implemented via `light-dark()` or via duplicated `@media (prefers-color-scheme: dark)` blocks?
+- [ ] **Native `<dialog>` + `popover`**: are modals using `<dialog>` or `<div role="dialog">`? Are tooltips/menus using Floating UI or native `popover`?
+- [ ] **Subgrid**: any sibling card grids with alignment issues? Subgrid fixes them
+- [ ] **`content-visibility`**: long lists, footers, off-screen sections — candidates for `content-visibility: auto`
+- [ ] **Design Tokens DTCG format**: if the project has a token file, does it use DTCG (`$value`, `$type`, `$description`)? W3C DTCG reached first stable version Oct 2025
+
+### Phase 2.6: AI-Generated Code Smells Scan
+
+If the project was built with v0, bolt, lovable, Figma Make, or heavy LLM assistance (check git log for AI attribution or rapid generation bursts), scan specifically for:
+
+- [ ] Conflicting Tailwind utilities on same element (grep: `class=".*\bw-\w+\b.*\bw-\w+\b"` etc.)
+- [ ] Dynamic Tailwind class concatenation (`` `text-${x}-500` ``)
+- [ ] Interactive `<div onClick>` without `role="button"`/`tabIndex`/`onKeyDown`
+- [ ] Form inputs with placeholder but no `<label>`
+- [ ] Images with no `alt`
+- [ ] Missing `:focus-visible`, `:disabled`, loading/error/empty states
+- [ ] Hardcoded hex/rgb instead of design tokens
+- [ ] Components that render correctly at reference viewport but break at mobile or wide screens
 
 ### Phase 3: Page-by-Page Scan
 
@@ -311,6 +346,7 @@ For each page, check:
 - [ ] Click targets
 - [ ] States: loading, empty, error
 - [ ] No layout shifts
+- [ ] INP < 200ms on interactions (p75)
 
 For each finding, include a **"Why it matters"** line citing the relevant UX principle or standard.
 
@@ -348,6 +384,23 @@ OUTDATED PATTERNS
   Deprecated CSS:   X found
   Legacy JS:        X found
   Click targets:    X containers with undersized single-action children
+  div[role=dialog]: X (should be native <dialog>)
+
+MODERN CSS ADOPTION
+  Container queries: [adopted / partial / absent]
+  :has() usage:      [adopted / partial / absent]
+  View Transitions:  [enabled / disabled]
+  OKLCH tokens:      [yes / no — uses hex/hsl]
+  light-dark():      [yes / no — uses duplicated media queries]
+  Native dialog:     X modals / Y with role=dialog
+  Popover API:       [yes / no — uses Floating UI]
+
+AI-GEN CODE SMELLS (if applicable)
+  Tailwind conflicts:  X
+  Dynamic classes:     X
+  div-as-button:       X
+  Missing labels/alts: X
+  Missing states:      X
 
 PAGE SCORES
   /                  [A/B/C/D]
@@ -358,6 +411,8 @@ CROSS-PAGE CONSISTENCY    [A/B/C/D]
 ACCESSIBILITY (WCAG 2.2)  [A/B/C/D]
 USABILITY (NN/g)          [A/B/C/D]
 RESPONSIVENESS            [A/B/C/D]
+MODERN CSS 2026           [A/B/C/D]
+AI-GEN CODE HEALTH        [A/B/C/D] (if applicable)
 ═══════════════════════════════════════
 OVERALL                   [A/B/C/D]
 

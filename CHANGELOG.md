@@ -1,5 +1,21 @@
 # ShipFlow Changelog
 
+## [2026-04-19] - Skills refresh for 2026 state of the art + new refresh meta-skill
+
+### Added
+- `sf-skills-refresh` — new meta-skill that refreshes other skills with latest industry state of the art via parallel research agents; takes a skill name or prompts multi-select if no arg
+- `skills/REFRESH_LOG.md` — chronological log of skill refreshes, backfilled with today's entries
+- `sf-audit-seo`: new Phase 5.5 — AI Visibility (AEO / GEO) with llms.txt, AI crawler allowlist, citation-ready content structure, SpeakableSpecification / QAPage / HowTo / Person schemas, off-site signals (Wikipedia, Reddit)
+- `sf-audit-design`: new categories 9 (Modern CSS 2026 — container queries, `:has()`, view transitions, OKLCH, `color-mix()`, `light-dark()`, subgrid, `content-visibility`, anchor positioning) and 10 (AI-Generated Code Smells); new Phases 2.5 (Modern CSS Adoption) and 2.6 (AI-Generated Code Smells Scan)
+- `sf-audit-copy`: new categories 8-11 — AI-Voice Detection (EN+FR blacklists, structural tells), AI-era Trust Signals, LLM-Answer-Engine Readiness (Princeton GEO), Conversion Copy 2025-2026; Framework Reference section (StoryBrand > PAS > JTBD > 4Cs > AIDA > Kennedy)
+- `sf-enrich`: new Phase 4.5 — AI Visibility Layer with semantic chunking, Quick Answer, E-E-A-T concrete checklist, Schema.org matrix per page type; content decay scan in research phase
+
+### Changed
+- `sf-audit-seo`: FID removed, INP < 200ms becomes the responsiveness metric; images upgraded from "WebP/AVIF" to explicit AVIF-first via `<picture>`; keyword density downgraded to semantic completeness + entity coverage
+- `sf-audit-design`: WCAG 2.2 target size rule refined with 8px spacing / 24px offset exemption; dark mode guidance updated to `light-dark()` + `color-scheme`
+- `sf-audit-copy`: sentence length adds variance check (robotic uniformity is AI tell); CTA rule tightened to "action verb + specific outcome + timeframe"; French typography rules made explicit
+- `sf-enrich`: internal linking expanded to topic cluster structure (pillar + 2-5 spokes); primary source preference added
+
 ## [2026-04-14] - No local builds in ship/verify flows
 
 ### Changed
