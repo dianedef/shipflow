@@ -18,6 +18,15 @@ argument-hint: [file-path | "global"] (omit for full project)
 - Deprecated HTML: !`grep -rn --include="*.{astro,vue,tsx,jsx,html}" -iE '<marquee|<blink|<center|<font ' src/ 2>/dev/null | head -20 || echo "none found"`
 - Dialog vs div[role=dialog]: !`grep -rn --include="*.{astro,vue,tsx,jsx,html}" -E '<div[^>]+role=["\x27]dialog' src/ 2>/dev/null | head -10 || echo "none found"`
 - Hardcoded colors: !`grep -rn --include="*.{astro,vue,tsx,jsx,css,scss}" -E '#[0-9a-fA-F]{3,6}\b|rgb\(|rgba\(' src/ 2>/dev/null | grep -v node_modules | wc -l || echo "0"`
+- Theme files: !`find src -type f \( -name "theme*" -o -name "*Theme*" -o -name "tokens*" -o -name "design-tokens*" -o -name "palette*" \) 2>/dev/null | grep -v node_modules | head -20 || echo "none found"`
+- Theme mode preference: !`grep -rn --include="*.{ts,tsx,js,jsx,vue,astro,svelte,dart,kt,swift}" -E 'ThemeMode|prefers-color-scheme|color-scheme|themeMode|theme_mode|darkMode|dark_mode' src/ lib/ 2>/dev/null | grep -v node_modules | head -10 || echo "none found"`
+- CSS custom properties for tokens: !`grep -rh --include="*.{css,scss}" -E '^\s*--(fs|fz|font-size|space|spacing|gap|color|c|bg|surface|duration|easing|ease|motion)-' src/ 2>/dev/null | sort -u | head -40 || echo "none found"`
+- Literal font-sizes outside tokens: !`grep -rn --include="*.{css,scss,vue,astro,tsx,jsx}" -E 'font-size:\s*[0-9]' src/ 2>/dev/null | grep -v 'var(--' | grep -v node_modules | wc -l || echo "0"`
+- Literal spacings outside tokens: !`grep -rn --include="*.{css,scss}" -E '(margin|padding|gap|top|right|bottom|left):\s*[0-9]+(\.[0-9]+)?(px|rem|em)' src/ 2>/dev/null | grep -v 'var(--' | grep -v node_modules | wc -l || echo "0"`
+- Motion / transitions: !`grep -rn --include="*.{css,scss}" -E '(transition|animation):\s*' src/ 2>/dev/null | grep -v 'var(--' | grep -v node_modules | wc -l || echo "0"`
+- Reduced-motion support: !`grep -rn --include="*.{css,scss,ts,tsx,js,jsx,vue,astro,svelte}" -E 'prefers-reduced-motion' src/ 2>/dev/null | grep -v node_modules | wc -l || echo "0"`
+- Design playground page: !`find src -type d \( -name "design-system" -o -name "styleguide" -o -name "tokens-debug" -o -name "theme-debug" \) 2>/dev/null | grep -v node_modules | head -5 || echo "none found"`
+- Auth detected (for theme sync rule): !`grep -rln --include="*.{ts,tsx,js,jsx}" -E "(next-auth|@clerk/|better-auth|@auth/|lucia|@supabase/auth|firebase/auth|getServerSession|useSession|useUser|currentUser)" src/ app/ pages/ 2>/dev/null | grep -v node_modules | head -3 || echo "none — theme sync to server not required"`
 
 ## Pre-check : contexte marque
 
@@ -123,6 +132,17 @@ Score each category **A/B/C/D** (A = excellent, D = critical issues). Be strict 
   - Apply to headings and hero text at minimum; body text benefits too
   - Flag any media-query that only changes `font-size` — likely replaceable with a single `clamp()` declaration
 
+##### Typography token system (centralization)
+- [ ] **No literal `font-size` values in components**: every `font-size` resolves to a token (`var(--fs-*)`, `theme.fontSize.*`, `Theme.of(context).textTheme.*`). Literal `font-size: 1.2rem` in a component file = violation. Acceptable exceptions: HTML email templates (mail clients require inline `px`), `em` units relative to parent (icons in text). Flag count: literal font-sizes outside tokens (see context block).
+- [ ] **Token bundle**: each typography token bundles `font-size` + `line-height` + `letter-spacing` (either as a single object/mixin or a triple of co-named CSS variables `--fs-base`, `--lh-base`, `--ls-base`). Isolated `font-size` tokens without paired line-height force per-component overrides → drift.
+- [ ] **Naming strategy adapted to project size**:
+  - Small projects (< ~30 component files, content sites, single-product) → **t-shirt naming** acceptable (`xs`, `sm`, `base`, `lg`, `xl`, `2xl`, `3xl`, `hero`). Simple, low cognitive load.
+  - Larger projects (SaaS, multi-product, design-system shared across apps) → **semantic naming required** (`body`, `body-sm`, `caption`, `heading-1`, `heading-2`, `display`). Survives refactors and onboards new contributors faster.
+  - Mixed naming in the same project = violation. Pick one and stick to it.
+- [ ] **Modular ratio for the scale**: the size progression should follow a coherent ratio (1.125 minor second, 1.2 minor third, 1.25 major third, 1.333 perfect fourth, 1.414 augmented fourth, 1.5 perfect fifth, 1.618 golden). If 8 tokens have ratios `1.1×`, `1.4×`, `1.2×` between consecutive levels — that's chaos, not a scale. **Recommend [Utopia.fyi](https://utopia.fyi) for pro projects** to generate the scale from a base size + ratio + viewport range.
+- [ ] **`vw` component caveat in `clamp()`**: the `vw` portion must stay **moderate** (≤ ~3vw) and always added to a solid `rem` base. A clamp like `clamp(1rem, 4vw, 2rem)` (vw-dominant, no rem in preferred) breaks WCAG 1.4.4 Resize Text — at 200% browser zoom, the user's font-size preference is ignored because `vw` is computed from viewport, not from user font scale. Pattern to enforce: `clamp(MIN_REM, X_REM + Y_VW, MAX_REM)` with `Y ≤ 3`.
+- [ ] **Iteration on tokens, not components**: if you find yourself debating font-size in a component file, the answer is "go change the token, not the component". Components reference tokens; tokens are the only place sizes are decided.
+
 #### 3. Color & Contrast
 - [ ] WCAG AA contrast ratios (4.5:1 text, 3:1 large text/UI). Note: WCAG 3.0 draft uses APCA (perceptual) — check both when time allows
 - [ ] Color is not the only way to convey information
@@ -131,6 +151,13 @@ Score each category **A/B/C/D** (A = excellent, D = critical issues). Be strict 
 - [ ] `color-mix()` declarations have a static fallback line above them (old browsers drop the whole rule otherwise)
 - [ ] Interactive elements have visible focus/hover/active states
 - [ ] Dark mode: `<meta name="color-scheme" content="light dark">` + root `color-scheme: light dark` + CSS uses `light-dark(<light>, <dark>)` — eliminates `@media (prefers-color-scheme: dark)` duplication
+
+##### Semantic palette (universal socle)
+- [ ] **Universal semantic socle present**: every project must expose at minimum `success`, `warning`, `danger`, `info`, `neutral` (intent-based names, not hue-based). Each one declined into the variants the project actually uses (`*-bg`, `*-fg`, `*-border`, `*-subtle` typically). These are the floor — domain-specific intents (`approve`, `reject`, `pending`, `archived`, etc.) are added **on top** for the project's vocabulary.
+- [ ] **Surface tokens present**: `surface-base`, `surface-raised`, `surface-overlay`, `surface-sunken` (or equivalent). Surfaces ≠ background colors — they encode elevation/role, not a hex value.
+- [ ] **No hue-based color names in components**: `Color(0xFF...)`, `Colors.white`, `Colors.orange`, `text-blue-500`, `bg-red-100` in business components = violation. Names by **intent** (`text-danger`, `bg-surface-raised`), never by **hue**. Brand colors are an acceptable exception (`brand-primary`) but should still be named by role, not by what color they happen to be.
+- [ ] **One source of truth per role**: if both `--color-error` and `--color-danger` exist for the same intent, that's drift — pick one and migrate.
+- [ ] **Each semantic token has a value per theme mode**: a `success` token defined only for light mode breaks dark mode. Audit all semantic tokens across all theme modes.
 
 #### 4. Responsiveness
 - [ ] Mobile-first or gracefully responsive (no horizontal scroll)
@@ -206,6 +233,37 @@ Flag these patterns — v0, bolt, lovable, Figma Make produce ~160 issues/app on
 - [ ] All interaction states present: `:focus-visible`, `:disabled`, loading, error, empty
 - [ ] Forms use HTML5 constraint validation (`required`, `pattern`, `type="email"`) before custom JS validation
 
+#### 11. Theme System Architecture
+The design tokens above (color, typography, spacing, motion) only pay off if there is a **theme system** that can swap them at runtime. Audit the architecture, not just the values.
+
+- [ ] **Three modes minimum**: `light`, `dark`, and `system` (follows OS preference). The system mode is the default for new users — explicit choice overrides it. Single-mode projects (dark-only, light-only) are acceptable **only** with a documented justification in `BRANDING.md` (e.g., "terminal product, dark-only by brand"). Absence of justification = violation.
+- [ ] **Centralized preference module**: a single source of truth (`theme_preference.{ts,dart,kt,...}`) that exposes the current mode, normalizes incoming values (any unknown value → `system`, never crash), and emits change events. Scattered `localStorage.getItem('theme')` reads across components = violation.
+- [ ] **Persistence**: the preference is persisted in platform-native local storage (`localStorage`, `SharedPreferences`, `UserDefaults`, `chrome.storage`).
+- [ ] **Server sync if auth present**: if the project has authentication (see context block — auth detection), the theme preference must also be synced to the user's server-side settings, so the choice follows the user across devices. Local-only persistence with auth = violation. **No auth = local persistence is sufficient.**
+- [ ] **Loaded before first render**: the theme is resolved and applied **before** the first paint, no flash of wrong theme (FOUC). Web: inline `<script>` in `<head>` reads localStorage and sets `data-theme` on `<html>` before stylesheets compute. SSR: read cookie or header. Native: read preference synchronously in app bootstrap.
+- [ ] **`prefers-color-scheme` honored at first render** for new users with no stored preference (fallback before they choose).
+- [ ] **User-facing selector in settings UI**: a dedicated section (`Appearance`, `Apparence`, `Display`) exposing `Light / Dark / System` choice. Hidden behind a debug menu = violation; this is a user-level preference, not a developer toggle.
+- [ ] **Each token has a value per mode**: every color/surface/elevation token used in the app is defined for **every** declared mode. A token defined only for light → undefined behavior in dark = violation.
+- [ ] **No mode-specific code branches in components**: components reference tokens, never `if (isDark) ...` to swap colors. Branching belongs in the token layer, not in business code.
+
+#### 12. Spacing System
+- [ ] **Centralized spacing scale**: all margins, paddings, gaps, and positioning offsets resolve to tokens (`var(--space-*)`, `theme.spacing.*`, `EdgeInsets.fromLTRB(theme.spacing.lg, ...)`). Literal `padding: 12px` in components = violation. Acceptable exceptions: `0`, `1px` borders, hairlines.
+- [ ] **Coherent ratio**: the spacing scale follows a recognizable progression (most common: 4px base → 4, 8, 12, 16, 24, 32, 48, 64, 96; or 8px base → 8, 16, 24, 32, 48, 64, 96, 128; or modular `1.5×`). Random ratios (`5px`, `13px`, `27px`) = violation.
+- [ ] **Naming strategy adapted to project size** (same rule as typography):
+  - Small projects → t-shirt naming (`xs`, `sm`, `md`, `lg`, `xl`, `2xl`, `3xl`)
+  - Larger projects → semantic naming (`gutter`, `stack-tight`, `stack-loose`, `inset-card`, `section`)
+  - Mixed naming = violation
+- [ ] **Fluid spacing for layout-level tokens**: section padding, container insets, hero whitespace benefit from `clamp()` (same accessibility rules as typography: `rem`-based, moderate `vw`). Component-level spacing (button padding, icon gap) stays static — fluid spacing inside components creates visual instability.
+- [ ] **No magic numbers in component padding/margin**: if you write `padding: 14px`, the question is "why not the nearest token?". Either the scale needs a new token, or the component needs to use an existing one. Never invent one-off values.
+
+#### 13. Motion System
+- [ ] **Centralized durations & easings**: all `transition-duration`, `animation-duration`, and easing curves resolve to tokens (`var(--duration-fast)`, `var(--ease-out-quart)`). Literal `transition: 200ms ease` in a component = violation.
+- [ ] **Semantic naming**: motion tokens are named by intent, not by value. ✅ `duration-instant` (50ms), `duration-fast` (150ms), `duration-base` (250ms), `duration-slow` (400ms), `duration-deliberate` (600ms). ❌ `duration-200ms`, `ms-md`. Same logic as colors: name the role, not the literal.
+- [ ] **Easing tokens**: at minimum `ease-out-standard` (entrances), `ease-in-standard` (exits), `ease-in-out-standard` (move/morph). Avoid CSS keywords (`ease`, `ease-in-out`) — they're reserved for prototypes; production needs explicit cubic-béziers.
+- [ ] **`prefers-reduced-motion` honored systematically**: every non-trivial animation/transition is wrapped in `@media (prefers-reduced-motion: no-preference)` or short-circuited at the source (a `motion()` helper that returns `0ms` when the user opts out). Decorative parallax, scroll-driven animations, autoplay carousels → must respect the OS preference. Required animations (loading spinners, focus outlines) can stay but should be minimal.
+- [ ] **Compositor-only properties for performance**: animations target `transform`, `opacity`, `filter` only. Animating `width`, `height`, `top`, `left`, `margin` triggers layout on every frame — flag as performance violation.
+- [ ] **Motion intent matters**: each animation answers "what is the user being told?". Feedback (button press), guidance (modal entrance), confirmation (success toast). Decorative motion without intent = noise → flag.
+
 ### Step 3: Fix what you can
 
 For each issue rated B or worse:
@@ -220,8 +278,8 @@ For each issue rated B or worse:
 DESIGN REVIEW: [page name]
 ─────────────────────────────────────
 Visual Hierarchy   [A/B/C/D] — one-line summary
-Typography         [A/B/C/D] — one-line summary
-Color & Contrast   [A/B/C/D] — one-line summary
+Typography         [A/B/C/D] — one-line summary (incl. token system)
+Color & Contrast   [A/B/C/D] — one-line summary (incl. semantic palette)
 Responsiveness     [A/B/C/D] — one-line summary
 Consistency        [A/B/C/D] — one-line summary
 Accessibility      [A/B/C/D] — one-line summary
@@ -229,6 +287,11 @@ Usability (NN/g)   [A/B/C/D] — one-line summary
 Modern Patterns    [A/B/C/D] — one-line summary
 Modern CSS 2026    [A/B/C/D] — container queries, :has, view transitions, oklch
 AI-Gen Smells      [A/B/C/D] — Tailwind conflicts, missing states, div-as-button
+─────────────────────────────────────
+DESIGN TOKEN SYSTEM
+Theme Architecture [A/B/C/D] — modes, persistence, sync, settings UI
+Spacing System     [A/B/C/D] — centralization, scale coherence, naming
+Motion System      [A/B/C/D] — tokens, prefers-reduced-motion, perf
 ─────────────────────────────────────
 OVERALL            [A/B/C/D]
 
@@ -261,14 +324,48 @@ Then proceed to **GLOBAL MODE** with the selected projects.
 
 ### Phase 1: Design System Inventory
 
-Read the Tailwind config, global styles, and 5-10 representative components. Document:
+Read the global styles, framework config (Tailwind, theme files), and 5-10 representative components. Document the **four token systems** and report their state:
 
-1. **Color palette**: List all colors actually used (Tailwind classes + custom). Flag inconsistencies (e.g., `text-gray-600` AND `text-gray-500` for similar purposes).
-2. **Typography scale**: List all font sizes, weights, and line heights in use. Flag violations of the scale.
-   - **Fluid typography audit**: Check if headings/hero text use `clamp()` for smooth viewport scaling. If the project uses media-query stepping (different font-size at each breakpoint), flag as improvable — `clamp(MIN, calc-value, MAX)` provides smoother scaling in one declaration. Verify clamp values use `rem` (not `px`) so user zoom/font-size preferences are preserved. The preferred (middle) value should be `rem + vw` (e.g., `0.5rem + 2.27vw`), never pure `vw`. Formula to calculate: `slope = (max-size - min-size) / (max-vw - min-vw)`, `intercept = min-size - (min-vw × slope)`, then `clamp(min-size, intercept-rem + slope×100vw, max-size)`.
-3. **Spacing system**: Check if spacing is consistent (Tailwind scale) or has arbitrary values.
-4. **Component patterns**: Identify repeated patterns (cards, buttons, sections). Flag inconsistencies between instances.
-5. **Breakpoint usage**: Check if responsive breakpoints are consistent.
+1. **Color & semantic palette**:
+   - List all colors actually used (Tailwind classes + custom + raw hex/rgb/hsl/oklch).
+   - Flag inconsistencies (e.g., `text-gray-600` AND `text-gray-500` for similar purposes).
+   - **Verify the universal semantic socle is present**: `success`, `warning`, `danger`, `info`, `neutral` (or equivalent). Missing = violation.
+   - **Verify surface tokens are present**: `surface-base`, `surface-raised`, `surface-overlay`, `surface-sunken` (or equivalent).
+   - Flag any hue-based names in component code (`bg-blue-500`, `Color(0xFFFF0000)`, `text-orange-600` in business components).
+   - Verify each semantic token has a value for **every** declared theme mode (light + dark + any custom).
+
+2. **Theme system architecture**:
+   - Identify the theme preference module (look at context block "Theme files" + "Theme mode preference").
+   - Verify the three modes: `light`, `dark`, `system`. Single-mode = OK only if `BRANDING.md` documents the choice.
+   - Verify normalization (unknown values fall back to `system`, never crash).
+   - Verify persistence layer (localStorage / SharedPreferences / UserDefaults).
+   - Verify server sync if auth detected (see context block "Auth detected").
+   - Verify FOUC prevention (theme resolved before first paint — inline script in `<head>`, SSR cookie, or native sync bootstrap).
+   - Verify the user-facing selector exists in settings UI (Light / Dark / System).
+
+3. **Typography token system**:
+   - List all font sizes, weights, and line heights in use. Flag violations of the scale.
+   - **Centralization**: report the count of literal `font-size` values in components vs token references (see context block).
+   - **Naming strategy**: detect t-shirt vs semantic. Recommend semantic if project has > ~30 component files or is multi-product.
+   - **Token bundle**: check that each typography token bundles `font-size` + `line-height` + `letter-spacing`. Isolated `font-size` tokens = violation.
+   - **Modular ratio**: compute the ratios between consecutive tokens. If chaotic (e.g., `1.1×`, `1.4×`, `1.2×`), recommend regenerating with [Utopia.fyi](https://utopia.fyi) — base + ratio + viewport range produce a coherent scale.
+   - **Fluid typography audit**: check if headings/hero text use `clamp()` for smooth viewport scaling. Verify clamp values use `rem` (not `px`), and the preferred value combines `rem + vw` (with `vw` ≤ ~3vw, never dominant). Formula: `slope = (max-size - min-size) / (max-vw - min-vw)`, `intercept = min-size - (min-vw × slope)`, then `clamp(min-size, intercept-rem + slope×100vw, max-size)`.
+
+4. **Spacing token system**:
+   - List all spacing values used. Detect literal `padding`/`margin`/`gap` in component files (see context block).
+   - **Coherent ratio**: report the scale (4px-base, 8px-base, modular). Flag random values.
+   - **Naming strategy**: t-shirt for small projects, semantic (`gutter`, `stack-tight`, `inset-card`) for larger ones. Mixed = violation.
+   - **Fluid spacing**: check if layout-level tokens (sections, hero) use `clamp()`. Component-level spacing should stay static.
+
+5. **Motion token system**:
+   - List all `transition`/`animation` declarations (see context block).
+   - **Centralization**: report the count of literal durations/easings vs token references.
+   - **Semantic naming**: tokens named by intent (`duration-fast`, `ease-out-standard`), not by value (`duration-200ms`).
+   - **`prefers-reduced-motion`**: check support count (see context block). Should be present in every non-trivial animation block.
+   - **Compositor-only**: flag any animation targeting `width`, `height`, `top`, `left`, `margin` (layout-triggering).
+
+6. **Component patterns**: Identify repeated patterns (cards, buttons, sections). Flag inconsistencies between instances.
+7. **Breakpoint usage**: Check if responsive breakpoints are consistent.
 
 ### Phase 2: Outdated Patterns Scan
 
@@ -335,6 +432,53 @@ If the project was built with v0, bolt, lovable, Figma Make, or heavy LLM assist
 - [ ] Hardcoded hex/rgb instead of design tokens
 - [ ] Components that render correctly at reference viewport but break at mobile or wide screens
 
+### Phase 2.7: Design Token System Audit
+
+Consolidated audit of the **four token systems** (theme, typography, spacing, motion). They share the same logic — centralization, semantic naming, single source of truth — so they're audited together. Strictness is **adaptive to project size** (5c rule): small projects get quick-wins, larger projects get harder findings.
+
+#### Theme System
+- [ ] Three modes (`light`, `dark`, `system`) declared and reachable from settings UI. Single-mode requires `BRANDING.md` justification.
+- [ ] Centralized preference module exists, normalizes unknown values to `system`, exposes change events.
+- [ ] Persisted to platform-native local storage.
+- [ ] If auth detected (see context block) → preference also synced to server-side user settings.
+- [ ] Theme resolved before first paint (no FOUC). Web: inline script in `<head>`. SSR: cookie/header. Native: sync bootstrap.
+- [ ] `prefers-color-scheme` honored at first render for new users with no stored preference.
+- [ ] Every token used in the app is defined for **every** mode.
+- [ ] Zero `if (isDark)` branches in component code (mode-switching logic belongs in the token layer).
+
+#### Typography Tokens
+- [ ] Zero literal `font-size` in components (count from context block; threshold = adaptive to project size).
+- [ ] Each token bundles `font-size` + `line-height` + `letter-spacing` (object or co-named CSS variables).
+- [ ] Naming strategy is **consistent** across the project: t-shirt OR semantic, not mixed. Recommend semantic if project has > ~30 component files or is multi-product.
+- [ ] Scale follows a coherent modular ratio (1.125, 1.2, 1.25, 1.333, 1.414, 1.5, 1.618). If chaotic, recommend regeneration with [Utopia.fyi](https://utopia.fyi).
+- [ ] Fluid `clamp()` used for headings and hero text. Format: `clamp(MIN_REM, X_REM + Y_VW, MAX_REM)` with `Y ≤ 3`. Pure-`vw` preferred values = WCAG 1.4.4 violation (Resize Text fails at 200% zoom).
+
+#### Spacing Tokens
+- [ ] Zero literal margin/padding/gap in components (count from context block; threshold = adaptive to project size). Acceptable exceptions: `0`, `1px` borders.
+- [ ] Coherent scale (4px-base, 8px-base, modular). No magic numbers (`13px`, `27px`).
+- [ ] Naming strategy is **consistent**: t-shirt for small projects, semantic (`gutter`, `stack-tight`, `inset-card`, `section`) for larger. Mixed = violation.
+- [ ] Layout-level spacing (sections, hero, container insets) uses `clamp()` for fluid behavior. Component-level spacing stays static.
+
+#### Motion Tokens
+- [ ] Zero literal `transition`/`animation` durations or easings in components (count from context block).
+- [ ] Tokens named by intent (`duration-fast`, `ease-out-standard`), not by value.
+- [ ] Easing tokens use explicit cubic-béziers, not CSS keywords (`ease`, `ease-in-out`).
+- [ ] `prefers-reduced-motion` support count > 0 (see context block). Every non-trivial animation respects it. Decorative motion (parallax, autoplay carousels, scroll-driven) must opt out under reduced motion.
+- [ ] Animations target `transform`, `opacity`, `filter` only. Animating `width`, `height`, `top`, `left`, `margin` triggers layout = perf violation.
+- [ ] Each animation has an intent (feedback, guidance, confirmation). Decorative motion without intent = noise.
+
+#### Severity rules (adaptive to project size — 5c)
+- **Small project** (< ~10 component files, content site, single product) → max severity for token violations is 🟡 medium (quick-wins). Don't drown a small site in red flags.
+- **Mid project** (~10-30 component files) → token violations cap at 🟠 high. The system is starting to leak; centralize before it grows.
+- **Large project** (> ~30 component files, SaaS, multi-product) → token violations are 🔴 critical. At this scale, drift compounds fast.
+
+#### Quick-win recommendation
+If the project has any token system worth auditing **and** no design playground page detected (see context block "Design playground page"), append this to Quick Wins:
+```
+⚡ No design system playground detected — run /sf-design-playground to scaffold a live token preview page.
+   Why: visualizing all tokens in one place + live editing is the fastest way to iterate on the design system without opening 30 files.
+```
+
 ### Phase 3: Page-by-Page Scan
 
 For each page, check:
@@ -378,6 +522,36 @@ DESIGN SYSTEM HEALTH
   Spacing:    [consistent / mixed / chaotic]
   Components: X patterns, Y inconsistencies
 
+DESIGN TOKEN SYSTEM
+  Theme architecture:
+    Modes:           [light + dark + system / single — justified / single — UNJUSTIFIED]
+    Preference:      [centralized + normalized / scattered / missing]
+    Persistence:     [present / missing]
+    Server sync:     [yes — auth detected / N/A — no auth / MISSING — auth present but no sync]
+    FOUC prevention: [yes / no — flash of wrong theme]
+    Settings UI:     [present / missing]
+  Typography tokens:
+    Centralization:  X literal font-sizes outside tokens (target: 0)
+    Naming:          [t-shirt / semantic / MIXED]
+    Bundle:          [size+lh+ls bundled / font-size only]
+    Scale ratio:     [coherent (1.X×) / chaotic — recommend Utopia.fyi]
+    Fluid clamp():   [adopted / partial / absent / vw-dominant — WCAG risk]
+  Spacing tokens:
+    Centralization:  X literal margin/padding outside tokens
+    Naming:          [t-shirt / semantic / MIXED]
+    Scale ratio:     [4px-base / 8px-base / modular / chaotic]
+    Fluid layout:    [adopted / static-only]
+  Motion tokens:
+    Centralization:  X literal transition/animation outside tokens
+    Naming:          [semantic / by-value / MIXED]
+    Reduced motion:  X declarations (target: every non-trivial animation)
+    Compositor-only: [yes / NO — animates layout properties]
+  Universal palette socle:
+    Semantic intents: [success/warning/danger/info/neutral all present / X missing]
+    Surface tokens:   [base/raised/overlay/sunken / X missing]
+    Hue-based names in components: X violations
+  Design playground page: [present / ABSENT — recommend /sf-design-playground]
+
 OUTDATED PATTERNS
   Browser dialogs:  X found
   Legacy HTML:      X found
@@ -413,6 +587,10 @@ USABILITY (NN/g)          [A/B/C/D]
 RESPONSIVENESS            [A/B/C/D]
 MODERN CSS 2026           [A/B/C/D]
 AI-GEN CODE HEALTH        [A/B/C/D] (if applicable)
+THEME ARCHITECTURE        [A/B/C/D]
+TYPOGRAPHY TOKENS         [A/B/C/D]
+SPACING TOKENS            [A/B/C/D]
+MOTION TOKENS             [A/B/C/D]
 ═══════════════════════════════════════
 OVERALL                   [A/B/C/D]
 
@@ -420,6 +598,8 @@ QUICK WINS (high impact, low effort)
   ⚡ [file:line] description — Why: [principle]
   ⚡ [file:line] description — Why: [principle]
   ... (max 5, ordered by impact)
+  ⚡ Run /sf-design-playground to scaffold a live token preview page
+     (auto-included if no design playground detected and project has any token system)
 
 Fixed: X issues across Y files
 Needs decision: Z items (listed below)
