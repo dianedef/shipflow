@@ -27,7 +27,7 @@ Quick reference for all 25 skills, modes, and workflows.
 | Skill | Purpose | Arguments |
 |-------|---------|-----------|
 | `/sf-audit` | Master orchestrator (all 8 domains) | `@file`, `global`, or nothing |
-| `/sf-audit-code` | Architecture, security, reliability | `@file`, `global`, or nothing |
+| `/sf-audit-code` | Architecture, security, reliability, system fit (anti-duplication) | `@file`, `global`, or nothing |
 | `/sf-audit-design` | UI/UX, a11y, responsiveness | `@file`, `global`, or nothing |
 | `/sf-audit-copy` | Copywriting, tone, CTAs | `@file`, `global`, or nothing |
 | `/sf-audit-seo` | Meta tags, structured data, links | `@file`, `global`, or nothing |

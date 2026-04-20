@@ -1,5 +1,11 @@
 # ShipFlow Changelog
 
+## [2026-04-20] - Code audit: anti-duplication & convention drift
+
+### Changed
+- `sf-audit-code`: new checks for duplication/context-miss and convention drift (System Fit & Reuse in file audits; Consistency & Reuse in project audits)
+- `sf-audit`: domain checklist paths updated to `/home/claude/.codex/skills/...` (fixes stale `/home/claude/dotfiles/...` references)
+
 ## [2026-04-19] - Skills refresh for 2026 state of the art + new refresh meta-skill
 
 ### Added

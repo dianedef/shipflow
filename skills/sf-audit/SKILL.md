@@ -48,14 +48,14 @@ Only launch (project × domain) pairs where: user selected the project AND user 
 ### Step 3: Read domain checklists
 
 Read each selected domain skill to get their PROJECT MODE checklists:
-- `/home/claude/dotfiles/claude/skills/sf-audit-code/SKILL.md`
-- `/home/claude/dotfiles/claude/skills/sf-audit-design/SKILL.md`
-- `/home/claude/dotfiles/claude/skills/sf-audit-copy/SKILL.md`
-- `/home/claude/dotfiles/claude/skills/sf-audit-seo/SKILL.md`
-- `/home/claude/dotfiles/claude/skills/sf-audit-gtm/SKILL.md`
-- `/home/claude/dotfiles/claude/skills/sf-audit-translate/SKILL.md`
-- `/home/claude/dotfiles/claude/skills/sf-deps/SKILL.md`
-- `/home/claude/dotfiles/claude/skills/sf-perf/SKILL.md`
+- `/home/claude/.codex/skills/sf-audit-code/SKILL.md`
+- `/home/claude/.codex/skills/sf-audit-design/SKILL.md`
+- `/home/claude/.codex/skills/sf-audit-copy/SKILL.md`
+- `/home/claude/.codex/skills/sf-audit-seo/SKILL.md`
+- `/home/claude/.codex/skills/sf-audit-gtm/SKILL.md`
+- `/home/claude/.codex/skills/sf-audit-translate/SKILL.md`
+- `/home/claude/.codex/skills/sf-deps/SKILL.md`
+- `/home/claude/.codex/skills/sf-perf/SKILL.md`
 
 ### Step 4: Launch ALL agents
 
@@ -159,7 +159,7 @@ For each agent, provide this prompt structure:
 ```
 You are performing a [DOMAIN] audit of [scope: file path OR full project] in the project at [current directory].
 
-[Paste the FULL audit checklist for that domain from the corresponding skill — PAGE MODE section if file argument given, PROJECT MODE section if no argument]
+[Paste the FULL audit checklist for that domain from the corresponding skill — FILE MODE/PAGE MODE section if a file argument was given, PROJECT MODE section if no argument]
 
 Project CLAUDE.md context:
 [Include the CLAUDE.md content from this skill's context]

@@ -1,8 +1,8 @@
 ---
 name: sf-audit-design
-description: Professional UI/UX design audit (NN/g heuristics, WCAG 2.2, visual hierarchy) — single page, full project, or global
+description: Professional UI/UX design audit (NN/g heuristics, WCAG 2.2, visual hierarchy) — light by default, or deep (orchestrates 3 specialist agents in parallel)
 disable-model-invocation: true
-argument-hint: [file-path | "global"] (omit for full project)
+argument-hint: [file-path | "global" | "deep"] (omit for full project light audit)
 ---
 
 ## Context
@@ -46,9 +46,123 @@ Si le fichier existe mais semble incomplet, signaler. Continuer l'audit dans tou
 
 ## Mode detection
 
-- **`$ARGUMENTS` is "global"** → GLOBAL MODE: audit ALL projects in the workspace.
+- **`$ARGUMENTS` is "deep"** → DEEP MODE: orchestrate 3 specialist agents in parallel (design tokens, components, a11y) for a pro-grade audit on a large project.
+- **`$ARGUMENTS` is "global"** → GLOBAL MODE: audit ALL projects in the workspace (light audit per project).
 - **`$ARGUMENTS` is a file path** → PAGE MODE: review that single page.
-- **`$ARGUMENTS` is empty** → PROJECT MODE: full design audit of the entire project.
+- **`$ARGUMENTS` is empty** → PROJECT MODE (light): full design audit of the entire project using the checklist below.
+
+**Light vs Deep**: light mode (default) is self-sufficient — one skill, one report, surface-level checklist covering the 13 categories below. Deep mode spawns dedicated specialist skills via the Agent tool, each one focusing exclusively on its domain (no attention dilution). Use deep when the project is large (> ~30 component files) or when you need audit-grade rigor on each design token / component architecture / WCAG 2.2 concern.
+
+---
+
+## DEEP MODE
+
+Orchestrator that delegates to three specialist sub-skills, each running as a parallel subagent. Use this when a single skill's attention would be diluted across too many distinct checklists.
+
+### Step 1: Launch the three specialists in parallel
+
+In **one single message**, use the **Agent tool** three times (one call per specialist). All three agents run in parallel. Each agent is `subagent_type: "general-purpose"` and receives:
+
+- The current working directory (project path)
+- A prompt that instructs it to **read and execute** the corresponding specialist SKILL.md in read-only mode
+- A reminder to return a **structured sub-report** with subscores, issue counts, and quick-wins — no code fixes
+
+**The three specialists**:
+
+1. **`sf-audit-design-tokens`** — audits the 4 design token systems (theme + typography + spacing + motion) with coverage matrix per mode, modular ratio analysis, dependency graph, DTCG compliance, historical drift. Subscores: `Theme Architecture`, `Typography Tokens`, `Spacing Tokens`, `Motion Tokens`, `Universal Palette Socle`.
+
+2. **`sf-audit-components`** — audits component architecture: atomic design inventory, duplication detection, god components (>15 props), unused components, abstraction quality (AHA rule), variant systems adoption (CVA, tailwind-variants), headless primitives adoption (Radix, React Aria), composition vs configuration, API hygiene.
+
+3. **`sf-audit-a11y`** — full WCAG 2.2 audit (A/AA/AAA), keyboard navigation patterns per W3C APG, focus management (trap, roving tabindex, virtual focus), ARIA patterns per component, aria-live regions, screen reader announcements, focus appearance (2.4.11), target size (2.5.8), dragging alternatives (2.5.7), consistent help (3.2.6).
+
+Agent prompt template (adapt per specialist):
+
+```
+You are auditing the project at: [project path]
+
+Read and execute the specialist skill at:
+/home/claude/ShipFlow/skills/sf-audit-[tokens|components|a11y]/SKILL.md
+
+Run the full skill read-only (no code fixes). Return a structured sub-report with:
+- Global score for this domain (A/B/C/D)
+- Subscores per phase/category
+- Issue counts by severity (🔴 critical / 🟠 high / 🟡 medium)
+- Top 5 quick-wins for this domain (file:line + fix + Why)
+- Raw findings list (file:line + description + severity + Why)
+
+Do not update AUDIT_LOG.md or TASKS.md — the orchestrator will do that.
+Do not edit any source files.
+```
+
+### Step 2: Compile the unified report
+
+After all three agents return, compile one consolidated deep-audit report:
+
+```
+DEEP DESIGN AUDIT: [project name]
+═══════════════════════════════════════
+Mode: DEEP (3 specialists, parallel) — [date]
+
+GLOBAL SCORES
+  Design Tokens      [A/B/C/D] — from sf-audit-design-tokens
+  Components         [A/B/C/D] — from sf-audit-components
+  Accessibility      [A/B/C/D] — from sf-audit-a11y
+═══════════════════════════════════════
+OVERALL              [A/B/C/D]  ← worst of the three (pro-grade standard)
+
+─────────────────────────────────────
+DESIGN TOKEN SYSTEMS (from sf-audit-design-tokens)
+  Theme Architecture     [A/B/C/D]
+  Typography Tokens      [A/B/C/D]
+  Spacing Tokens         [A/B/C/D]
+  Motion Tokens          [A/B/C/D]
+  Universal Palette Socle [A/B/C/D]
+  Issues: X 🔴 | Y 🟠 | Z 🟡
+─────────────────────────────────────
+COMPONENT ARCHITECTURE (from sf-audit-components)
+  Atomic Design Inventory   [A/B/C/D]
+  Duplication               [A/B/C/D]
+  Abstraction Quality (AHA) [A/B/C/D]
+  Variant Systems Adoption  [A/B/C/D]
+  Headless Primitives       [A/B/C/D]
+  API Hygiene               [A/B/C/D]
+  Issues: X 🔴 | Y 🟠 | Z 🟡
+─────────────────────────────────────
+ACCESSIBILITY (from sf-audit-a11y)
+  WCAG 2.2 (A/AA)        [A/B/C/D]
+  Keyboard Navigation    [A/B/C/D]
+  Focus Management       [A/B/C/D]
+  ARIA Patterns          [A/B/C/D]
+  aria-live Regions      [A/B/C/D]
+  Focus Appearance       [A/B/C/D]
+  Target Size            [A/B/C/D]
+  Issues: X 🔴 | Y 🟠 | Z 🟡
+─────────────────────────────────────
+
+CONSOLIDATED QUICK WINS (top 10 across all three domains, ordered by impact)
+  ⚡ [domain] [file:line] description — Why: [principle]
+  ...
+
+ALL CRITICAL ISSUES (🔴)
+  [domain] [file:line] description — Why: [principle]
+  ...
+
+Total: X 🔴 critical, Y 🟠 high, Z 🟡 medium across 3 domains
+═══════════════════════════════════════
+```
+
+**Overall rule for deep mode**: overall score is the **worst** of the three (pro-grade standard — a project isn't "A" in design if its a11y is "C"). In light mode, overall is an average; in deep mode, it's the worst.
+
+### Step 3: Update tracking files
+
+- **Local `./AUDIT_LOG.md`**: append one row with mode = `deep`, three sub-scores, overall = worst.
+- **Global `/home/claude/shipflow_data/AUDIT_LOG.md`**: same, Design column = overall, mark mode as deep in notes column.
+- **Local `TASKS.md`**: replace `### Audit: Design` subsection with three sub-subsections (`#### Tokens`, `#### Components`, `#### A11y`) — one task per critical / high / medium issue per domain.
+- **Master `/home/claude/shipflow_data/TASKS.md`**: same structure under the project section.
+
+### Step 4: Offer fix
+
+After the unified report, ask the user: **"Which domain should I fix first — tokens, components, or a11y?"** Fix one domain at a time, re-running the relevant specialist after each batch to re-score. Do not attempt to fix all three in one pass — the context would explode.
 
 ---
 
@@ -132,7 +246,7 @@ Score each category **A/B/C/D** (A = excellent, D = critical issues). Be strict 
   - Apply to headings and hero text at minimum; body text benefits too
   - Flag any media-query that only changes `font-size` — likely replaceable with a single `clamp()` declaration
 
-##### Typography token system (centralization)
+##### Typography design token system (centralization)
 - [ ] **No literal `font-size` values in components**: every `font-size` resolves to a token (`var(--fs-*)`, `theme.fontSize.*`, `Theme.of(context).textTheme.*`). Literal `font-size: 1.2rem` in a component file = violation. Acceptable exceptions: HTML email templates (mail clients require inline `px`), `em` units relative to parent (icons in text). Flag count: literal font-sizes outside tokens (see context block).
 - [ ] **Token bundle**: each typography token bundles `font-size` + `line-height` + `letter-spacing` (either as a single object/mixin or a triple of co-named CSS variables `--fs-base`, `--lh-base`, `--ls-base`). Isolated `font-size` tokens without paired line-height force per-component overrides → drift.
 - [ ] **Naming strategy adapted to project size**:
@@ -278,7 +392,7 @@ For each issue rated B or worse:
 DESIGN REVIEW: [page name]
 ─────────────────────────────────────
 Visual Hierarchy   [A/B/C/D] — one-line summary
-Typography         [A/B/C/D] — one-line summary (incl. token system)
+Typography         [A/B/C/D] — one-line summary (incl. design token system)
 Color & Contrast   [A/B/C/D] — one-line summary (incl. semantic palette)
 Responsiveness     [A/B/C/D] — one-line summary
 Consistency        [A/B/C/D] — one-line summary
@@ -324,7 +438,7 @@ Then proceed to **GLOBAL MODE** with the selected projects.
 
 ### Phase 1: Design System Inventory
 
-Read the global styles, framework config (Tailwind, theme files), and 5-10 representative components. Document the **four token systems** and report their state:
+Read the global styles, framework config (Tailwind, theme files), and 5-10 representative components. Document the **four design token systems** and report their state:
 
 1. **Color & semantic palette**:
    - List all colors actually used (Tailwind classes + custom + raw hex/rgb/hsl/oklch).
@@ -343,7 +457,7 @@ Read the global styles, framework config (Tailwind, theme files), and 5-10 repre
    - Verify FOUC prevention (theme resolved before first paint — inline script in `<head>`, SSR cookie, or native sync bootstrap).
    - Verify the user-facing selector exists in settings UI (Light / Dark / System).
 
-3. **Typography token system**:
+3. **Typography design token system**:
    - List all font sizes, weights, and line heights in use. Flag violations of the scale.
    - **Centralization**: report the count of literal `font-size` values in components vs token references (see context block).
    - **Naming strategy**: detect t-shirt vs semantic. Recommend semantic if project has > ~30 component files or is multi-product.
@@ -351,13 +465,13 @@ Read the global styles, framework config (Tailwind, theme files), and 5-10 repre
    - **Modular ratio**: compute the ratios between consecutive tokens. If chaotic (e.g., `1.1×`, `1.4×`, `1.2×`), recommend regenerating with [Utopia.fyi](https://utopia.fyi) — base + ratio + viewport range produce a coherent scale.
    - **Fluid typography audit**: check if headings/hero text use `clamp()` for smooth viewport scaling. Verify clamp values use `rem` (not `px`), and the preferred value combines `rem + vw` (with `vw` ≤ ~3vw, never dominant). Formula: `slope = (max-size - min-size) / (max-vw - min-vw)`, `intercept = min-size - (min-vw × slope)`, then `clamp(min-size, intercept-rem + slope×100vw, max-size)`.
 
-4. **Spacing token system**:
+4. **Spacing design token system**:
    - List all spacing values used. Detect literal `padding`/`margin`/`gap` in component files (see context block).
    - **Coherent ratio**: report the scale (4px-base, 8px-base, modular). Flag random values.
    - **Naming strategy**: t-shirt for small projects, semantic (`gutter`, `stack-tight`, `inset-card`) for larger ones. Mixed = violation.
    - **Fluid spacing**: check if layout-level tokens (sections, hero) use `clamp()`. Component-level spacing should stay static.
 
-5. **Motion token system**:
+5. **Motion design token system**:
    - List all `transition`/`animation` declarations (see context block).
    - **Centralization**: report the count of literal durations/easings vs token references.
    - **Semantic naming**: tokens named by intent (`duration-fast`, `ease-out-standard`), not by value (`duration-200ms`).
@@ -434,7 +548,7 @@ If the project was built with v0, bolt, lovable, Figma Make, or heavy LLM assist
 
 ### Phase 2.7: Design Token System Audit
 
-Consolidated audit of the **four token systems** (theme, typography, spacing, motion). They share the same logic — centralization, semantic naming, single source of truth — so they're audited together. Strictness is **adaptive to project size** (5c rule): small projects get quick-wins, larger projects get harder findings.
+Consolidated audit of the **four design token systems** (theme, typography, spacing, motion). They share the same logic — centralization, semantic naming, single source of truth — so they're audited together. Strictness is **adaptive to project size** (5c rule): small projects get quick-wins, larger projects get harder findings.
 
 #### Theme System
 - [ ] Three modes (`light`, `dark`, `system`) declared and reachable from settings UI. Single-mode requires `BRANDING.md` justification.
@@ -473,9 +587,9 @@ Consolidated audit of the **four token systems** (theme, typography, spacing, mo
 - **Large project** (> ~30 component files, SaaS, multi-product) → token violations are 🔴 critical. At this scale, drift compounds fast.
 
 #### Quick-win recommendation
-If the project has any token system worth auditing **and** no design playground page detected (see context block "Design playground page"), append this to Quick Wins:
+If the project has any design token system worth auditing **and** no design playground page detected (see context block "Design playground page"), append this to Quick Wins:
 ```
-⚡ No design system playground detected — run /sf-design-playground to scaffold a live token preview page.
+⚡ No design system playground detected — run /sf-design-playground to scaffold a live design token preview page.
    Why: visualizing all tokens in one place + live editing is the fastest way to iterate on the design system without opening 30 files.
 ```
 
@@ -598,8 +712,8 @@ QUICK WINS (high impact, low effort)
   ⚡ [file:line] description — Why: [principle]
   ⚡ [file:line] description — Why: [principle]
   ... (max 5, ordered by impact)
-  ⚡ Run /sf-design-playground to scaffold a live token preview page
-     (auto-included if no design playground detected and project has any token system)
+  ⚡ Run /sf-design-playground to scaffold a live design token preview page
+     (auto-included if no design playground detected and project has any design token system)
 
 Fixed: X issues across Y files
 Needs decision: Z items (listed below)

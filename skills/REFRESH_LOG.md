@@ -4,6 +4,17 @@ Chronological log of skill refreshes via `/sf-skills-refresh`. Most recent first
 
 ---
 
+## 2026-04-20 — sf-audit-code
+
+**Added:**
+- FILE MODE — Category 2 (NEW): System Fit & Reuse (anti-duplication): prefer reusing existing utilities/patterns; avoid near-duplicate helpers and signature drift
+- PROJECT MODE — Phase 1.5 (NEW): Consistency & Reuse (anti-duplication / convention drift): flag competing patterns (validation, error handling, logging, state) and recommend consolidation
+
+**Updated:**
+- Fix guidance: bias toward deleting duplicates and calling the canonical helper/module
+
+---
+
 ## 2026-04-19 — sf-enrich
 
 **Added:**

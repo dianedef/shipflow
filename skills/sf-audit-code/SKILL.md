@@ -76,6 +76,13 @@ Audit ALL projects in the workspace for code quality, architecture, security, an
 2. Read files it imports/depends on (follow the imports, 1 level deep).
 3. Read the types/interfaces it uses.
 4. Identify the file's role: component, page, API route, utility, config, test, etc.
+5. Identify project conventions this file must fit:
+   - Look for existing equivalents before suggesting “new utils”:
+     - Search for same responsibility by filename (`date*`, `error*`, `format*`, `validate*`, `client*`, `logger*`) and by key identifiers.
+     - Check canonical folders (`utils/`, `lib/`, `shared/`, `common/`, `services/`, `core/`) for existing helpers.
+   - Determine the standard patterns in this codebase for:
+     - Validation (Zod/Valibot/Pydantic/hand-rolled), error handling (Result types vs exceptions), logging, API clients, state management.
+   - If multiple competing patterns exist, note it as **convention drift** and recommend consolidation (don’t introduce a 3rd pattern).
 
 ### Step 2: Audit the file
 
@@ -89,28 +96,35 @@ Score each category **A/B/C/D**. Be strict.
 - [ ] Proper separation: logic vs presentation vs data access
 - [ ] Exports are intentional (not exporting internals)
 
-#### 2. Type Safety
+#### 2. System Fit & Reuse (anti-duplication)
+- [ ] Uses existing utilities/modules instead of re-implementing
+- [ ] Naming/signatures match existing conventions (don’t create near-duplicates)
+- [ ] Follows the project’s established patterns (validation, errors, logging, data access)
+- [ ] No “context-free” helpers (generic utils that should live in shared modules)
+- [ ] If this introduces a new abstraction, it’s justified (measurable reuse / simplifies call sites)
+
+#### 3. Type Safety
 - [ ] No `any` types
 - [ ] Function parameters and return types are typed
 - [ ] API responses / external data validated at boundary (Zod, Valibot, runtime check)
 - [ ] No type assertions (`as`) that bypass safety
 - [ ] Enums or const maps instead of magic strings/numbers
 
-#### 3. Error Handling
+#### 4. Error Handling
 - [ ] Every async call has error handling
 - [ ] Errors are not swallowed (no empty `catch {}`)
 - [ ] User-facing errors are helpful and actionable
 - [ ] Edge cases handled: null, undefined, empty arrays, network failure
 - [ ] No unhandled promise rejections
 
-#### 4. Performance
+#### 5. Performance
 - [ ] No unnecessary re-renders (React: stable callbacks, proper deps arrays)
 - [ ] No expensive computations on every render (memoize if needed)
 - [ ] No N+1 queries or waterfall fetches
 - [ ] Large imports are tree-shakeable or lazy-loaded
 - [ ] Images/assets properly optimized if referenced
 
-#### 5. Security
+#### 6. Security
 - [ ] User input is validated before use
 - [ ] No `dangerouslySetInnerHTML` / `set:html` with user data
 - [ ] No secrets or hardcoded credentials
@@ -118,7 +132,7 @@ Score each category **A/B/C/D**. Be strict.
 - [ ] Auth/authorization checked if this is an API route or mutation
 - [ ] No open redirects or XSS vectors
 
-#### 6. Modern Practices
+#### 7. Modern Practices
 - [ ] Uses current framework patterns (not deprecated APIs)
 - [ ] Hooks over class components (React)
 - [ ] Reactive queries over fetch-in-effect (Convex, React Query)
@@ -126,7 +140,7 @@ Score each category **A/B/C/D**. Be strict.
 - [ ] No commented-out code
 - [ ] Naming is clear and consistent
 
-#### 7. Reliability
+#### 8. Reliability
 - [ ] Tests exist for this file (or should they?)
 - [ ] Edge cases considered (empty state, max length, concurrent access)
 - [ ] Cleanup on unmount (subscriptions, timers, event listeners)
@@ -136,7 +150,7 @@ Score each category **A/B/C/D**. Be strict.
 
 For each issue rated B or worse:
 1. Explain the problem with the specific line.
-2. Fix it directly in the code.
+2. Fix it directly in the code (prefer **reuse over invention**: delete duplicates and call the existing helper/module).
 3. For architectural choices, propose 2 options and ask.
 
 ### Step 4: Report
@@ -145,6 +159,7 @@ For each issue rated B or worse:
 CODE REVIEW: [file name]
 ─────────────────────────────────────
 Architecture       [A/B/C/D] — one-line summary
+System Fit & Reuse [A/B/C/D] — one-line summary
 Type Safety        [A/B/C/D] — one-line summary
 Error Handling     [A/B/C/D] — one-line summary
 Performance        [A/B/C/D] — one-line summary
@@ -208,7 +223,15 @@ Read the project structure, entry points, configs, and 10-15 key files. Audit:
 - [ ] Shared types between frontend/backend
 - [ ] Enums or const maps instead of magic strings
 
-#### 1.5 Dependency Health (quick check)
+#### 1.5 Consistency & Reuse (anti-duplication / convention drift)
+- [ ] Common utilities exist exactly once (no “near-duplicate” helpers across `utils/`, `lib/`, `shared/`)
+- [ ] Error handling is standardized (don’t have multiple competing patterns unless clearly scoped)
+- [ ] Validation is standardized at boundaries (pick one approach per layer)
+- [ ] Logging/telemetry is consistent (structured logs, consistent error context)
+- [ ] No parallel state-management paradigms competing in the same app (unless intentionally isolated)
+- [ ] New code follows conventions set in the last 3–6 months (avoid regressions to legacy patterns)
+
+#### 1.6 Dependency Health (quick check)
 
 > Deep dependency analysis has moved to `/sf-deps`.
 
@@ -338,6 +361,7 @@ ARCHITECTURE                           [A/B/C/D]
   Data Flow & State                    [A/B/C/D]
   Error Resilience                     [A/B/C/D]
   Type Safety                          [A/B/C/D]
+  Consistency & Reuse                  [A/B/C/D]
   Dependency Health (quick)            [A/B/C/D]  → /sf-deps for full audit
 
 PERFORMANCE (quick scan)               [A/B/C/D]  → /sf-perf for full audit
@@ -397,5 +421,6 @@ Create either file if missing, using the table header from the master `/audit` s
 - Detect the stack automatically. Only audit relevant sections.
 - Security findings are never optional — flag them regardless of focus.
 - When a fix touches shared infrastructure, apply once at the source.
+- Be extra strict about duplication and “convention drift” (common in AI-assisted codebases): prefer consolidating existing patterns over adding new ones.
 - For shell/Bash projects: focus on input validation, quoting, `set -euo pipefail`, ShellCheck.
 - Don't refactor working code for aesthetics. Only change code with a concrete issue.
