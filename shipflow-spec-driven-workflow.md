@@ -13,13 +13,13 @@ sf-fix -> fix directly or route to spec-first path
 For non-trivial work, the default flow is:
 
 ```text
-sf-explore -> sf-spec -> sf-ready -> sf-start -> implementation -> sf-verify -> sf-end
+sf-explore -> sf-spec -> sf-ready -> sf-start -> sf-verify -> sf-end
 ```
 
 For small, explicit, local fixes, the fast path remains:
 
 ```text
-sf-start -> implementation -> sf-verify -> sf-end
+sf-start -> sf-verify -> sf-end
 ```
 
 The goal is not to remove iteration. The goal is to move ambiguity reduction before coding, then let verification close the loop when implementation or spec drift appears.
@@ -44,8 +44,8 @@ It performs a short triage and routes the bug:
 - ambiguous or non-trivial -> spec-first path
 
 Typical routed outcomes:
-- direct: `sf-fix -> implementation -> sf-verify -> sf-end`
-- spec-first: `sf-spec -> sf-ready -> sf-start -> implementation -> sf-verify -> sf-end`
+- direct: `sf-fix -> sf-verify -> sf-end`
+- spec-first: `sf-spec -> sf-ready -> sf-start -> sf-verify -> sf-end`
 
 ### 1. `sf-explore`
 
@@ -124,9 +124,9 @@ Behavior:
 The key rule:
 - if the work is ambiguous or multi-file, `sf-start` should not invent the missing intent
 
-### 5. Implementation
+### 5. Implementation (inside `sf-start`)
 
-Once execution begins, the implementation should follow the spec contract:
+Once `sf-start` begins execution, the implementation should follow the spec contract:
 - same scope
 - same ordering assumptions
 - same acceptance criteria
@@ -224,19 +224,19 @@ Shortcut rules:
 ### Small local bug fix
 
 ```text
-sf-fix -> implementation -> sf-verify -> sf-end
+sf-fix -> sf-verify -> sf-end
 ```
 
 ### New feature with ambiguity
 
 ```text
-sf-explore -> sf-spec -> sf-ready -> sf-start -> implementation -> sf-verify -> sf-end
+sf-explore -> sf-spec -> sf-ready -> sf-start -> sf-verify -> sf-end
 ```
 
 ### Feature mostly implemented but incomplete
 
 ```text
-sf-spec -> sf-ready -> sf-start -> implementation -> sf-verify
+sf-spec -> sf-ready -> sf-start -> sf-verify
                                            |
                                            v
                           remediate missing specified work
@@ -248,7 +248,7 @@ sf-spec -> sf-ready -> sf-start -> implementation -> sf-verify
 ### Feature reveals missing edge case late
 
 ```text
-sf-spec -> sf-ready -> sf-start -> implementation -> sf-verify
+sf-spec -> sf-ready -> sf-start -> sf-verify
                                            |
                                            v
                               mini spec delta + remediation

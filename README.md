@@ -71,19 +71,19 @@ If the bug is ambiguous or non-trivial, `sf-fix` routes to `sf-spec -> sf-ready 
 For non-trivial coding work, the default workflow is:
 
 ```text
-sf-explore -> sf-spec -> sf-ready -> sf-start -> implementation -> sf-verify -> sf-end
+sf-explore -> sf-spec -> sf-ready -> sf-start -> sf-verify -> sf-end
 ```
 
 Fast path for a small, explicit fix:
 
 ```text
-sf-start -> implementation -> sf-verify -> sf-end
+sf-start -> sf-verify -> sf-end
 ```
 
 Bug fast path (recommended mental model):
 
 ```text
-sf-fix -> implementation -> sf-verify -> sf-end
+sf-fix -> sf-verify -> sf-end
 ```
 
 The key rule is simple:

@@ -1,6 +1,6 @@
 ---
 name: sf-start
-description: Start a task — load context, mark task in-progress in TASKS.md, plan the work. Use at the beginning of any work session.
+description: Execute a task end-to-end from kickoff to implementation. Use spec-first guardrails when the scope is non-trivial.
 argument-hint: <task description or TASKS.md item>
 ---
 
@@ -13,10 +13,15 @@ argument-hint: <task description or TASKS.md item>
 - Git status: !`git status --short 2>/dev/null || echo "Not a git repo"`
 - Master TASKS.md: !`cat /home/claude/shipflow_data/TASKS.md 2>/dev/null || echo "No master TASKS.md"`
 - Local TASKS.md (if exists): !`cat TASKS.md 2>/dev/null || echo "No local TASKS.md"`
+- Available specs: !`find docs specs -maxdepth 2 -type f -name "*.md" 2>/dev/null | sort | head -40`
 
 ## Your task
 
-Start a work session on a task. Load context, mark the task as in-progress, and plan the approach.
+`sf-start` is an execution skill. It should implement, not only plan.
+
+Routing rule:
+- **Small/local/clear** task: execute directly
+- **Non-trivial or ambiguous** task: require a ready spec before implementation
 
 ### Step 1 — Identify the task
 
@@ -28,51 +33,73 @@ If `$ARGUMENTS` is empty, look at TASKS.md from context and use **AskUserQuestio
 - Options: top 5-7 uncompleted tasks from TASKS.md (highest priority first), each with its priority emoji as prefix
 - Add a final option: "Autre — je décris ma tâche"
 
-### Step 2 — Load context (silent)
+### Step 2 — Scope triage
 
-Use the Agent tool with subagent_type=Explore to quickly find the 3-5 most relevant files for this task. Focus on:
-- Files mentioned in the task description
-- Files likely to be modified
-- Config/entry points for the area of code involved
+Classify as `direct` or `spec-first`.
 
-Read only what's needed. Do NOT read more than 5 files.
+Signals for `spec-first`:
+- multiple files or subsystems
+- unclear expected behavior
+- auth/data/migration/API contract implications
+- likely edge cases or cross-domain impact
 
-### Step 3 — Mark task in-progress
+If `spec-first` and no matching `Status: ready` spec exists:
+- stop execution
+- route to:
+  1. `/sf-spec [task]`
+  2. `/sf-ready [task/spec]`
+  3. `/sf-start [task]`
 
-Update TASKS.md:
-- Find the matching task and change its status: `📋 todo` → `🔄 in progress` (or `- [ ]` stays but add `🔄` prefix)
-- If the task doesn't exist in TASKS.md yet, add it under the right section with `🔄 in progress`
-- Update master `/home/claude/shipflow_data/TASKS.md` — always
-- If a local `TASKS.md` also exists, update both
-- No output at this step.
+### Step 3 — Load context and track task (silent)
 
-### Step 4 — Plan and report
+- Read only the 3-5 most relevant files
+- Include associated tests or entry points
+- Update task tracking to `🔄 in progress` in master TASKS.md
+- Update local TASKS.md too when present
 
-Output a concise plan:
+### Step 4 — Implement
 
+Execute the changes directly.
+
+Implementation constraints:
+- follow existing project conventions
+- keep the change inside the declared task scope
+- avoid speculative refactors unrelated to the task
+- if scope expands materially, stop and reroute to spec-first
+
+### Step 5 — Quick validation
+
+Run focused validation relevant to the modified area:
+- targeted tests if available
+- quick lint/type check for touched modules when practical
+- syntax check for touched shell scripts if relevant
+
+If checks fail, report clearly and include next repair action.
+
+### Step 6 — Report
+
+Output one concise execution report:
+
+```text
+## Started and Implemented: [task name]
+
+Mode: [direct / spec-first]
+Spec: [path or "none"]
+
+Files changed:
+- [file] — [what changed]
+
+Validation:
+- [check] -> [pass/fail]
+
+Next step:
+- /sf-verify [task]
 ```
-## Starting: [task name]
-
-**Files in context:**
-- [file] — [why it's relevant]
-
-**Key constraints:**
-- [any relevant decisions from memory or CLAUDE.md]
-
-**Plan:**
-1. [step]
-2. [step]
-3. [step]
-
-**Estimated scope:** [small / medium / large]
-```
-
-Then ask: "On y va ?"
 
 ### Rules
 
-- Do NOT start coding — this skill only primes and plans
-- Do NOT commit or push anything
-- Do NOT update CHANGELOG.md (that's for sf-end)
-- Keep the plan under 10 steps
-- If the task is vague, ask ONE clarifying question before planning
+- Implement by default (do not stop at planning)
+- Do NOT commit or push
+- Do NOT update CHANGELOG.md (handled by end/ship flow)
+- For non-trivial tasks, block without a `ready` spec
+- If request and spec conflict, surface the conflict before coding
