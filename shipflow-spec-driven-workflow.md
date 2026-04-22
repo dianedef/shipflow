@@ -283,3 +283,18 @@ The real distinction is:
 - implementation/spec drift
 
 That distinction now drives the workflow.
+
+## Questions
+
+### Si je veux ameliorer ou elargir une feature existante, quelle skill utiliser ?
+
+Use this decision rule:
+
+- `sf-explore` if the change is still fuzzy (intent, scope, or expected behavior not clear)
+- `sf-start` if the work is clear and already executable
+- `sf-fix` if your entrypoint is "adjust/correct this existing feature" and you want automatic routing
+
+Practical shortcut:
+
+- if you hesitate between `sf-explore` and `sf-start`, begin with `sf-fix`
+- `sf-fix` handles quick direct execution for local changes and routes to spec-first when the scope is non-trivial
