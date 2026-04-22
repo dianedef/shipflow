@@ -298,3 +298,48 @@ Practical shortcut:
 
 - if you hesitate between `sf-explore` and `sf-start`, begin with `sf-fix`
 - `sf-fix` handles quick direct execution for local changes and routes to spec-first when the scope is non-trivial
+
+### J'ai un bug: est-ce que je dois lancer `sf-verify` en premier ?
+
+No. Start with `sf-fix`.
+
+- `sf-fix` = intake + triage + direct execution when local/clear
+- `sf-verify` = post-implementation validation and remediation loop
+
+Recommended bug flow:
+
+```text
+sf-fix -> sf-verify -> sf-end
+```
+
+If the bug is non-trivial, `sf-fix` routes to:
+
+```text
+sf-spec -> sf-ready -> sf-start -> sf-verify -> sf-end
+```
+
+### Quand faire une revue adversariale de la spec ?
+
+Apply this rule:
+
+- if at least one signal is true, run an adversarial review
+
+Signals:
+- more than one file is impacted
+- more than one domain is impacted (for example UI + API, backend + data)
+- non-trivial business behavior
+- security/data/auth/perf/migration/API contract impact
+- likely edge cases
+- vague wording in spec without testable criteria
+
+Light review is acceptable only for local, obvious, single-file fixes.
+
+### Faut-il renommer `TASKS` en `BACKLOG` ?
+
+No. Keep both with distinct roles.
+
+- `TASKS.md` = active, prioritized, executable now
+- `BACKLOG.md` = deferred ideas and parking lot
+
+Promotion rule:
+- move an item from backlog to tasks only when it is clear enough and prioritized for execution now
