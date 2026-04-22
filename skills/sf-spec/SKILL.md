@@ -112,6 +112,18 @@ Couvrir : happy path, erreurs, cas limites, intégrations.
 
 Présenter la spec complète et demander une revue.
 
+**Déclencheurs de revue adversariale (règle simple) :**
+- Si **au moins un** signal ci-dessous est vrai, faire une revue adversariale avant validation finale :
+  - plus d'un fichier à modifier
+  - plus d'un domaine impacté (ex: UI + API, backend + data, auth + routing)
+  - comportement métier non trivial
+  - impact sécurité, données, auth, perf, migration, ou contrat API
+  - cas limites probables ou déjà observés
+  - au moins une phrase vague dans la spec ("optimiser", "gérer proprement", "adapter") sans critère testable
+
+**Quand la revue adversariale peut rester légère :**
+- bug local, comportement attendu évident, un seul fichier, pas d'impact transverse
+
 **Afficher un résumé rapide :**
 ```
 Spec : [titre]
@@ -138,6 +150,7 @@ Puis afficher la spec complète.
 - Y a-t-il des cas limites non couverts dans les CA ?
 - Un agent frais pourrait-il implémenter sans contexte supplémentaire ?
 - Manque-t-il des fichiers à modifier ?
+- Y a-t-il des formulations vagues sans test associé ?
 - Présenter les trouvailles, corriger, re-présenter.
 
 **Si "C'est bon"** : enregistrer la spec.
