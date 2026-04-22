@@ -1,5 +1,17 @@
 # ShipFlow Changelog
 
+## [2026-04-22] - Spec-driven workflow v3 and documentation cleanup
+
+### Added
+- `shipflow-spec-driven-workflow.md` — living documentation for the ShipFlow V3 spec-driven workflow, including `sf-explore`, `sf-spec`, `sf-ready`, `sf-start`, `sf-verify`, and `sf-end`
+- `archive/reports/README.md` and `archive/notes/README.md` — archive indexes for historical reports and obsolete notes
+
+### Changed
+- `sf-spec`, `sf-start`, `sf-ready`, and `sf-verify` aligned around a stricter spec-driven execution model with `sf-verify` now able to classify, reroute, and remediate bounded gaps
+- Root documentation trimmed to living docs only; historical reports and obsolete notes moved out of the repository root into `archive/`
+- `README.md` rewritten to reflect the current ShipFlow architecture, core docs, and the V3 workflow
+- `archive/README.md` updated to distinguish living documentation from historical artifacts
+
 ## [2026-04-20] - Code audit: anti-duplication & convention drift
 
 ### Changed
