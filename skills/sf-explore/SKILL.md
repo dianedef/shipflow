@@ -90,6 +90,9 @@ Au démarrage, regarde rapidement :
 
 Utilise ce contexte pour ancrer la réflexion dans la réalité du projet, pas dans l'abstrait.
 
+Les snapshots de `TASKS.md` lus ici sont informatifs seulement.
+`sf-explore` ne doit jamais modifier `TASKS.md`, `AUDIT_LOG.md` ou `PROJECTS.md`.
+
 ---
 
 ## Ce que tu n'as PAS à faire

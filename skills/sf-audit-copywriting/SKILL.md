@@ -1,7 +1,7 @@
 ---
 name: sf-audit-copywriting
-description: Audit copywriting & marketing — analyse le parcours client depuis le persona jusqu'à la conversion. Évalue la stratégie de persuasion, pas la qualité rédactionnelle.
-argument-hint: [file-path | "global"] (omit for full project)
+description: "Audit copywriting & marketing — analyse le parcours client depuis le persona jusqu'à la conversion. Évalue la stratégie de persuasion, pas la qualité rédactionnelle."
+argument-hint: '[file-path | "global"] (omit for full project)'
 ---
 
 ## Context
@@ -28,6 +28,67 @@ Avant de commencer, vérifier le contexte chargé ci-dessus. Si BUSINESS.md ou B
 ```
 
 Si les fichiers existent mais semblent incomplets (< 5 lignes de contenu hors titres ou `<!-- à confirmer -->`), signaler. Continuer l'audit dans tous les cas.
+
+---
+
+## Metadata et versioning ShipFlow
+
+Les livrables `docs/copywriting/persona.md`, `docs/copywriting/parcours-client.md` et `docs/copywriting/strategie.md` sont des artefacts business ShipFlow. Ils doivent porter un frontmatter YAML ShipFlow et référencer les versions des contrats business/brand utilisés.
+
+Frontmatter minimal :
+
+```yaml
+---
+artifact: "[persona|customer_journey|copywriting_strategy]"
+metadata_schema_version: "1.0"
+artifact_version: "0.1.0"
+project: "[project name]"
+created: "[YYYY-MM-DD]"
+updated: "[YYYY-MM-DD]"
+status: "draft|reviewed|stale"
+source_skill: "sf-audit-copywriting"
+scope: "business|copywriting|gtm"
+confidence: "low|medium|high"
+risk_level: "low|medium|high"
+target_audience: "[persona/ICP]"
+value_proposition: "[one-line promise]"
+docs_impact: "yes"
+depends_on:
+  - artifact: "BUSINESS.md"
+    artifact_version: "[version or unknown]"
+    required_status: "reviewed"
+  - artifact: "BRANDING.md"
+    artifact_version: "[version or unknown]"
+    required_status: "reviewed"
+evidence:
+  - "[page path, user statement, analytics, source URL]"
+next_review: "[YYYY-MM-DD]"
+---
+```
+
+Avant d'auditer ou de persister les livrables, lire le frontmatter complet de `BUSINESS.md`, `BRANDING.md` et des docs copywriting existantes. Reporter leurs versions dans `depends_on`. Si une version manque, utiliser `artifact_version: "unknown"` et signaler un `metadata gap` dans le rapport.
+
+### Bump `artifact_version`
+
+Utiliser un versioning sémantique simple :
+- `MAJOR` (`1.0.0` -> `2.0.0`) : changement d'ICP/persona principal, promesse, positionnement, funnel cible, modèle de conversion, pricing psychology ou stratégie d'objections.
+- `MINOR` (`1.0.0` -> `1.1.0`) : nouveau segment, nouvelle objection importante, nouvelle page clé du funnel, recommandation stratégique ajoutée sans changer la thèse centrale.
+- `PATCH` (`1.0.0` -> `1.0.1`) : correction de wording, lien, exemple, source ou précision sans changement stratégique.
+
+Les nouveaux artefacts non validés démarrent à `0.1.0`. Passer à `1.0.0` quand l'utilisateur a validé la persona, le parcours et la stratégie comme sources de vérité.
+
+---
+
+## Doctrine business et vérité produit
+
+Évaluer la persuasion contre la réalité produit :
+- la stratégie part d'une user story client claire : persona, douleur, déclencheur, résultat attendu
+- la promesse marketing doit être tenue dans le produit, l'onboarding, la documentation, le pricing et le support
+- les preuves doivent être proportionnées au prix et au risque perçu
+- les objections sécurité, confidentialité, paiement, effort de setup, fiabilité et support doivent être traitées si elles bloquent l'achat
+- une feature récemment modifiée doit avoir un parcours et une documentation cohérents avant d'être poussée dans le funnel
+
+Si le marketing vend une capacité non prouvée ou non documentée, classer l'écart comme `promesse non tenue` ou `cohérence documentaire manquante`, pas comme simple problème rédactionnel.
 
 ---
 
@@ -76,6 +137,7 @@ Score chaque catégorie **A/B/C/D**. Standard : copywriter senior spécialisé c
 - [ ] Le différenciateur vs alternatives est clair (pourquoi ici et pas ailleurs ?)
 - [ ] La transformation promise (avant → après) est concrète
 - [ ] La preuve de la promesse est présente (data, témoignage, mécanisme expliqué)
+- [ ] La promesse est alignée avec le produit réel, les docs, le pricing, les emails et l'onboarding
 
 #### 3. Structure de persuasion
 - [ ] Le hook (titre + sous-titre) crée une tension ou une curiosité
@@ -110,6 +172,8 @@ Score chaque catégorie **A/B/C/D**. Standard : copywriter senior spécialisé c
 - [ ] La transition vers la page suivante est fluide (pas de rupture de ton ou de promesse)
 - [ ] Le message se renforce au fil du parcours (pas de contradiction entre pages)
 - [ ] Les micro-engagements sont valorisés (newsletter, quiz, téléchargement)
+- [ ] Les docs/FAQ/support confirment les mêmes promesses et limites que les pages de vente
+- [ ] Les changements récents de feature ne créent pas de contradiction entre marketing, app et documentation
 
 ### Step 3: Recommandations
 
@@ -135,11 +199,13 @@ Objections             [A/B/C/D]
 Parcours émotionnel    [A/B/C/D]
 Appels à l'action      [A/B/C/D]
 Cohérence parcours     [A/B/C/D]
+Cohérence documentaire [A/B/C/D]
 ─────────────────────────────────────
 OVERALL                [A/B/C/D]
 
 Recommandations stratégiques : X
 Impact conversion estimé : [fort/moyen/faible]
+Proof/docs gaps : [X]
 ```
 
 ---
@@ -224,6 +290,7 @@ Pour chaque étape du parcours, évaluer les pages regroupées :
 3. **Pricing psychology** : ancrage, decoy, framing — utilisés correctement ?
 4. **Trust signals** : suffisants à chaque point de friction ?
 5. **Content-market fit** : le contenu attire-t-il le persona ou des curieux sans intention ?
+6. **Cohérence documentaire** : docs, FAQ, onboarding, emails et support confirment-ils la même promesse et les mêmes limites ?
 
 ### Phase 5 : Recommandations prioritisées
 
@@ -285,6 +352,33 @@ Créer le dossier si absent : `mkdir -p docs/copywriting`
 #### `docs/copywriting/persona.md`
 
 ```markdown
+---
+artifact: persona
+metadata_schema_version: "1.0"
+artifact_version: "0.1.0"
+project: "[Projet]"
+created: "[date]"
+updated: "[date]"
+status: "draft"
+source_skill: "sf-audit-copywriting"
+scope: "business|copywriting|persona"
+confidence: "[low|medium|high]"
+risk_level: "[low|medium|high]"
+target_audience: "[nom du persona]"
+value_proposition: "[promesse principale]"
+docs_impact: "yes"
+depends_on:
+  - artifact: "BUSINESS.md"
+    artifact_version: "[version or unknown]"
+    required_status: "reviewed"
+  - artifact: "BRANDING.md"
+    artifact_version: "[version or unknown]"
+    required_status: "reviewed"
+evidence:
+  - "[pages/sources utilisées]"
+next_review: "[date]"
+---
+
 # Persona — [Nom du persona]
 
 > Dernière mise à jour : [date]
@@ -321,6 +415,33 @@ Créer le dossier si absent : `mkdir -p docs/copywriting`
 #### `docs/copywriting/parcours-client.md`
 
 ```markdown
+---
+artifact: customer_journey
+metadata_schema_version: "1.0"
+artifact_version: "0.1.0"
+project: "[Projet]"
+created: "[date]"
+updated: "[date]"
+status: "draft"
+source_skill: "sf-audit-copywriting"
+scope: "business|copywriting|funnel"
+confidence: "[low|medium|high]"
+risk_level: "[low|medium|high]"
+target_audience: "[persona]"
+value_proposition: "[promesse principale]"
+docs_impact: "yes"
+depends_on:
+  - artifact: "BUSINESS.md"
+    artifact_version: "[version or unknown]"
+    required_status: "reviewed"
+  - artifact: "BRANDING.md"
+    artifact_version: "[version or unknown]"
+    required_status: "reviewed"
+evidence:
+  - "[pages/sources utilisées]"
+next_review: "[date]"
+---
+
 # Parcours Client — [Projet]
 
 > Dernière mise à jour : [date]
@@ -347,6 +468,33 @@ Créer le dossier si absent : `mkdir -p docs/copywriting`
 #### `docs/copywriting/strategie.md`
 
 ```markdown
+---
+artifact: copywriting_strategy
+metadata_schema_version: "1.0"
+artifact_version: "0.1.0"
+project: "[Projet]"
+created: "[date]"
+updated: "[date]"
+status: "draft"
+source_skill: "sf-audit-copywriting"
+scope: "business|copywriting|gtm"
+confidence: "[low|medium|high]"
+risk_level: "[low|medium|high]"
+target_audience: "[persona]"
+value_proposition: "[promesse principale]"
+docs_impact: "yes"
+depends_on:
+  - artifact: "BUSINESS.md"
+    artifact_version: "[version or unknown]"
+    required_status: "reviewed"
+  - artifact: "BRANDING.md"
+    artifact_version: "[version or unknown]"
+    required_status: "reviewed"
+evidence:
+  - "[pages/sources utilisées]"
+next_review: "[date]"
+---
+
 # Stratégie Copywriting — [Projet]
 
 > Dernière mise à jour : [date]
@@ -395,6 +543,14 @@ Créer le dossier si absent : `mkdir -p docs/copywriting`
 
 3. Lancer un agent par projet sélectionné (en parallèle). Chaque agent exécute le PROJECT MODE complet.
 
+   Chaque prompt agent doit inclure :
+   - `cd [path]` puis lecture de `CLAUDE.md`, `BUSINESS.md` et `BRANDING.md` si présents
+   - la date absolue et le chemin exact du projet
+   - le **PROJECT MODE** complet de cette skill
+   - la consigne d'identifier le funnel, les pages liées et les conséquences aval des recommandations
+   - la consigne de ne pas poser de question de clarification ; si le contexte manque, documenter hypothèses et niveau de confiance
+   - un format de sous-rapport avec : `Scope understood`, `Context read`, `Linked systems & consequences`, `Findings`, `Confidence / missing context`
+
 4. Compiler un rapport cross-projet :
    ```
    GLOBAL COPYWRITING AUDIT — [date]
@@ -415,6 +571,13 @@ Créer le dossier si absent : `mkdir -p docs/copywriting`
 ---
 
 ## Tracking (all modes)
+
+Protocole d'ecriture des fichiers partages (`AUDIT_LOG.md`, `TASKS.md`) :
+- Les snapshots lus au debut du skill sont informatifs, pas autoritatifs.
+- Juste avant chaque ecriture, relire le fichier cible depuis le disque et utiliser cette version comme source de verite.
+- N'ajouter ou remplacer que la ligne ou sous-section visee ; ne jamais reecrire tout le fichier a partir d'un etat perime.
+- Si l'ancre attendue a bouge ou change, relire une fois et recalculer.
+- Si c'est encore ambigu apres cette seconde lecture, s'arreter et demander a l'utilisateur.
 
 ### Log the audit
 

@@ -1,8 +1,8 @@
 ---
 name: sf-audit-a11y
-description: Deep specialist audit of accessibility — full WCAG 2.2 + W3C ARIA Authoring Practices (APG) patterns for custom components (Radix/React Aria level). Keyboard nav, focus management, ARIA per component, aria-live, screen reader announcements. Cross-platform (web ARIA + Flutter Semantics).
+description: "Deep specialist audit of accessibility — full WCAG 2.2 + W3C ARIA Authoring Practices (APG) patterns for custom components (Radix/React Aria level). Keyboard nav, focus management, ARIA per component, aria-live, screen reader announcements. Cross-platform (web ARIA + Flutter Semantics)."
 disable-model-invocation: true
-argument-hint: [file-path | "global"] (omit for full project)
+argument-hint: '[file-path | "global"] (omit for full project)'
 ---
 
 ## Context
@@ -316,6 +316,13 @@ Standard pattern: read PROJECTS.md, AskUserQuestion for selection, parallel agen
 ---
 
 ## Tracking
+
+Shared file write protocol for `AUDIT_LOG.md` and `TASKS.md`:
+- Treat the snapshots loaded at skill start as informational only.
+- Right before each write, re-read the target file from disk and use that version as authoritative.
+- Append or replace only the intended row or subsection; never rewrite the whole file from stale context.
+- If the expected anchor moved or changed, re-read once and recompute.
+- If it is still ambiguous after the second read, stop and ask the user instead of forcing the write.
 
 - Local `AUDIT_LOG.md` : row for "A11y" audit with date + score + critical count
 - Local `TASKS.md` : `### Audit: A11y` subsection (🔴 items bubble up to top of TASKS.md since they block real users)

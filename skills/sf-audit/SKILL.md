@@ -1,14 +1,24 @@
 ---
 name: sf-audit
-description: Master audit — launches all 8 domain audits (code, design, copy, seo, gtm, translate, deps, perf) in parallel agents. Works on a single file or the full project.
+description: "Master audit — launches all 8 domain audits (code, design, copy, seo, gtm, translate, deps, perf) in parallel agents. Works on a single file or the full project."
 disable-model-invocation: true
-argument-hint: [file-path | "global"] (omit for full project)
+argument-hint: '[file-path | "global"] (omit for full project)'
 ---
+
+## Doctrine
+
+- The master audit evaluates whether the product still delivers its intended user story coherently across domains, not just whether isolated checks pass.
+- Treat workflow integrity, security posture, and product coherence as first-class audit concerns.
+- Treat documentation coherence as first-class when feature behavior, public promises, setup, API usage or support expectations changed.
+- Treat ShipFlow business metadata versions as evidence. `BUSINESS.md`, `BRANDING.md`, and `GUIDELINES.md` are decision contracts; stale, missing, low-confidence, or unversioned contracts must reduce confidence and appear as proof gaps.
+- Prefer honest reporting over tidy grades. If proof is partial, say so explicitly and keep confidence bounded.
+- Keep orchestration practical: parallelize aggressively, but never invent certainty for skipped or weakly evidenced domains.
 
 ## Context
 
 - Current directory: !`pwd`
 - Project CLAUDE.md: !`head -50 CLAUDE.md 2>/dev/null || echo "no CLAUDE.md"`
+- Business metadata: !`for f in BUSINESS.md BRANDING.md GUIDELINES.md; do if [ -f "$f" ]; then printf '%s: ' "$f"; sed -n '1,40p' "$f" | grep -E '^(metadata_schema_version|artifact_version|status|updated|confidence|next_review):' | tr '\n' ' '; printf '\n'; else echo "$f: missing"; fi; done`
 - Project structure: !`find src -maxdepth 2 -type d 2>/dev/null | grep -v node_modules | head -20 || echo "no src dir"`
 - i18n present: !`find src -path "*/i18n/*" -o -path "*/locales/*" 2>/dev/null | head -3 || echo "no i18n"`
 - Package.json scripts: !`cat package.json 2>/dev/null | grep -E '^\s+"(dev|build|lint|typecheck|check)"' || echo "no package.json"`
@@ -68,6 +78,12 @@ Each agent: `subagent_type: "general-purpose"`. Each agent prompt MUST include:
 2. The complete **PROJECT MODE** section from the corresponding domain skill
 3. The **Tracking** section from that domain skill
 4. Rule: **read-only analysis** — no code fixes, only update AUDIT_LOG.md and TASKS.md
+5. Today's absolute date and the exact project path / scope under review
+6. Instruction: identify linked systems, consumers, and downstream consequences before scoring anything
+7. Instruction: do not ask follow-up questions; if context is missing, state assumptions / confidence limits and continue
+8. Instruction: call out user-story drift, product incoherence, workflow bypass, and security proof gaps explicitly
+9. Instruction: call out documentation mismatch, stale feature claims, and public promises unsupported by app/docs
+10. Instruction: read/report `BUSINESS.md`, `BRANDING.md`, and `GUIDELINES.md` metadata versions where relevant; stale, missing, low-confidence, or unversioned business contracts must appear in `Risky assumptions / proof gaps` and reduce confidence before scoring
 
 ### Step 5: Cross-project master report
 
@@ -89,10 +105,19 @@ GoCharbon      [B]   [A]    [B]   [B]  [C]   —    [A]   [A]    [B]
 CROSS-PROJECT PATTERNS
   [Systemic issues across multiple projects]
 
+USER STORY / PRODUCT COHERENCE PATTERNS
+  [Repeated promise drift, misleading UX, inconsistent flow decisions, trust-boundary confusion]
+
+SECURITY / SUPPLY CHAIN PATTERNS
+  [Shared auth/authz weaknesses, unsafe dependency posture, weak defaults, repeated proof gaps]
+
 ALL ISSUES BY SEVERITY
   🔴 [project] [domain] file:line — description
   🟠 [project] [domain] file:line — description
   🟡 [project] [domain] file:line — description
+
+RISKY ASSUMPTIONS / PROOF GAPS
+  - [project] [domain] — what was not demonstrated and why it matters
 
 Total: X critical, Y high, Z medium
        across N projects and M domain audits (up to 8 domains)
@@ -148,6 +173,11 @@ Then use **AskUserQuestion** to let the user confirm:
 - List all 8 domains as options. For each: label = domain name, description = what it checks
 - Mark inapplicable domains with "(not detected)" in the description so the user can still opt in
 
+If the product intent is still ambiguous after reading `CLAUDE.md` and the repo context, ask one short clarification before launching agents:
+- who the main actor is
+- what outcome the product promises
+- whether the surface is public, internal, or admin-only
+
 Only launch agents for selected domains.
 
 ### Step 2: Launch parallel agents
@@ -166,8 +196,16 @@ Project CLAUDE.md context:
 
 IMPORTANT:
 - Do NOT fix anything. This is a READ-ONLY analysis pass.
+- Do NOT ask follow-up questions. If context is missing, state assumptions and keep going.
+- Before scoring, identify linked systems, consumers, and likely downstream consequences.
+- Evaluate user-story fit and product coherence, not just local correctness.
+- Evaluate documentation coherence when the audited surface makes or depends on product claims.
+- Read/report business decision-contract metadata when relevant: `BUSINESS.md`, `BRANDING.md`, `GUIDELINES.md` with `artifact_version`, `status`, `updated`, `confidence`, and `next_review`.
+- Treat missing `artifact_version`, missing `status`, stale `next_review`, `status: draft|stale|outdated|deprecated`, or `confidence: low` as proof gaps that limit scores and confidence.
+- Call out workflow bypass, stale-state, partial-failure, permission, trust-boundary, and security concerns when relevant.
 - Score every category A/B/C/D.
 - For each issue found, note: file path, line number, what's wrong, severity (critical/high/medium/low), and your proposed fix.
+- Include these sections before the score table: Scope understood, User story / promised outcome, Business metadata versions, Context read, Linked systems & consequences, Documentation coherence, Risky assumptions / proof gaps, Confidence / missing context.
 - End with the full report table as specified in the checklist.
 ```
 
@@ -181,6 +219,31 @@ IMPORTANT:
 Once all agents return, compile a **master report**:
 
 ```
+---
+artifact: audit_report
+project: "[project name or global]"
+created: "[YYYY-MM-DD]"
+updated: "[YYYY-MM-DD]"
+status: reviewed
+source_skill: sf-audit
+scope: "[file|project|global]"
+confidence: "[high|medium|low]"
+risk_level: "[low|medium|high]"
+security_impact: "[none|yes|unknown]"
+docs_impact: "[none|yes|unknown]"
+business_metadata_versions:
+  BUSINESS.md: "[artifact_version/status/confidence or missing]"
+  BRANDING.md: "[artifact_version/status/confidence or missing]"
+  GUIDELINES.md: "[artifact_version/status/confidence or missing]"
+domains: [code, design, copy, seo, gtm, translate, deps, perf]
+issue_counts:
+  critical: 0
+  high: 0
+  medium: 0
+evidence: []
+next_step: "[recommended command]"
+---
+
 ══════════════════════════════════════════════════════
 MASTER AUDIT: [project name or file name]
 ══════════════════════════════════════════════════════
@@ -197,6 +260,20 @@ DOMAIN SCORES
 
 OVERALL          [A/B/C/D]
 
+USER STORY / PRODUCT COHERENCE
+  Verdict        [holding / drifting / unclear]
+  Summary        [is the implemented product still delivering the promised outcome coherently?]
+
+SECURITY / WORKFLOW INTEGRITY
+  Verdict        [sound / risky / unclear]
+  Summary        [major authz, abuse-case, supply-chain, or trust-boundary concerns]
+
+BUSINESS METADATA VERSIONS
+  BUSINESS.md    artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing] next_review=[date|missing]
+  BRANDING.md    artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing] next_review=[date|missing]
+  GUIDELINES.md  artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing] next_review=[date|missing]
+  Proof gaps      [missing/stale/unversioned contracts that affected scoring, or none]
+
 ──────────────────────────────────────────────────────
 CRITICAL ISSUES (fix immediately)
   1. [domain] file:line — description
@@ -209,12 +286,30 @@ HIGH ISSUES (fix soon)
 MEDIUM ISSUES (improve when possible)
   1. [domain] file:line — description
   2. ...
+
+RISKY ASSUMPTIONS / GAPS
+  1. [domain] what was not proved, and what this limits
+  2. ...
 ──────────────────────────────────────────────────────
 Total issues: X critical, Y high, Z medium
 ══════════════════════════════════════════════════════
 ```
 
 Then print each domain's full detailed report below the master summary.
+
+Rules for consolidation:
+- Do not assign an `A` to a domain if the report says evidence was partial on a user-critical or security-critical path.
+- If multiple domains disagree on the same flow, call out the inconsistency explicitly instead of averaging it away.
+- If a domain was skipped, failed, or could not demonstrate enough evidence, record that as a proof gap, not as a silent omission.
+
+### Shared file write protocol
+
+Before editing `/home/claude/shipflow_data/AUDIT_LOG.md`, project-local `AUDIT_LOG.md`, or either `TASKS.md` file:
+- Treat the snapshots loaded earlier in the skill as informational only.
+- Right before each write, re-read the target file from disk and use that version as authoritative.
+- Append or replace only the intended row or subsection; never rewrite the whole file from stale context.
+- If the expected anchor moved or changed, re-read once and recompute.
+- If it is still ambiguous after the second read, stop and ask the user instead of forcing the write.
 
 ### Step 4: Log the audit
 
@@ -303,4 +398,6 @@ When fixing, group changes by file to avoid conflicts. If two domains flag the s
 - Keep agent prompts self-contained — each agent should work independently without needing context from other agents.
 - If a domain agent fails or times out, report it and continue with the others.
 - Don't re-audit what agents already audited. Trust their analysis, consolidate, and fix.
+- Never say `looks good overall` when core user flows, security posture, or dependency/supply-chain risk were not actually demonstrated.
+- Prioritize issues that break the promised user outcome, create dangerous ambiguity, or permit abuse/bypass over cosmetic concerns.
 - For FILE MODE: some domain checklists may partially apply (e.g., GTM checks don't make sense for a utility function). Agents should skip irrelevant checks and note "N/A" in their report.

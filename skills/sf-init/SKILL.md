@@ -1,8 +1,8 @@
 ---
 name: sf-init
-description: Bootstrap a new project for ShipFlow tracking — detect stack, generate CLAUDE.md, create TASKS.md, register in PROJECTS.md
+description: "Bootstrap a new project for ShipFlow tracking — detect stack, generate CLAUDE.md, create TASKS.md, register in PROJECTS.md"
 disable-model-invocation: true
-argument-hint: [project-path] (omit to init current directory)
+argument-hint: '[project-path] (omit to init current directory)'
 ---
 
 ## Context
@@ -135,6 +135,13 @@ Populate the initial tasks intelligently from what was detected in Step 1 (stack
 
 Read `/home/claude/shipflow_data/PROJECTS.md` and add a row to both tables:
 
+Before editing `/home/claude/shipflow_data/PROJECTS.md` here, or `/home/claude/shipflow_data/TASKS.md` later in Step 6:
+- Treat the snapshots loaded earlier in the skill as informational only.
+- Right before editing the shared file, re-read it from disk and use that version as authoritative.
+- Apply a minimal targeted row or section insert/update; never rewrite the whole file from stale context.
+- If the expected table, project row, or section moved, re-read once and recompute.
+- If it is still ambiguous after the second read, stop and ask the user instead of forcing the write.
+
 **Project Registry table**:
 ```
 | [name] | [path] | [stack summary] |
@@ -156,6 +163,8 @@ Créer les fichiers de contexte business/marque dans le dossier `~/shipflow_data
 
 **Pour chaque fichier** : vérifier d'abord s'il existe déjà (fichier ou symlink) dans le projet. Si oui, sauter.
 
+BUSINESS.md, BRANDING.md et GUIDELINES.md sont des artefacts ShipFlow, pas de simples notes. Ils doivent commencer par un frontmatter YAML ShipFlow avec `metadata_schema_version`, `artifact_version`, `status`, `confidence`, `risk_level`, `evidence`, `next_review`, `depends_on` et `supersedes`. À l'initialisation, utiliser `metadata_schema_version: "1.0"` et `artifact_version: "0.1.0"` tant que le contenu n'a pas été revu explicitement par l'utilisateur; passer à `artifact_version: "1.0.0"` seulement si les réponses utilisateur couvrent les décisions essentielles sans placeholder.
+
 #### 5a. BUSINESS.md
 
 Utiliser **AskUserQuestion** pour recueillir le contexte business :
@@ -165,6 +174,33 @@ Utiliser **AskUserQuestion** pour recueillir le contexte business :
 Puis générer `~/shipflow_data/projects/[name]/BUSINESS.md` et symlinker :
 
 ```markdown
+---
+artifact: business_context
+metadata_schema_version: "1.0"
+artifact_version: "0.1.0"
+project: "[project name]"
+created: "[YYYY-MM-DD]"
+updated: "[YYYY-MM-DD]"
+status: "draft"
+source_skill: sf-init
+scope: "business"
+owner: "[user or team if known]"
+confidence: "low"
+risk_level: "medium"
+business_model: "[detected or unknown]"
+target_audience: "[short ICP/persona or unknown]"
+value_proposition: "[one-line promise or unknown]"
+market: "[country/language/niche or unknown]"
+docs_impact: "yes"
+security_impact: "unknown"
+evidence:
+  - "[user answer or detected source]"
+depends_on: []
+supersedes: []
+next_review: "[YYYY-MM-DD]"
+next_step: "/sf-docs update"
+---
+
 # Business — [project name]
 
 ## Mission
@@ -201,6 +237,35 @@ Utiliser **AskUserQuestion** :
 Puis générer `~/shipflow_data/projects/[name]/BRANDING.md` et symlinker :
 
 ```markdown
+---
+artifact: brand_context
+metadata_schema_version: "1.0"
+artifact_version: "0.1.0"
+project: "[project name]"
+created: "[YYYY-MM-DD]"
+updated: "[YYYY-MM-DD]"
+status: "draft"
+source_skill: sf-init
+scope: "branding"
+owner: "[user or team if known]"
+confidence: "low"
+risk_level: "medium"
+target_audience: "[from BUSINESS.md if known]"
+value_proposition: "[from BUSINESS.md if known]"
+market: "[country/language/niche or unknown]"
+docs_impact: "yes"
+security_impact: "none"
+evidence:
+  - "[tone selected by user]"
+depends_on:
+  - artifact: BUSINESS.md
+    artifact_version: "0.1.0"
+    required_status: "draft|reviewed"
+supersedes: []
+next_review: "[YYYY-MM-DD]"
+next_step: "/sf-docs update"
+---
+
 # Branding — [project name]
 
 ## Voix de marque
@@ -229,6 +294,33 @@ Générer automatiquement depuis ce qui a été détecté en Step 1 + CLAUDE.md.
 `~/shipflow_data/projects/[name]/GUIDELINES.md` :
 
 ```markdown
+---
+artifact: technical_guidelines
+metadata_schema_version: "1.0"
+artifact_version: "0.1.0"
+project: "[project name]"
+created: "[YYYY-MM-DD]"
+updated: "[YYYY-MM-DD]"
+status: "draft"
+source_skill: sf-init
+scope: "guidelines"
+owner: "[user or team if known]"
+confidence: "medium"
+risk_level: "medium"
+docs_impact: "yes"
+security_impact: "unknown"
+linked_systems: ["[detected auth/payments/backend/hosting if any]"]
+evidence:
+  - "Detected stack and project files during sf-init"
+depends_on:
+  - artifact: CLAUDE.md
+    artifact_version: "unknown"
+    required_status: "draft|reviewed"
+supersedes: []
+next_review: "[YYYY-MM-DD]"
+next_step: "/sf-docs audit"
+---
+
 # Guidelines — [project name]
 
 ## Stack technique
@@ -293,7 +385,7 @@ Configure the Shipflow MCP server for this project by writing (or updating) `.cl
   "mcpServers": {
     "codebase": {
       "command": "python3",
-      "args": ["/home/claude/ShipFlow/tools/codebase-mcp/server.py", "[ABSOLUTE_PROJECT_PATH]"]
+      "args": ["/home/claude/shipflow/tools/codebase-mcp/server.py", "[ABSOLUTE_PROJECT_PATH]"]
     }
   }
 }
@@ -302,7 +394,7 @@ Configure the Shipflow MCP server for this project by writing (or updating) `.cl
 - Replace `[ABSOLUTE_PROJECT_PATH]` with the actual absolute path of the project.
 - If `.claude/settings.json` already exists and has `mcpServers`, merge the `codebase` key without overwriting other entries.
 - Create `.claude/` directory if needed.
-- Skip silently if `/home/claude/ShipFlow/tools/codebase-mcp/server.py` doesn't exist.
+- Skip silently if `/home/claude/shipflow/tools/codebase-mcp/server.py` doesn't exist.
 
 Also append the codebase-mcp usage protocol to the generated `CLAUDE.md` (after the Commands section):
 
@@ -317,7 +409,7 @@ This project uses a local codebase MCP server for efficient context management.
 3. **Use `context_read`** instead of Read for code exploration (tracks token budget).
 4. **After editing**, call `context_register_edit` with a one-sentence summary.
 
-See `/home/claude/ShipFlow/tools/codebase-mcp/README.md` for full tool reference.
+See `/home/claude/shipflow/tools/codebase-mcp/README.md` for full tool reference.
 ```
 
 ### Step 8: Confirm domain applicability

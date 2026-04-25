@@ -54,7 +54,13 @@ Output a concise summary:
 **Budget used:** X / 18,000 chars
 ```
 
-Then ask: "Shall I proceed?"
+Then use **AskUserQuestion**:
+- Question: "Le contexte est prêt. On fait quoi ?"
+- `multiSelect: false`
+- Options:
+  - **Proceed now (recommandé)** — "Tu exécutes le plan avec ce contexte"
+  - **Ajouter 1 fichier clé** — "Tu enrichis le contexte d'un seul fichier supplémentaire"
+  - **Affiner la cible** — "Tu reformules la tâche avant d'aller plus loin"
 
 ### Rules
 

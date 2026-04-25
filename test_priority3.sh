@@ -160,7 +160,7 @@ echo ""
 # Check that functions have documentation headers
 check_function_docs() {
     local func_name=$1
-    local lib_file="/root/ShipFlow/lib.sh"
+    local lib_file="$SCRIPT_DIR/lib.sh"
 
     # Find the function and check if there's a doc comment before it
     # Look within 35 lines before the function definition
@@ -186,13 +186,13 @@ run_test "env_remove has docs" check_function_docs "env_remove"
 run_test "resolve_project_path has docs" check_function_docs "resolve_project_path"
 
 # Check documentation quality
-doc_count=$(grep -c "# Description:" /root/ShipFlow/lib.sh)
+doc_count=$(grep -c "# Description:" "$SCRIPT_DIR/lib.sh")
 run_test "lib.sh has 10+ documented functions" test "$doc_count" -ge 10
 
 # Check for proper doc structure
-run_test "Docs have Arguments section" grep -q "# Arguments:" /root/ShipFlow/lib.sh
-run_test "Docs have Returns section" grep -q "# Returns:" /root/ShipFlow/lib.sh
-run_test "Docs have Example section" grep -q "# Example:" /root/ShipFlow/lib.sh
+run_test "Docs have Arguments section" grep -q "# Arguments:" "$SCRIPT_DIR/lib.sh"
+run_test "Docs have Returns section" grep -q "# Returns:" "$SCRIPT_DIR/lib.sh"
+run_test "Docs have Example section" grep -q "# Example:" "$SCRIPT_DIR/lib.sh"
 
 echo ""
 

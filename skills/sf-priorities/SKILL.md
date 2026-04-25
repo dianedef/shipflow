@@ -24,6 +24,14 @@ argument-hint: [optional priority criteria: impact, effort, blockers, quick-wins
 - When re-ranking, update the Dashboard table's "Top Priority" column to reflect the new P0 for each project
 - If the user specifies a project name as argument, focus prioritization on that project's section only
 
+## Shared tracking file write protocol
+
+- Treat the TASKS snapshots loaded at skill start as informational only.
+- Right before editing the master or local TASKS file, re-read the target from disk and use that version as authoritative.
+- Apply a minimal targeted edit to the relevant dashboard rows and task sections; never rewrite the whole file from stale context.
+- If the expected anchor moved or changed, re-read once and recompute.
+- If it is still ambiguous after the second read, stop and ask the user instead of forcing the write.
+
 ## Your task
 
 Analyze all tasks and reorganize them by priority using a smart prioritization framework.

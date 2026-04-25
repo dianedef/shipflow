@@ -1,9 +1,16 @@
 ---
 name: sf-deps
-description: Deep dependency audit — vulnerabilities, outdated packages, unused deps, license compliance, type definitions, configuration health
+description: "Deep dependency audit — vulnerabilities, outdated packages, unused deps, license compliance, type definitions, configuration health"
 disable-model-invocation: true
-argument-hint: ["global"] (omit for current project)
+argument-hint: '["global"] (omit for current project)'
 ---
+
+## Doctrine
+
+- Dependency health is product health: evaluate package risk in terms of user-facing outcome, operational continuity, and security exposure.
+- Treat supply-chain trust as a first-class concern: integrity, provenance, install-time behavior, registry trust, token handling, and automation posture matter.
+- Report risky assumptions explicitly. Quiet tooling output is not proof that runtime reachability or deployment exposure is safe.
+- Keep the workflow practical: fix the highest-risk issues first and avoid churn that does not materially improve safety or coherence.
 
 ## Context
 
@@ -40,8 +47,13 @@ Audit dependencies across ALL projects in the workspace.
 
    Agent prompt must include:
    - `cd [path]` then read `CLAUDE.md` for project context
+   - The absolute date, exact project path, and the dependency context already surfaced by this skill (`package.json`, lockfiles, version pins, security config)
    - The complete **PROJECT MODE** section from this skill (all 8 phases)
    - The **Tracking** section from this skill
+   - Rule: before scoring, identify runtime/build/test consequences of dependency changes and the linked systems they affect
+   - Rule: do not ask follow-up questions; if context is missing, state assumptions / confidence limits and continue
+   - Rule: call out supply-chain trust issues, product-critical dependency risk, and proof gaps explicitly
+   - Required sub-report sections: `Scope understood`, `User story / critical product flows affected`, `Context read`, `Linked systems & consequences`, `Findings`, `Risky assumptions / proof gaps`, `Confidence / missing context`
 
 4. After all agents return, compile a **cross-project dependency report**:
 
@@ -94,12 +106,18 @@ For each vulnerability found:
 - [ ] Affected package and version range
 - [ ] Fix available? (patch version, or requires major upgrade)
 - [ ] Transitive or direct dependency?
+- [ ] Does it affect a user-critical flow, privileged path, public surface, or sensitive-data path?
+- [ ] Is exploitability demonstrated, likely, limited, or unknown from available evidence?
 
 **Supply chain checks**:
 - [ ] Lockfile committed to git (`git ls-files --error-unmatch [lockfile]`)
 - [ ] No unusual registry URLs in `.npmrc` or lockfile
 - [ ] No `postinstall` scripts in dependencies doing suspicious things (`grep -r postinstall node_modules/*/package.json | head -20`)
 - [ ] Provenance/integrity checksums present in lockfile
+- [ ] No project install scripts download or execute remote code without a clear trust rationale
+- [ ] No plaintext registry tokens or suspicious package-manager credentials committed in repo config
+- [ ] CI/package install path does not obviously weaken integrity or trust boundaries
+- [ ] Security-motivated `overrides` / `resolutions` are still necessary and documented
 
 ---
 
@@ -119,6 +137,7 @@ Additional checks:
 - [ ] Deprecation timeline — is the package abandoned? (no commits >2 years)
 - [ ] Replacement recommendations for deprecated packages
 - [ ] Framework version alignment (e.g., all React ecosystem on same major)
+- [ ] Product blast radius — which user journeys, jobs, admin actions, or integrations would break if the package upgrade goes wrong?
 
 ---
 
@@ -129,6 +148,7 @@ Cross-reference installed dependencies with actual usage:
 - [ ] Search for each dependency name in source files (imports/requires)
 - [ ] Flag packages in `dependencies` that should be in `devDependencies` (test frameworks, build tools, linters, type packages used only in dev)
 - [ ] Flag packages in `devDependencies` that should be in `dependencies` (imported by production code)
+- [ ] Flag dependencies that only support dead code, abandoned flows, or scaffolding but still increase attack surface
 - [ ] Detect functional duplicates — multiple libraries doing the same job:
   - HTTP clients (axios + fetch + got + node-fetch)
   - Date libraries (moment + dayjs + date-fns + luxon)
@@ -149,6 +169,7 @@ List all dependency licenses:
 - [ ] Flag unknown or missing licenses
 - [ ] Flag SSPL (Server Side Public License) — restrictive for SaaS
 - [ ] Ensure project's own license is declared
+- [ ] Flag licenses that materially conflict with the intended business model (commercial SaaS, public API, redistribution, on-prem)
 
 ---
 
@@ -171,6 +192,9 @@ Skip this phase for Python or Bash projects.
 - [ ] If dependabot/renovate exists: check it covers all package ecosystems (npm, pip, github-actions, docker)
 - [ ] `.npmrc` settings appropriate (no `ignore-scripts=false`, proper registry)
 - [ ] `overrides` / `resolutions` documented with reason (why is each override needed?)
+- [ ] CI and release workflows install dependencies in a way consistent with the repo trust model
+- [ ] Update automation is not silently auto-merging risky majors or security-sensitive changes without review
+- [ ] If no automation exists, record the operational risk explicitly instead of merely noting absence
 
 ---
 
@@ -186,6 +210,8 @@ Apply fixes in priority order. **Ask before each category** using AskUserQuestio
 6. **Patch/minor updates** — update safe packages (patch first, then minor)
 
 **NEVER auto-upgrade major versions.** For major version upgrades, recommend `/sf-migrate` instead.
+**NEVER weaken security controls** to make the dependency graph quieter. Do not disable audits, integrity controls, or scripts review as a shortcut.
+If ambiguity affects a public flow, privileged action, tenant isolation, payment/auth path, or sensitive-data handling, ask a targeted clarification before making changes.
 
 ---
 
@@ -199,6 +225,7 @@ Vulnerabilities              [A/B/C/D]
   Critical CVEs                [count]
   High CVEs                    [count]
   Supply chain risks           [count]
+  Product-critical exposure    [count]
 
 Currency                     [A/B/C/D]
   Patch outdated               [count]
@@ -223,12 +250,26 @@ Configuration                [A/B/C/D]
 ═══════════════════════════════════════════════════
 OVERALL                      [A/B/C/D]
 
+USER STORY / PRODUCT COHERENCE
+  Summary                      [how dependency risk affects the promised product outcome]
+
+RISKY ASSUMPTIONS / PROOF GAPS
+  - [what was not proved: exploitability, runtime reachability, CI behavior, license certainty, etc.]
+
 Fixed: X issues | Remaining: Y (major upgrades → /sf-migrate)
+Confidence: [high/medium/low]
 ```
 
 ---
 
 ## Tracking (all modes)
+
+Shared file write protocol for `AUDIT_LOG.md` and `TASKS.md`:
+- Treat the snapshots loaded at skill start as informational only.
+- Right before each write, re-read the target file from disk and use that version as authoritative.
+- Append or replace only the intended row or subsection; never rewrite the whole file from stale context.
+- If the expected anchor moved or changed, re-read once and recompute.
+- If it is still ambiguous after the second read, stop and ask the user instead of forcing the write.
 
 After generating the report and applying fixes:
 
@@ -256,3 +297,5 @@ Create either file if missing, using the table header from the master `/sf-audit
 - For monorepos (tubeflow), audit all workspace package.json files.
 - For Python projects, check both `requirements.txt` and `pyproject.toml`.
 - If `npm audit` / `pip-audit` is not available, install it first or use alternative tools.
+- Do not conclude `dependencies are healthy` from quiet tooling alone. Distinguish `no known findings from available tools` from `supply-chain posture demonstrated sound`.
+- If lockfile integrity, registry trust, CI install behavior, or runtime reachability could not be checked, record that explicitly as a proof gap.

@@ -1,5 +1,57 @@
 # ShipFlow Changelog
 
+## [2026-04-25] - Contract metadata versioning across skills
+
+### Added
+- `sf-ready` — new readiness gate for specs before implementation, with explicit user-story alignment, adversarial review, workflow bypass checks, documentation coherence, and proportional cybersecurity review
+- Standard artifact versioning rules for ShipFlow documentation: `metadata_schema_version` for the metadata contract and `artifact_version` for the document's decision content
+- Versioned dependency tracking through `depends_on`, `required_status`, `next_review`, and `supersedes` so specs can declare which business and technical contracts they were built against
+- Active documentation-coherence checks across implementation, verification, audit, docs, business-content, and shipping skills
+
+### Changed
+- `sf-spec`, `sf-ready`, `sf-start`, `sf-verify`, `sf-end`, `sf-docs`, and business/documentation-generating skills now treat business docs as versioned decision contracts, not passive context
+- Audit skills now apply stronger product-coherence, user-story, documentation-drift, and security-risk scrutiny instead of limiting review to their narrow domain
+- `sf-verify` now checks whether work was implemented against current docs, outdated docs, unknown dependency versions, or non-applicable contracts
+- `sf-ship` now reports evidence limits explicitly and avoids claiming product, user-story, documentation, or security completion from commit/push alone
+
+## [2026-04-25] - ShipFlow artifact and business-documentation doctrine
+
+### Added
+- `README.md` now frames ShipFlow as a professional work framework built around decision contracts, not just a collection of skills
+- `shipflow-spec-driven-workflow.md` now documents the artifact doctrine, standard metadata frontmatter, business docs as decision contracts, documentation coherence, and adoption/migration rules
+- Business documentation (`BUSINESS.md`, `BRANDING.md`, personas, pricing, positioning, GTM docs) is now documented as technical decision infrastructure because it drives implementation, audits, shipping, and public claims
+
+### Changed
+- ShipFlow internal artifacts are now expected to use standardized metadata for status, confidence, risk, security impact, documentation impact, evidence, linked systems, and next step
+- Documentation coherence is now described as part of feature completeness when product behavior, setup, permissions, API usage, pricing, onboarding, or support expectations change
+
+## [2026-04-25] - Codex TUI defaults during install
+
+### Changed
+- `install.sh` now configures Codex TUI defaults for each user (`root` + `/home/*`) by writing a ShipFlow-managed block in `~/.codex/config.toml`
+- Added idempotent TOML upsert behavior for `tui.status_line` and `tui.terminal_title` while preserving user configuration outside the managed block
+
+### Documentation
+- `README.md` now documents the Codex defaults (`context-used` in status line and `thread` in terminal title), interactive fallback commands (`/statusline`, `/title`), and the current Codex customization boundary
+
+## [2026-04-24] - Model routing and multi-agent execution topology
+
+### Added
+- `sf-model` — new skill to choose between `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.5`, `gpt-5.3-codex`, `gpt-5.3-codex-spark`, and `gpt-5.2` based on task profile, cost, latency, and execution risk
+- `skills/sf-model/references/model-routing.md` — shared routing matrix so model-selection guidance can be reused consistently across ShipFlow skills
+
+### Changed
+- `sf-start` now chooses an execution topology (`single-agent` vs `multi-agent`) before implementation, with explicit file ownership, group boundaries, and integration responsibility
+- `sf-start` now reads the shared `sf-model` routing reference, selects a primary execution model and reasoning effort, and can assign per-group model overrides for multi-agent runs
+
+## [2026-04-23] - One-pass workflow docs and fresh-context policy
+
+### Changed
+- `README.md` now states the one-pass execution model explicitly: complete context before coding, no hidden dependency on chat history, and fresh-context escalation when needed
+- `shipflow-spec-driven-workflow.md` now documents that `sf-ready` and `sf-start` are the main points where a fresh context may be enforced for non-trivial execution
+- The workflow docs now treat prompt-and-correct as a bounded fallback, not the default operating mode
+- `CHANGELOG.md` records the fresh-context policy so the workflow shift is visible outside the skills themselves
+
 ## [2026-04-22] - Spec-driven workflow v3 and documentation cleanup
 
 ### Added

@@ -1,8 +1,8 @@
 ---
 name: sf-perf
-description: Deep performance audit — bundle analysis, rendering, Core Web Vitals, data fetching, database optimization. Single file, full project, or global.
+description: "Deep performance audit — bundle analysis, rendering, Core Web Vitals, data fetching, database optimization. Single file, full project, or global."
 disable-model-invocation: true
-argument-hint: [file-path | "global"] (omit for full project)
+argument-hint: '[file-path | "global"] (omit for full project)'
 ---
 
 ## Context
@@ -39,8 +39,12 @@ Audit performance across ALL projects in the workspace.
 
    Agent prompt must include:
    - `cd [path]` then read `CLAUDE.md` for project context
+   - The absolute date, exact project path, and the perf context already surfaced by this skill (build config, framework detection, third-party scripts, assets)
    - The complete **PROJECT MODE** section from this skill (all 6 phases)
    - The **Tracking** section from this skill
+   - Rule: before scoring, identify linked systems and performance consequences across bundle, rendering, fetching, caching, and third-party integrations
+   - Rule: do not ask follow-up questions; if context is missing, state assumptions / confidence limits and continue
+   - Required sub-report sections: `Scope understood`, `Context read`, `Linked systems & consequences`, `Findings`, `Confidence / missing context`
 
 4. After all agents return, compile a **cross-project performance report**:
 
@@ -346,6 +350,13 @@ Apply the relevant section based on detected framework:
 ---
 
 ## Tracking (all modes)
+
+Shared file write protocol for `AUDIT_LOG.md` and `TASKS.md`:
+- Treat the snapshots loaded at skill start as informational only.
+- Right before each write, re-read the target file from disk and use that version as authoritative.
+- Append or replace only the intended row or subsection; never rewrite the whole file from stale context.
+- If the expected anchor moved or changed, re-read once and recompute.
+- If it is still ambiguous after the second read, stop and ask the user instead of forcing the write.
 
 After generating the report and applying fixes:
 

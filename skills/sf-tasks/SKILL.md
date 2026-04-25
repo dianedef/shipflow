@@ -24,6 +24,15 @@ argument-hint: [optional focus area or task type]
 - The master file has a Dashboard table, per-project task sections, cross-project concerns, and a backlog
 - When checking off tasks in the master file, also update the Dashboard status column if the project phase changed
 
+## Shared tracking file write protocol
+
+- Treat the TASKS snapshots loaded at skill start as informational only.
+- Right before editing the master or local TASKS file, re-read the target from disk and use that version as authoritative.
+- Apply the smallest possible patch to the relevant dashboard row, project section, or backlog block; never rewrite the whole file from stale context.
+- If the expected anchor moved or changed, re-read once and recompute.
+- If it is still ambiguous after the second read, stop and ask the user instead of forcing the write.
+- If the file is still missing after that authoritative re-read, create it from the canonical format.
+
 ## Your task
 
 Intelligently manage the TASKS.md file by:

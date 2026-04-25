@@ -1,8 +1,8 @@
 ---
 name: sf-audit-design-tokens
-description: Deep specialist audit of the 4 design token systems (theme + typography + spacing + motion) — token coverage matrix per mode, modular ratio analysis, dependency graph, historical drift, DTCG compliance. Called by sf-audit-design in deep mode, or run standalone.
+description: "Deep specialist audit of the 4 design token systems (theme + typography + spacing + motion) — token coverage matrix per mode, modular ratio analysis, dependency graph, historical drift, DTCG compliance. Called by sf-audit-design in deep mode, or run standalone."
 disable-model-invocation: true
-argument-hint: [file-path | "global"] (omit for full project)
+argument-hint: '[file-path | "global"] (omit for full project)'
 ---
 
 ## Context
@@ -273,6 +273,13 @@ Same pattern as `sf-audit-design` GLOBAL MODE:
 ---
 
 ## Tracking (all modes)
+
+Shared file write protocol for `AUDIT_LOG.md` and `TASKS.md`:
+- Treat the snapshots loaded at skill start as informational only.
+- Right before each write, re-read the target file from disk and use that version as authoritative.
+- Append or replace only the intended row or subsection; never rewrite the whole file from stale context.
+- If the expected anchor moved or changed, re-read once and recompute.
+- If it is still ambiguous after the second read, stop and ask the user instead of forcing the write.
 
 After generating the report:
 

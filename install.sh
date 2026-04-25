@@ -256,7 +256,7 @@ fi
 # Runs for root + ALL regular users in /home/
 # ──────────────────────────────────────────────────────────────
 
-SHIPFLOW_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SHIPFLOW_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 
 # StatusLine — pointer vers le script ShipFlow
 configure_statusline() {
@@ -274,17 +274,145 @@ configure_statusline() {
     fi
 }
 
+# Codex TUI defaults — idempotent and non-destructive
+configure_codex_tui() {
+    local target_home="$1"
+    local codex_dir="$target_home/.codex"
+    local config_file="$codex_dir/config.toml"
+    local tmp_file="$config_file.tmp.$$"
+    local cleaned_file="$config_file.cleaned.$$"
+
+    mkdir -p "$codex_dir"
+    [ -f "$config_file" ] || touch "$config_file"
+
+    awk '
+        BEGIN {
+            in_shipflow_block = 0
+        }
+        /^# >>> shipflow codex tui >>>$/ {
+            in_shipflow_block = 1
+            next
+        }
+        /^# <<< shipflow codex tui <<<$/ {
+            in_shipflow_block = 0
+            next
+        }
+        in_shipflow_block {
+            next
+        }
+        {
+            print
+        }
+    ' "$config_file" > "$cleaned_file"
+
+    local has_status_line
+    local has_terminal_title
+
+    has_status_line=$(awk '
+        BEGIN {
+            in_tui_table = 0
+            found = 0
+        }
+        /^[[:space:]]*tui[[:space:]]*\.[[:space:]]*status_line[[:space:]]*=/ {
+            found = 1
+        }
+        /^\[[[:space:]]*tui[[:space:]]*\][[:space:]]*$/ {
+            in_tui_table = 1
+            next
+        }
+        /^\[[^]]+\][[:space:]]*$/ {
+            in_tui_table = 0
+            next
+        }
+        in_tui_table && /^[[:space:]]*status_line[[:space:]]*=/ {
+            found = 1
+        }
+        END {
+            print found
+        }
+    ' "$cleaned_file")
+
+    has_terminal_title=$(awk '
+        BEGIN {
+            in_tui_table = 0
+            found = 0
+        }
+        /^[[:space:]]*tui[[:space:]]*\.[[:space:]]*terminal_title[[:space:]]*=/ {
+            found = 1
+        }
+        /^\[[[:space:]]*tui[[:space:]]*\][[:space:]]*$/ {
+            in_tui_table = 1
+            next
+        }
+        /^\[[^]]+\][[:space:]]*$/ {
+            in_tui_table = 0
+            next
+        }
+        in_tui_table && /^[[:space:]]*terminal_title[[:space:]]*=/ {
+            found = 1
+        }
+        END {
+            print found
+        }
+    ' "$cleaned_file")
+
+    {
+        cat "$cleaned_file"
+        if [ "$has_status_line" -eq 0 ] || [ "$has_terminal_title" -eq 0 ]; then
+            if [ -s "$cleaned_file" ]; then
+                printf '\n'
+            fi
+            printf '# >>> shipflow codex tui >>>\n'
+            if [ "$has_status_line" -eq 0 ]; then
+                printf 'tui.status_line = ["model-with-reasoning", "current-dir", "context-used"]\n'
+            fi
+            if [ "$has_terminal_title" -eq 0 ]; then
+                printf 'tui.terminal_title = ["spinner", "thread", "project"]\n'
+            fi
+            printf '# <<< shipflow codex tui <<<\n'
+        fi
+    } > "$tmp_file"
+
+    mv "$tmp_file" "$config_file"
+    rm -f "$cleaned_file"
+}
+
 # Configure skills symlinks for a user
+ensure_skill_link() {
+    local source_dir="$1"
+    local target_path="$2"
+    local resolved_target
+    local backup_dir
+
+    if [ -L "$target_path" ]; then
+        resolved_target=$(readlink -f "$target_path" 2>/dev/null || true)
+        if [ "$resolved_target" = "${source_dir%/}" ]; then
+            return 0
+        fi
+        rm -f "$target_path"
+        ln -s "$source_dir" "$target_path"
+        return 0
+    fi
+
+    if [ -e "$target_path" ]; then
+        backup_dir="$(dirname "$target_path")/.backup-$(date '+%Y%m%d-%H%M%S')"
+        mkdir -p "$backup_dir"
+        mv "$target_path" "$backup_dir/"
+    fi
+
+    ln -s "$source_dir" "$target_path"
+}
+
 configure_skills() {
     local target_home="$1"
     if [ -d "$SHIPFLOW_DIR/skills" ]; then
         mkdir -p "$target_home/.claude/skills"
+        mkdir -p "$target_home/.codex/skills"
         for skill_dir in "$SHIPFLOW_DIR/skills"/*/; do
             local skill_name
             skill_name=$(basename "$skill_dir")
-            if [ ! -e "$target_home/.claude/skills/$skill_name" ]; then
-                ln -s "$skill_dir" "$target_home/.claude/skills/$skill_name"
-            fi
+            ensure_skill_link "$skill_dir" "$target_home/.claude/skills/$skill_name"
+            ensure_skill_link "$skill_dir" "$target_home/.codex/skills/$skill_name"
         done
     fi
 }
@@ -320,6 +448,7 @@ setup_user() {
     local username="$2"
 
     configure_statusline "$user_home"
+    configure_codex_tui "$user_home"
     configure_skills "$user_home"
     configure_aliases "$user_home"
     configure_data "$user_home"
@@ -327,6 +456,7 @@ setup_user() {
     # Fix ownership — everything we created must belong to the user
     if [ "$username" != "root" ]; then
         chown -R "$username:$username" "$user_home/.claude" 2>/dev/null || true
+        chown -R "$username:$username" "$user_home/.codex" 2>/dev/null || true
         chown -R "$username:$username" "$user_home/shipflow_data" 2>/dev/null || true
     fi
 

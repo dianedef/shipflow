@@ -28,6 +28,53 @@ Continuer dans tous les cas — une étude de marché peut aussi servir à const
 
 ---
 
+## Metadata et versioning ShipFlow
+
+Une étude de marché est un artefact business ShipFlow. Le rapport généré doit donc inclure un frontmatter YAML ShipFlow, sauf si le fichier cible est explicitement du contenu applicatif consommé par le runtime du projet.
+
+Frontmatter minimal pour `MARKET-STUDY.md` :
+
+```yaml
+---
+artifact: market_study
+metadata_schema_version: "1.0"
+artifact_version: "0.1.0"
+project: "[project name]"
+created: "[YYYY-MM-DD]"
+updated: "[YYYY-MM-DD]"
+status: "draft|reviewed|stale"
+source_skill: "sf-market-study"
+scope: "business|market|gtm"
+confidence: "low|medium|high"
+risk_level: "low|medium|high"
+business_model: "[saas|content|ecommerce|service|marketplace|unknown]"
+target_audience: "[ICP/persona]"
+market: "[countries/languages]"
+value_proposition: "[one-line promise]"
+docs_impact: "yes"
+depends_on:
+  - artifact: "BUSINESS.md"
+    artifact_version: "[version or unknown]"
+    required_status: "reviewed"
+evidence:
+  - "[source URL or data source]"
+next_review: "[YYYY-MM-DD]"
+---
+```
+
+Si `BUSINESS.md` existe, lire son frontmatter complet et reporter sa `artifact_version` dans `depends_on`. Si la version est absente, utiliser `artifact_version: "unknown"` et signaler un `metadata gap`. Si l'étude sert à créer le premier `BUSINESS.md`, mettre `depends_on: []` et `status: draft`.
+
+### Bump `artifact_version`
+
+Utiliser un versioning sémantique simple pour le contenu décisionnel :
+- `MAJOR` (`1.0.0` -> `2.0.0`) : changement de marché cible, ICP, business model, verdict GO/NO-GO, positionnement, pricing stratégique ou hypothèse centrale.
+- `MINOR` (`1.0.0` -> `1.1.0`) : ajout d'un segment, nouvelle source importante, mise à jour de chiffres qui change une recommandation mais pas la thèse centrale.
+- `PATCH` (`1.0.0` -> `1.0.1`) : correction de lien, typo, formulation, source clarifiée ou mise à jour mineure sans impact décisionnel.
+
+Les artefacts migrés ou non revus commencent à `0.1.0` avec `status: draft` et `confidence: low|medium`. Passer à `1.0.0` seulement après revue explicite.
+
+---
+
 ## Mode detection
 
 - **`$ARGUMENTS` is provided** → Run market study on that niche/product.

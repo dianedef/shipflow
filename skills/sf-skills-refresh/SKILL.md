@@ -1,14 +1,14 @@
 ---
 name: sf-skills-refresh
-description: Rafraîchir les skills avec l'état de l'art récent — recherche web en parallèle, puis applique les nouveautés (AEO/GEO, WCAG, CSS 2026, AI-slop, etc.) aux SKILL.md sans les réécrire
+description: "Rafraîchir les skills avec l'état de l'art récent — recherche web en parallèle, puis applique les nouveautés (AEO/GEO, WCAG, CSS 2026, AI-slop, etc.) aux SKILL.md sans les réécrire"
 disable-model-invocation: true
-argument-hint: [skill-name] (omit to pick multiple)
+argument-hint: '[skill-name] (omit to pick multiple)'
 ---
 
 ## Context
 
-- Skills directory: !`ls /home/claude/ShipFlow/skills/ | head -60`
-- Refresh log: !`head -30 /home/claude/ShipFlow/skills/REFRESH_LOG.md 2>/dev/null || echo "no log yet — will be created"`
+- Skills directory: !`ls /home/claude/shipflow/skills/ | head -60`
+- Refresh log: !`head -30 /home/claude/shipflow/skills/REFRESH_LOG.md 2>/dev/null || echo "no log yet — will be created"`
 - Today: !`date -I`
 
 ## Your task
@@ -46,15 +46,17 @@ Spawn one `Agent` per skill using `subagent_type: "general-purpose"`, `run_in_ba
 
 Each agent prompt MUST include:
 
-1. `"Read /home/claude/ShipFlow/skills/<skill-name>/SKILL.md first. Don't duplicate what's covered."`
+1. `"Read /home/claude/shipflow/skills/<skill-name>/SKILL.md first. Don't duplicate what's covered."`
 2. Today's absolute date so the agent knows what "recent" means.
 3. A domain-specific research brief — 8-12 concrete topics to investigate via WebSearch, specific to the skill's purpose.
 4. Required output format:
    - **NEW CHECKS TO ADD** (grouped by existing phase)
    - **EXISTING CHECKS TO UPDATE** (with before/after)
    - **NEW PHASE PROPOSALS** (only if a whole area is missing)
+   - **CROSS-SKILL CONSEQUENCES** (if a finding implies edits in another skill, workflow doc, or help file)
    - **Sources** (URLs consulted)
 5. `"Be specific and actionable. Each check must be droppable directly into the skill as a [ ] line with a why/rationale. Under 1200 words."`
+6. `"Work in one pass: do not ask follow-up questions. If evidence is mixed, state assumptions and confidence."`
 
 ### Domain-specific brief seeds
 
@@ -94,7 +96,7 @@ For each returned report:
 
 ## PHASE 4: LOG THE REFRESH
 
-Append an entry to `/home/claude/ShipFlow/skills/REFRESH_LOG.md` (create if missing). Most recent first. Format:
+Append an entry to `/home/claude/shipflow/skills/REFRESH_LOG.md` (create if missing). Most recent first. Format:
 
 ```markdown
 ## YYYY-MM-DD — <skill-name>

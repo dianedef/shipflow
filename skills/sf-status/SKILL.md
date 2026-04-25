@@ -1,8 +1,8 @@
 ---
 name: sf-status
-description: Quick cross-project git dashboard — branches, uncommitted changes, sync status, last commits
+description: Quick cross-project git dashboard — branches, uncommitted changes, sync status, last commits, with selectable view mode
 disable-model-invocation: true
-argument-hint: (no arguments needed)
+argument-hint: [optional: all | issues | dirty]
 ---
 
 ## Context
@@ -12,9 +12,24 @@ argument-hint: (no arguments needed)
 
 ## Flow
 
+### Step 0: Choose view mode
+
+If `$ARGUMENTS` is empty, use **AskUserQuestion**:
+- Question: "Quelle vue du dashboard veux-tu ?"
+- `multiSelect: false`
+- Options:
+  - **Issues only (recommandé)** — "Affiche seulement les projets avec attention requise"
+  - **Dirty only** — "Affiche seulement les projets avec changements locaux"
+  - **All projects** — "Affiche tout le portefeuille"
+
+If `$ARGUMENTS` is provided, map:
+- `issues` -> issues only
+- `dirty` -> dirty only
+- any other value -> all projects
+
 ### Step 1: Read project registry
 
-Read `/home/claude/shipflow_data/PROJECTS.md` to get the list of all projects with their paths. Also include ShipFlow itself (`/home/claude/ShipFlow`).
+Read `/home/claude/shipflow_data/PROJECTS.md` to get the list of all projects with their paths. Also include ShipFlow itself (`/home/claude/shipflow`).
 
 ### Step 2: Gather git status for each project
 
@@ -49,6 +64,11 @@ GIT STATUS DASHBOARD — [date]
 ──────────────────────────────────────────────────────────────────────
 ```
 
+Apply selected filter before rendering:
+- **issues only**: show projects with uncommitted, ahead/behind, no remote, detached HEAD, or stash > 0
+- **dirty only**: show projects with uncommitted > 0
+- **all projects**: show all valid repos
+
 ### Step 4: Highlight issues
 
 ```
@@ -75,6 +95,7 @@ Only show NEEDS ATTENTION if there are issues. Issues to flag:
 ## Important
 
 - **READ-ONLY** — never modify any files or run git commands that change state.
+- `PROJECTS.md` is read-only here; never edit shared tracking files from `sf-status`.
 - Include ShipFlow repo itself in the dashboard.
 - Skip projects whose paths don't exist on disk.
 - Skip SocialFlowz if it has no git repo.

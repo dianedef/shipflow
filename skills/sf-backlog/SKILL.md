@@ -24,6 +24,14 @@ argument-hint: [optional: add "idea", move "defer", review, clean]
 - When deferring tasks from a project, move them from the project's active section to the Backlog section in the master file
 - When promoting backlog items, move them into the correct project's section in the master file
 
+## Shared tracking file write protocol
+
+- Treat the TASKS.md and BACKLOG.md snapshots loaded at skill start as informational only.
+- Right before editing the master or local tracking file, re-read the target from disk and use that version as authoritative.
+- Apply a minimal targeted edit to the relevant project section or backlog block; never rewrite the whole file from stale context.
+- If the expected anchor moved or changed, re-read once and recompute.
+- If it is still ambiguous after the second read, stop and ask the user instead of forcing the write.
+
 ## Your task
 
 Manage the backlog to keep active work focused and capture future ideas.

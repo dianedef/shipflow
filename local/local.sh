@@ -158,13 +158,13 @@ load_current_connection
 CACHED_SESSION_INFO=""
 CACHED_SESSION_TIME=0
 
-# Function to retrieve server session info from ShipFlow install paths
+# Function to retrieve server session info from canonical shipflow install paths
 fetch_server_session_info() {
     ssh -o ConnectTimeout=5 "$REMOTE_HOST" "bash -lc '
         for lib_path in \
-            \"\$HOME/ShipFlow/lib.sh\" \
-            \"/home/claude/ShipFlow/lib.sh\" \
-            \"/root/ShipFlow/lib.sh\"
+            \"\$HOME/shipflow/lib.sh\" \
+            \"/home/claude/shipflow/lib.sh\" \
+            \"/root/shipflow/lib.sh\"
         do
             if [ -f \"\$lib_path\" ]; then
                 source \"\$lib_path\" 2>/dev/null

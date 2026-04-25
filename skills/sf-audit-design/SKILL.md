@@ -1,8 +1,8 @@
 ---
 name: sf-audit-design
-description: Professional UI/UX design audit (NN/g heuristics, WCAG 2.2, visual hierarchy) — light by default, or deep (orchestrates 3 specialist agents in parallel)
+description: "Professional UI/UX design audit (NN/g heuristics, WCAG 2.2, visual hierarchy) — light by default, or deep (orchestrates 3 specialist agents in parallel)"
 disable-model-invocation: true
-argument-hint: [file-path | "global" | "deep"] (omit for full project light audit)
+argument-hint: '[file-path | "global" | "deep"] (omit for full project light audit)'
 ---
 
 ## Context
@@ -10,6 +10,7 @@ argument-hint: [file-path | "global" | "deep"] (omit for full project light audi
 - Current directory: !`pwd`
 - Project CLAUDE.md: !`head -100 CLAUDE.md 2>/dev/null || echo "no CLAUDE.md"`
 - Brand voice: !`head -60 BRANDING.md 2>/dev/null || echo "no BRANDING.md — run /sf-init to generate"`
+- Business metadata: !`for f in BUSINESS.md BRANDING.md GUIDELINES.md; do if [ -f "$f" ]; then printf '%s: ' "$f"; sed -n '1,40p' "$f" | grep -E '^(metadata_schema_version|artifact_version|status|updated|confidence|next_review):' | tr '\n' ' '; printf '\n'; else echo "$f: missing"; fi; done`
 - Tailwind/CSS config: !`cat tailwind.config.* 2>/dev/null | head -80 || echo "no tailwind config"`
 - Global styles: !`cat src/styles/global.css 2>/dev/null || cat src/assets/styles/*.css 2>/dev/null | head -100 || echo "no global styles found"`
 - All pages: !`find src/pages src/app -name "*.astro" -o -name "*.tsx" -o -name "*.vue" 2>/dev/null | grep -v node_modules | sort`
@@ -41,6 +42,33 @@ Avant de commencer, vérifier le contexte chargé ci-dessus. Si BRANDING.md est 
 ```
 
 Si le fichier existe mais semble incomplet, signaler. Continuer l'audit dans tous les cas.
+
+---
+
+## Metadata versioning doctrine
+
+`BUSINESS.md`, `BRANDING.md`, and `GUIDELINES.md` are ShipFlow decision contracts for design audits when they define visual identity, audience expectations, trust posture, product promise, or interface guidelines. Before scoring:
+- Read/report `artifact_version`, `status`, `updated`, `confidence`, and `next_review` when available.
+- If `artifact_version`, `status`, or `updated` is missing, add a proof gap: `business doc metadata incomplete`.
+- If `status` is `draft`, `stale`, `outdated`, `deprecated`, or `confidence` is `low`, cap confidence and state that design scoring depends on an unreviewed decision contract.
+- If `next_review` is before today's absolute date, treat the document as stale unless a newer replacement is explicit.
+- If visual identity, theme mode, CTA hierarchy, UI trust signals, accessibility posture, onboarding, or screenshots rely on stale or unversioned docs, do not give `A` to the affected category.
+- Include a `Business metadata versions` section in every report.
+
+Use ShipFlow versioning semantics: patch = visual wording/example clarification without decision change, minor = changed brand/UI guidance inside the same strategy, major = changed ICP, positioning, trust posture, accessibility policy, market, or brand strategy.
+
+---
+
+## Doctrine design / produit / docs
+
+Le design doit servir une promesse utilisateur cohérente :
+- les écrans doivent soutenir une user story identifiable : acteur, action, résultat, état de succès
+- les états UI doivent refléter les vrais états système : chargement, vide, erreur, permission refusée, paiement, retry, succès partiel
+- la hiérarchie visuelle, les CTA et la navigation doivent rester cohérents avec le funnel, l'onboarding et les docs
+- les claims visibles dans l'interface (sécurité, automatisation, disponibilité, IA, gain de temps) doivent être cohérents avec la documentation et les limites produit
+- quand une feature change, l'interface, la documentation, les exemples et les captures doivent rester alignés
+
+Signaler les écarts de `product coherence`, `docs mismatch`, `misleading UI state` et `unproven interface claim` comme des risques produit.
 
 ---
 
@@ -81,13 +109,27 @@ Agent prompt template (adapt per specialist):
 You are auditing the project at: [project path]
 
 Read and execute the specialist skill at:
-/home/claude/ShipFlow/skills/sf-audit-[tokens|components|a11y]/SKILL.md
+/home/claude/shipflow/skills/sf-audit-[tokens|components|a11y]/SKILL.md
+
+Read the project context first:
+- `CLAUDE.md`
+- `BUSINESS.md`, `BRANDING.md`, and `GUIDELINES.md` metadata if present
+- the theme/token/motion/auth hints surfaced by this skill when relevant
+
+Before scoring, identify linked systems and downstream consequences.
+Evaluate product coherence and documentation alignment when UI states or feature promises changed.
+Read/report business metadata versions and flag missing, stale, low-confidence, or unversioned contracts as proof gaps.
+Do not ask follow-up questions. If context is missing, state assumptions and confidence limits.
 
 Run the full skill read-only (no code fixes). Return a structured sub-report with:
 - Global score for this domain (A/B/C/D)
 - Subscores per phase/category
 - Issue counts by severity (🔴 critical / 🟠 high / 🟡 medium)
 - Top 5 quick-wins for this domain (file:line + fix + Why)
+- Linked systems / consequences to watch
+- Product/docs coherence gaps
+- Business metadata versions
+- Confidence / missing context
 - Raw findings list (file:line + description + severity + Why)
 
 Do not update AUDIT_LOG.md or TASKS.md — the orchestrator will do that.
@@ -182,9 +224,15 @@ Audit ALL UI projects in the workspace for design, UX, and accessibility issues.
 
    Agent prompt must include:
    - `cd [path]` then read `CLAUDE.md` for project context
+   - The absolute date, exact project path, and the design context already surfaced by this skill (`BRANDING.md`, theme/token files, reduced-motion support, auth/theme sync hints)
    - The complete **PROJECT MODE** section from this skill (all 6 phases: Design System Inventory → Outdated Patterns Scan → Page-by-Page Scan → Cross-Page Consistency → Fix → Report)
    - The **Tracking** section from this skill
    - Rule: **read-only analysis** — no code fixes, only update AUDIT_LOG.md and TASKS.md
+   - Rule: before scoring, identify linked systems and side effects (tokens, components, themes, responsive contexts, accessibility, auth-linked preferences)
+   - Rule: call out product-flow incoherence, misleading UI states, documentation mismatch, and unproven interface claims
+   - Rule: read/report `BUSINESS.md`, `BRANDING.md`, and `GUIDELINES.md` metadata versions; flag missing, stale, low-confidence, or unversioned contracts as proof gaps before scoring
+   - Rule: do not ask follow-up questions; if context is missing, state assumptions / confidence limits and continue
+   - Required sub-report sections: `Scope understood`, `User story / interface promise`, `Business metadata versions`, `Context read`, `Linked systems & consequences`, `Product/docs coherence`, `Risky assumptions / proof gaps`, `Findings`, `Confidence / missing context`
 
 4. After all agents return, compile a **cross-project design report**:
 
@@ -232,6 +280,8 @@ Score each category **A/B/C/D** (A = excellent, D = critical issues). Be strict 
 - [ ] Proper whitespace rhythm — consistent spacing scale (not arbitrary px values)
 - [ ] Content sections have clear visual separation
 - [ ] No orphaned headings, dangling text, or layout widows
+- [ ] Primary action and visual priority match the user story and funnel stage
+- [ ] UI does not visually promise unavailable, unproven, or undocumented behavior
 
 #### 2. Typography
 - [ ] Heading hierarchy is semantic (h1 > h2 > h3, no skipped levels)
@@ -391,6 +441,10 @@ For each issue rated B or worse:
 ```
 DESIGN REVIEW: [page name]
 ─────────────────────────────────────
+Business metadata:
+  BUSINESS.md    artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing]
+  BRANDING.md    artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing]
+  GUIDELINES.md  artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing]
 Visual Hierarchy   [A/B/C/D] — one-line summary
 Typography         [A/B/C/D] — one-line summary (incl. design token system)
 Color & Contrast   [A/B/C/D] — one-line summary (incl. semantic palette)
@@ -630,6 +684,12 @@ Fix all issues directly in code. Prioritize:
 DESIGN AUDIT: [project name]
 ═══════════════════════════════════════
 
+BUSINESS METADATA VERSIONS
+  BUSINESS.md    artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing] next_review=[date|missing]
+  BRANDING.md    artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing] next_review=[date|missing]
+  GUIDELINES.md  artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing] next_review=[date|missing]
+  Proof gaps: [missing/stale/unversioned docs that affected scoring, or none]
+
 DESIGN SYSTEM HEALTH
   Colors:     X tokens used, Y inconsistencies
   Typography: X sizes used, Y violations
@@ -722,6 +782,13 @@ Needs decision: Z items (listed below)
 ---
 
 ## Tracking (all modes)
+
+Shared file write protocol for `AUDIT_LOG.md` and `TASKS.md`:
+- Treat the snapshots loaded at skill start as informational only.
+- Right before each write, re-read the target file from disk and use that version as authoritative.
+- Append or replace only the intended row or subsection; never rewrite the whole file from stale context.
+- If the expected anchor moved or changed, re-read once and recompute.
+- If it is still ambiguous after the second read, stop and ask the user instead of forcing the write.
 
 After generating the report and applying fixes:
 

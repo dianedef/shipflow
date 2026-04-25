@@ -48,6 +48,24 @@ Run searches in parallel where possible (multiple WebSearch + Exa calls in one m
 Structure the research into a comprehensive markdown report:
 
 ```markdown
+---
+artifact: research
+project: "[project name or workspace]"
+created: "[YYYY-MM-DD]"
+updated: "[YYYY-MM-DD]"
+status: reviewed
+source_skill: sf-research
+scope: "[topic]"
+confidence: "[high|medium|low]"
+risk_level: "[low|medium|high]"
+security_impact: "[none|yes|unknown]"
+docs_impact: "[none|yes|unknown]"
+source_count: [count]
+evidence:
+  - "[source URL or title]"
+next_step: "[recommended action]"
+---
+
 # Research: [Topic]
 
 > Generated [date] — Sources: [count]

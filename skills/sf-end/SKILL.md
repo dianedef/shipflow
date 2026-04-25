@@ -20,6 +20,7 @@ argument-hint: [optional summary or notes]
 ## Your task
 
 Wrap up the current task. Summarize, update tracking files, but do NOT commit or push.
+This skill closes a work session, not product truth. TASKS and CHANGELOG updates are bookkeeping, not proof that the outcome is fully correct, complete, or secure.
 
 ### Step 1 — Summarize what was done (internal)
 
@@ -28,6 +29,30 @@ From the conversation, identify:
 - What was started but not finished
 - Key files modified (from git diff)
 - Any decisions worth noting
+- The user story or user-facing outcome this work was intended to support, if inferable
+- Any gap between "work performed" and "outcome proven"
+- Documentation surfaces updated or possibly stale after the change
+
+### Step 1.5 — Closure mode decision
+
+If completion status is ambiguous, use **AskUserQuestion**:
+- Question: "Quel mode de clôture veux-tu ?"
+- `multiSelect: false`
+- Options:
+  - **Clôture complète** — "Marquer la tâche en done"
+  - **Clôture partielle (recommandé si doute)** — "Garder un reliquat en in progress"
+  - **Résumé seulement** — "Ne pas toucher TASKS/CHANGELOG, juste rapporter"
+
+Ask a targeted clarification instead of assuming `done` when:
+- the work is implemented but not meaningfully validated
+- the user story or expected outcome is still unclear
+- the work touches auth, permissions, billing, secrets, tenant boundaries, destructive actions, migrations, public flows, or other security-sensitive surfaces
+- there are remaining risks, TODOs, or blockers that materially affect product coherence or safety
+- docs, README, FAQ, onboarding, changelog, examples, pricing or support copy may still describe old behavior
+
+Examples:
+- "Est-ce que tu veux clôturer la tâche comme livrée fonctionnellement, ou la laisser partielle tant que le flow utilisateur n’est pas validé ?"
+- "Cette passe touche la sécurité / visibilité des données. Veux-tu une clôture partielle avec risques restants explicites ?"
 
 ### Step 2 — Update TASKS.md (silent)
 
@@ -37,7 +62,16 @@ Using the master TASKS.md from context:
 - Add new tasks discovered during the work
 - Update master `/home/claude/shipflow_data/TASKS.md` — always
 - If a local `TASKS.md` also exists, update both
+- Treat the TASKS content loaded in Context as informational only.
+- Immediately before editing either TASKS file, re-read it from disk and use that version as authoritative.
+- Apply a minimal targeted edit to the relevant rows only; never rewrite the whole file from stale context.
+- If the expected row or section moved, re-read once and recompute; if it is still ambiguous, stop and ask the user.
+- If the evidence supports only partial completion, keep or move the task to `🔄 in progress` with a short note rather than forcing `✅ done`.
+- Reflect product coherence and safety gaps when they materially affect closure.
+- Reflect documentation coherence gaps when a user-facing feature behavior changed.
 - No output at this step.
+
+If mode is **Résumé seulement**, skip this step.
 
 ### Step 3 — Update CHANGELOG.md (silent)
 
@@ -45,7 +79,11 @@ Using the master TASKS.md from context:
 - Consolidate related changes into single human-readable entries
 - Prepend a new `## [date]` entry to CHANGELOG.md (or update today's entry if it exists)
 - Skip trivial changes (formatting, comments)
+- Keep entries evidence-based and user-facing; do not claim a feature is "done", "safe", or "production ready" unless the work actually demonstrated that.
+- Include documentation alignment when it materially affects user-facing behavior.
 - No output at this step.
+
+If mode is **Résumé seulement**, skip this step.
 
 ### Step 4 — Save decisions to memory (silent)
 
@@ -61,9 +99,16 @@ Output ONE concise report:
 **What changed:**
 - [bullet per logical change — specific, not vague]
 
+**User story / outcome:**
+- [what user-facing outcome was advanced, completed, or still unproven]
+
+**Documentation coherence:**
+- [updated / not impacted / gap remains]
+
 **Status:**
 - Completed: [item], [item]
 - In progress: [item — where it stands]
+- Risks / evidence limits: [explicit remaining uncertainty, especially product/security]
 - Decisions saved: [decision or "none"]
 
 **Up next:**
@@ -81,3 +126,6 @@ Output ONE concise report:
 - Keep the report under 25 lines
 - If nothing was done this session, say so honestly
 - Update BOTH master and local TASKS.md when both exist
+- Do not let TASKS/CHANGELOG imply stronger proof than the actual validation supports
+- Do not mark feature work fully closed if known docs remain stale and materially affect users/operators
+- Prefer partial closure when user-story completion or security posture remains uncertain

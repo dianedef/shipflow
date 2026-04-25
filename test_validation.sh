@@ -40,7 +40,7 @@ echo ""
 
 # Should pass
 run_test "Valid path /root" "pass" validate_project_path "/root"
-run_test "Valid path /root/ShipFlow" "pass" validate_project_path "/root/ShipFlow"
+run_test "Valid path checkout" "pass" validate_project_path "$SCRIPT_DIR"
 run_test "Valid path /opt" "pass" validate_project_path "/opt"
 
 # Should fail

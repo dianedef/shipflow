@@ -15,6 +15,7 @@ argument-hint: [fix|nofix]
 ## Your task
 
 Run all available checks for the current project and fix errors if found.
+Treat this skill as a practical confidence pass, not as proof that the product is fully correct or secure.
 
 ### Workspace root detection
 
@@ -25,6 +26,10 @@ If the current directory has no project markers (no `package.json`, no `requirem
 - Read project list from `/home/claude/shipflow_data/PROJECTS.md`
 
 Then run checks for each selected project sequentially.
+
+Shared tracking files are read-only in this skill:
+- `PROJECTS.md` is only used to discover projects when running from the workspace root.
+- Never edit `TASKS.md`, `AUDIT_LOG.md`, or `PROJECTS.md` from `sf-check`.
 
 ### Step 0: Choose which checks to run
 
@@ -62,6 +67,15 @@ Based on the context above, identify the project stack and run the appropriate c
 - `bash -n` syntax check on `.sh` files
 - Run test scripts if they exist (`./test_*.sh`)
 
+Before concluding that the project is "green", explicitly note any major gap in coverage:
+- No tests available
+- No typecheck available on a typed codebase
+- No lint script on a repo that normally uses linting
+- Build skipped because no build command exists
+- Checks only validate syntax/compile steps, not runtime behavior or user-facing flows
+
+If project scripts in `CLAUDE.md` or `package.json` suggest an expected check exists but it cannot be run, report that as a risky assumption instead of silently skipping it.
+
 ### Step 1b: Check dependencies (if selected) — quick scan only
 
 > For comprehensive dependency auditing (unused deps, license compliance, type coverage, supply chain), run `/sf-deps`.
@@ -76,6 +90,8 @@ Based on the context above, identify the project stack and run the appropriate c
 
 Report a quick summary. Do NOT auto-update dependencies. Recommend `/sf-deps` for full analysis (unused, duplicates, licenses, configuration).
 
+Do not present a clean dependency scan as a security sign-off. If dependency checks were not available, required auth to registry services, or only partial results were obtained, state that explicitly.
+
 ### Step 2: Fix errors
 
 If `$ARGUMENTS` is "nofix", stop here and just report the errors.
@@ -87,9 +103,23 @@ Otherwise (default behavior, including when `$ARGUMENTS` is "fix" or empty):
 3. Re-run the failed check to confirm the fix works.
 4. Repeat until all checks pass or you've attempted 3 fix cycles.
 
+Do not "fix" a failing check by weakening the intended guardrail unless the user explicitly asked for that tradeoff. In particular:
+- Do not disable lint/type/test/build rules just to get green output
+- Do not replace meaningful assertions with trivial ones
+- Do not remove validation, auth, authorization, or error handling paths to silence failures
+- If a passing result depends on a risky assumption, surface it in the report
+
 ### Step 3: Report
 
 Summarize what was checked, what failed, and what was fixed. If anything still fails after 3 attempts, explain the remaining errors clearly so the user can decide what to do.
+
+Always include a short `Risky assumptions / gaps` section when any of the following is true:
+- a relevant check was unavailable or skipped
+- the repo has no meaningful runtime or integration coverage
+- a dependency/security check could not be completed
+- the build passes but warnings suggest a likely product-quality or security issue
+
+If nothing indicates functional validation of the main user flow, say so plainly. Example: "Checks pass, but no evidence was gathered that checkout/login/sync actually works end-to-end."
 
 ### Important
 
@@ -97,3 +127,5 @@ Summarize what was checked, what failed, and what was fixed. If anything still f
 - Do not install dependencies — if something is missing, tell the user.
 - Do not modify test expectations to make tests pass. Fix the actual code.
 - If the project CLAUDE.md specifies custom check commands, use those instead.
+- A passing `sf-check` run means "no obvious issues in the checks that were executed", not "product is production-ready".
+- When security-relevant checks fail or are missing (for example auth flows, permission boundaries, secret/config validation, dependency audit access), call that out explicitly and recommend the next skill when appropriate (`/sf-verify`, `/sf-prod`, `/sf-deps`).

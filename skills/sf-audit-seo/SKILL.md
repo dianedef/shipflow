@@ -1,8 +1,8 @@
 ---
 name: sf-audit-seo
-description: Professional SEO audit — single page (with argument) or full technical + on-page site audit (no argument)
+description: "Professional SEO audit — single page (with argument) or full technical + on-page site audit (no argument)"
 disable-model-invocation: true
-argument-hint: [file-path | "global"] (omit for full project)
+argument-hint: '[file-path | "global"] (omit for full project)'
 ---
 
 ## Context
@@ -10,6 +10,7 @@ argument-hint: [file-path | "global"] (omit for full project)
 - Current directory: !`pwd`
 - Project CLAUDE.md: !`head -100 CLAUDE.md 2>/dev/null || echo "no CLAUDE.md"`
 - Business context: !`head -40 BUSINESS.md 2>/dev/null || echo "no BUSINESS.md — run /sf-init to generate"`
+- Business metadata: !`for f in BUSINESS.md BRANDING.md GUIDELINES.md; do if [ -f "$f" ]; then printf '%s: ' "$f"; sed -n '1,40p' "$f" | grep -E '^(metadata_schema_version|artifact_version|status|updated|confidence|next_review):' | tr '\n' ' '; printf '\n'; else echo "$f: missing"; fi; done`
 - All pages: !`find src/pages src/app -name "*.astro" -o -name "*.tsx" -o -name "*.vue" 2>/dev/null | grep -v node_modules | sort`
 - Sitemap: !`cat public/sitemap*.xml 2>/dev/null | head -50 || echo "no sitemap found"`
 - Robots.txt: !`cat public/robots.txt 2>/dev/null || echo "no robots.txt"`
@@ -32,6 +33,33 @@ Avant de commencer, vérifier le contexte chargé ci-dessus. Si BUSINESS.md est 
 ```
 
 Si le fichier existe mais semble incomplet, signaler. Continuer l'audit dans tous les cas.
+
+---
+
+## Metadata versioning doctrine
+
+`BUSINESS.md`, `BRANDING.md`, and `GUIDELINES.md` are ShipFlow decision contracts for SEO audits when they define ICP, positioning, tone, market, or editorial rules. Before scoring:
+- Read/report `artifact_version`, `status`, `updated`, `confidence`, and `next_review` when available.
+- If `artifact_version`, `status`, or `updated` is missing, add a proof gap: `business doc metadata incomplete`.
+- If `status` is `draft`, `stale`, `outdated`, `deprecated`, or `confidence` is `low`, cap confidence and state that keyword/search-intent scoring depends on an unreviewed business contract.
+- If `next_review` is before today's absolute date, treat the document as stale unless a newer replacement is explicit.
+- If search intent, target persona, market language, E-E-A-T claims, compliance claims, or feature claims rely on stale or unversioned docs, do not give `A` to the affected category.
+- Include a `Business metadata versions` section in every report.
+
+Use ShipFlow versioning semantics: patch = editorial clarification without strategy change, minor = changed keyword/persona guidance inside the same market strategy, major = changed ICP, positioning, pricing promise, trust posture, market, or acquisition strategy.
+
+---
+
+## Doctrine SEO / business / docs
+
+Le SEO doit attirer les bons utilisateurs vers une promesse vraie :
+- l'intention de recherche doit correspondre à la user story et à l'étape du parcours
+- le contenu doit refléter le produit actuel, pas une ancienne feature ou une roadmap implicite
+- les claims YMYL, sécurité, conformité, gains financiers, IA, santé, légaux ou productivité doivent être datés, sourcés et vérifiables
+- les docs, FAQ, changelog, guides et pages produit doivent rester cohérents avec les pages indexables
+- une page SEO qui contredit l'app ou la documentation crée un risque business, pas seulement SEO
+
+Signaler explicitement les écarts `docs mismatch`, `outdated feature claim`, `unproven claim` et `wrong-intent traffic`.
 
 ---
 
@@ -59,9 +87,15 @@ Audit ALL web projects in the workspace for SEO issues.
 
    Agent prompt must include:
    - `cd [path]` then read `CLAUDE.md` for project context
+   - The absolute date, exact project path, and the SEO context already surfaced by this skill (`BUSINESS.md`, sitemap, robots, llms.txt, head/meta config)
    - The complete **PROJECT MODE** section from this skill (all 7 phases: Technical SEO → On-Page Scan → Content SEO → Structured Data → Internal Linking → Fix → Report)
    - The **Tracking** section from this skill
    - Rule: **read-only analysis** — no code fixes, only update AUDIT_LOG.md and TASKS.md
+   - Rule: before scoring, identify linked systems and side effects (templates, metadata injection, sitemap, robots, locale variants, AI crawler rules)
+   - Rule: call out outdated feature claims, documentation mismatches, wrong-intent traffic, and unproven sensitive claims
+   - Rule: read/report `BUSINESS.md`, `BRANDING.md`, and `GUIDELINES.md` metadata versions; flag missing, stale, low-confidence, or unversioned contracts as proof gaps before scoring
+   - Rule: do not ask follow-up questions; if context is missing, state assumptions / confidence limits and continue
+   - Required sub-report sections: `Scope understood`, `Search intent / user story`, `Business metadata versions`, `Context read`, `Linked systems & consequences`, `Docs coherence`, `Risky assumptions / proof gaps`, `Findings`, `Confidence / missing context`
 
 4. After all agents return, compile a **cross-project SEO report**:
 
@@ -136,6 +170,8 @@ Score each category **A/B/C/D**. Be strict — production SEO standard.
 - [ ] **Entity-rich language** — named tools, companies, standards, people (15+ recognized entities → 4.8x citation rate)
 - [ ] Content length is competitive for keyword intent
 - [ ] No duplicate content with other pages
+- [ ] Content reflects current product behavior and docs; no outdated feature claims
+- [ ] Search intent attracts the target persona, not low-intent curiosity traffic that cannot convert
 
 #### 5. Images & Media
 - [ ] All `<img>` have descriptive `alt` text
@@ -174,6 +210,7 @@ Score each category **A/B/C/D**. Be strict — production SEO standard.
 - [ ] First-person experience markers in YMYL content ("I tested", "in our case study", specific outcomes/numbers)
 - [ ] Primary source citations inside content (outbound links to research, gov data, official docs)
 - [ ] Canonical brand name used consistently everywhere (never "Our Product" vs "ProductX" vs "the tool")
+- [ ] Public docs, changelog or support references corroborate feature claims that AI engines may cite
 
 ### Step 3: Fix
 
@@ -187,6 +224,10 @@ For each issue rated B or worse:
 ```
 SEO REVIEW: [page name] — target keyword: "[inferred keyword]"
 ─────────────────────────────────────
+Business metadata:
+  BUSINESS.md    artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing]
+  BRANDING.md    artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing]
+  GUIDELINES.md  artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing]
 Meta Tags & Head   [A/B/C/D] — one-line summary
 Social / OG        [A/B/C/D] — one-line summary
 Heading Structure  [A/B/C/D] — one-line summary
@@ -195,10 +236,11 @@ Images & Media     [A/B/C/D] — one-line summary
 Technical SEO      [A/B/C/D] — one-line summary
 Performance        [A/B/C/D] — INP, LCP, CLS summary
 AI Visibility      [A/B/C/D] — AEO/GEO readiness
+Docs Coherence     [A/B/C/D] — indexed claims match docs/app/current feature set
 ─────────────────────────────────────
 OVERALL            [A/B/C/D]
 
-Fixed: X issues | Needs decision: Y issues
+Fixed: X issues | Needs decision: Y issues | Proof/docs gaps: Z
 ```
 
 ---
@@ -235,6 +277,7 @@ Then proceed to **GLOBAL MODE** with the selected projects.
 - [ ] Max 3 clicks from homepage to any page
 - [ ] Breadcrumbs on nested pages
 - [ ] Pagination uses `rel="next"` / `rel="prev"` if applicable
+- [ ] Docs, guides, changelog and public feature pages are internally linked when they support indexed product claims
 
 #### Performance (SEO-critical)
 - [ ] SSG/SSR used (not client-side rendering for content — AI crawlers don't execute JS reliably)
@@ -330,6 +373,12 @@ Fix all issues in code. Priority:
 SEO AUDIT: [project name]
 ═══════════════════════════════════════
 
+BUSINESS METADATA VERSIONS
+  BUSINESS.md    artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing] next_review=[date|missing]
+  BRANDING.md    artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing] next_review=[date|missing]
+  GUIDELINES.md  artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing] next_review=[date|missing]
+  Proof gaps: [missing/stale/unversioned docs that affected scoring, or none]
+
 TECHNICAL SEO
   Crawlability:      [A/B/C/D]
   Site Architecture:  [A/B/C/D]
@@ -372,6 +421,13 @@ Critical remaining: Z items
 ---
 
 ## Tracking (all modes)
+
+Shared file write protocol for `AUDIT_LOG.md` and `TASKS.md`:
+- Treat the snapshots loaded at skill start as informational only.
+- Right before each write, re-read the target file from disk and use that version as authoritative.
+- Append or replace only the intended row or subsection; never rewrite the whole file from stale context.
+- If the expected anchor moved or changed, re-read once and recompute.
+- If it is still ambiguous after the second read, stop and ask the user instead of forcing the write.
 
 After generating the report and applying fixes:
 

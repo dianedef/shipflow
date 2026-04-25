@@ -1112,6 +1112,7 @@ load_secret() {
 init_logging() {
     if [ "$SHIPFLOW_LOGGING_ENABLED" = "true" ]; then
         mkdir -p "$SHIPFLOW_LOG_DIR" 2>/dev/null || true
+        touch "$SHIPFLOW_LOG_FILE" 2>/dev/null || true
 
         # Rotate old logs
         if [ -f "$SHIPFLOW_LOG_FILE" ]; then
@@ -4606,8 +4607,10 @@ CHANGELOG_EOF
             echo "| $project_name | $project_dir | $stack |" >> "$projects_file"
     fi
 
-    # Configure codebase-mcp for this project
-    local mcp_server="/home/claude/ShipFlow/tools/codebase-mcp/server.py"
+    # Configure codebase-mcp using the current ShipFlow checkout.
+    local shipflow_root
+    shipflow_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local mcp_server="$shipflow_root/tools/codebase-mcp/server.py"
     if [ -f "$mcp_server" ]; then
         local claude_dir="$project_dir/.claude"
         local settings_file="$claude_dir/settings.json"

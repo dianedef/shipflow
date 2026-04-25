@@ -1,8 +1,8 @@
 ---
 name: sf-audit-copy
-description: Professional copywriting review — single page (with argument) or full project audit (no argument)
+description: "Professional copywriting review — single page (with argument) or full project audit (no argument)"
 disable-model-invocation: true
-argument-hint: [file-path | "global"] (omit for full project)
+argument-hint: '[file-path | "global"] (omit for full project)'
 ---
 
 ## Context
@@ -11,6 +11,7 @@ argument-hint: [file-path | "global"] (omit for full project)
 - Project CLAUDE.md: !`head -100 CLAUDE.md 2>/dev/null || echo "no CLAUDE.md"`
 - Business context: !`head -60 BUSINESS.md 2>/dev/null || echo "no BUSINESS.md — run /sf-init to generate"`
 - Brand voice: !`head -60 BRANDING.md 2>/dev/null || echo "no BRANDING.md — run /sf-init to generate"`
+- Business metadata: !`for f in BUSINESS.md BRANDING.md GUIDELINES.md; do if [ -f "$f" ]; then printf '%s: ' "$f"; sed -n '1,40p' "$f" | grep -E '^(metadata_schema_version|artifact_version|status|updated|confidence|next_review):' | tr '\n' ' '; printf '\n'; else echo "$f: missing"; fi; done`
 - Content language: !`grep -ri "lang=" src/layouts/*.astro src/app/layout.tsx 2>/dev/null | head -5 || echo "unknown"`
 - All pages: !`find src/pages src/app -name "*.astro" -o -name "*.tsx" -o -name "*.vue" 2>/dev/null | grep -v node_modules | sort`
 - i18n/translations: !`find src -path "*/i18n/*" -o -path "*/locales/*" -o -path "*/messages/*" 2>/dev/null | head -10 || echo "none"`
@@ -38,6 +39,32 @@ Continuer l'audit dans tous les cas — ne pas bloquer. L'avertissement sert à 
 
 ---
 
+## Metadata versioning doctrine
+
+`BUSINESS.md`, `BRANDING.md`, and `GUIDELINES.md` are ShipFlow decision contracts for copy audits. Before scoring:
+- Read/report `artifact_version`, `status`, `updated`, `confidence`, and `next_review` when available.
+- If `artifact_version`, `status`, or `updated` is missing, add a proof gap: `business doc metadata incomplete`.
+- If `status` is `draft`, `stale`, `outdated`, `deprecated`, or `confidence` is `low`, cap confidence and state that copy recommendations depend on an unreviewed business contract.
+- If `next_review` is before today's absolute date, treat the document as stale unless a newer replacement is explicit.
+- If value proposition, tone, ICP language, pricing copy, trust claims, or sensitive claims rely on stale or unversioned docs, do not give `A` to the affected category.
+- Include a `Business metadata versions` section in every report.
+
+Use ShipFlow versioning semantics: patch = wording clarification without decision change, minor = changed message/voice guidance inside the same strategy, major = changed ICP, positioning, pricing promise, trust posture, market, or brand strategy.
+
+---
+
+## Doctrine business et documentation
+
+La copy doit être jugée comme une interface produit, pas seulement comme du texte :
+- la promesse utilisateur doit rester cohérente entre landing pages, app, docs, pricing, FAQ, emails et support
+- les claims sensibles (sécurité, conformité, gains, IA, automatisation, disponibilité, économies) doivent être précis et prouvables
+- les microcopies doivent refléter les vrais états système : succès, échec, attente, permission refusée, paiement, retry
+- quand une feature change, la copy publique et la documentation active doivent être alignées ou signalées comme dette produit
+
+Ne pas corriger une page en embellissant une promesse que le produit ou la documentation ne démontre pas. Dans ce cas, signaler `proof gap` ou `docs mismatch`.
+
+---
+
 ## Mode detection
 
 - **`$ARGUMENTS` is "global"** → GLOBAL MODE: audit ALL projects in the workspace.
@@ -62,9 +89,15 @@ Audit ALL web projects in the workspace for copywriting quality.
 
    Agent prompt must include:
    - `cd [path]` then read `CLAUDE.md` for project context
+   - The absolute date, exact project path, and the copy context already surfaced by this skill (`BUSINESS.md`, `BRANDING.md`, language/i18n hints)
    - The complete **PROJECT MODE** section from this skill (all 6 phases: Voice & Tone Inventory → Messaging Hierarchy → Page-by-Page Copy Scan → Conversion Copy Check → Fix → Report)
    - The **Tracking** section from this skill
    - Rule: **read-only analysis** — no code fixes, only update AUDIT_LOG.md and TASKS.md
+   - Rule: before scoring, identify the linked pages, funnel position, and downstream consequences of weak messaging or CTA choices
+   - Rule: call out product promise drift, documentation mismatch, and unproven sensitive claims explicitly
+   - Rule: read/report `BUSINESS.md`, `BRANDING.md`, and `GUIDELINES.md` metadata versions; flag missing, stale, low-confidence, or unversioned contracts as proof gaps before scoring
+   - Rule: do not ask follow-up questions; if context is missing, state assumptions / confidence limits and continue
+   - Required sub-report sections: `Scope understood`, `User story / promise`, `Business metadata versions`, `Context read`, `Linked systems & consequences`, `Docs coherence`, `Risky assumptions / proof gaps`, `Findings`, `Confidence / missing context`
 
 4. After all agents return, compile a **cross-project copy report**:
 
@@ -111,6 +144,7 @@ Score each category **A/B/C/D**. Be strict — professional copywriter standard.
 - [ ] Copy speaks to a specific audience, not everyone
 - [ ] Features are framed as benefits (not just feature lists)
 - [ ] StoryBrand check: customer = hero, product = guide (not the reverse)
+- [ ] Core promise is consistent with product behavior, docs, pricing, FAQ and onboarding
 
 #### 2. Clarity & Readability
 - [ ] Sentences average under 20 words, with **variance** (SD > 6 words) — robotic uniformity is an AI-content tell
@@ -144,6 +178,7 @@ Score each category **A/B/C/D**. Be strict — professional copywriter standard.
 - [ ] Empty states guide the user to take action
 - [ ] Loading states set expectations
 - [ ] Navigation labels are predictable (no creative menu names)
+- [ ] Messages match true system state and permission model; no false success, false availability, or hidden failure
 
 #### 6. Tone & Voice Consistency
 - [ ] Tone is consistent across the page (no formal → casual switches)
@@ -194,6 +229,7 @@ With AI-generated content saturation, human-verifiable signals are the primary d
 - [ ] At least one verifiable external proof per key claim (case study, dated screenshot, named customer)
 - [ ] Author/team bio reachable in ≤ 1 click from the page
 - [ ] Schema.org `author` + `datePublished` present in source (verify in head)
+- [ ] Feature claims link to docs, examples, changelog, case study, or product evidence when the claim affects buying trust
 
 #### 10. LLM-Answer-Engine Readiness (AEO/GEO)
 
@@ -226,6 +262,10 @@ For each issue rated B or worse:
 ```
 COPY REVIEW: [page name]
 ─────────────────────────────────────
+Business metadata:
+  BUSINESS.md    artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing]
+  BRANDING.md    artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing]
+  GUIDELINES.md  artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing]
 Value Proposition  [A/B/C/D] — one-line summary
 Clarity            [A/B/C/D] — one-line summary
 Persuasion         [A/B/C/D] — one-line summary
@@ -237,10 +277,11 @@ AI-Voice Detection [A/B/C/D] — X slop hits (list top 5)
 Trust Signals      [A/B/C/D] — named author, dates, first-person proof
 AEO/GEO Readiness  [A/B/C/D] — direct answer, question headings, fact density
 Conversion Copy    [A/B/C/D] — message match, trust sequencing
+Docs Coherence     [A/B/C/D] — docs/pricing/FAQ/onboarding aligned
 ─────────────────────────────────────
 OVERALL            [A/B/C/D]
 
-Rewrites applied: X | Needs decision: Y
+Rewrites applied: X | Needs decision: Y | Proof/docs gaps: Z
 ```
 
 ---
@@ -316,6 +357,12 @@ Rewrite and fix all issues directly in code. Prioritize:
 COPY AUDIT: [project name]
 ═══════════════════════════════════════
 
+BUSINESS METADATA VERSIONS
+  BUSINESS.md    artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing] next_review=[date|missing]
+  BRANDING.md    artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing] next_review=[date|missing]
+  GUIDELINES.md  artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing] next_review=[date|missing]
+  Proof gaps: [missing/stale/unversioned docs that affected scoring, or none]
+
 VOICE & TONE
   Brand voice:  [description]
   Consistency:  [A/B/C/D]
@@ -344,6 +391,13 @@ Needs decision: W items
 ---
 
 ## Tracking (all modes)
+
+Shared file write protocol for `AUDIT_LOG.md` and `TASKS.md`:
+- Treat the snapshots loaded at skill start as informational only.
+- Right before each write, re-read the target file from disk and use that version as authoritative.
+- Append or replace only the intended row or subsection; never rewrite the whole file from stale context.
+- If the expected anchor moved or changed, re-read once and recompute.
+- If it is still ambiguous after the second read, stop and ask the user instead of forcing the write.
 
 After generating the report and applying fixes:
 

@@ -1,8 +1,8 @@
 ---
 name: sf-audit-translate
-description: Translation audit — single page (with argument) or full project i18n consistency check (no argument). Verifies completeness, quality, and consistency of all translations.
+description: "Translation audit — single page (with argument) or full project i18n consistency check (no argument). Verifies completeness, quality, and consistency of all translations."
 disable-model-invocation: true
-argument-hint: [file-path | "global"] (omit for full project)
+argument-hint: '[file-path | "global"] (omit for full project)'
 ---
 
 ## Context
@@ -40,9 +40,13 @@ Audit ALL multilingual projects in the workspace for translation completeness an
 
    Agent prompt must include:
    - `cd [path]` then read `CLAUDE.md` for project context
+   - The absolute date, exact project path, and the i18n context already surfaced by this skill (default locale, locale dirs, translation files, content collections)
    - The complete **PROJECT MODE** section from this skill (all 7 phases: i18n Architecture Review → Translation Completeness Matrix → Consistency Audit → Hardcoded String Detection → Technical SEO for i18n → Fix → Report)
    - The **Tracking** section from this skill
    - Rule: **read-only analysis** — no code fixes, only update AUDIT_LOG.md and TASKS.md
+   - Rule: before scoring, identify locale links, routing/SEO consequences, and UI surfaces affected by translation drift
+   - Rule: do not ask follow-up questions; if context is missing, state assumptions / confidence limits and continue
+   - Required sub-report sections: `Scope understood`, `Context read`, `Linked systems & consequences`, `Findings`, `Confidence / missing context`
 
 4. After all agents return, compile a **cross-project translation report**:
 
@@ -289,6 +293,13 @@ Technical fixes: W
 ---
 
 ## Tracking (all modes)
+
+Shared file write protocol for `AUDIT_LOG.md` and `TASKS.md`:
+- Treat the snapshots loaded at skill start as informational only.
+- Right before each write, re-read the target file from disk and use that version as authoritative.
+- Append or replace only the intended row or subsection; never rewrite the whole file from stale context.
+- If the expected anchor moved or changed, re-read once and recompute.
+- If it is still ambiguous after the second read, stop and ask the user instead of forcing the write.
 
 After generating the report and applying fixes:
 

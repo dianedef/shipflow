@@ -26,9 +26,18 @@ argument-hint: [optional: daily, weekly, sprint, release]
 - The review summary should reference which project(s) were worked on and how the master Dashboard changed
 - When planning next session, suggest tasks from the master file's highest-priority items across all projects
 
+## Shared tracking file write protocol
+
+- Treat the TASKS snapshots loaded at skill start as informational only.
+- Right before editing the master or local TASKS file, re-read the target from disk and use that version as authoritative.
+- Apply a minimal targeted edit to the relevant dashboard rows and project sections; never rewrite the whole file from stale context.
+- If the expected anchor moved or changed, re-read once and recompute.
+- If it is still ambiguous after the second read, stop and ask the user instead of forcing the write.
+
 ## Your task
 
 Conduct a comprehensive review of recent work and prepare for the next session.
+This is a review and closure aid, not a truth machine. Commits, changed files, updated docs, and changelog entries are evidence of activity; they are not by themselves proof that the product outcome is complete, coherent, or secure.
 
 ### Workspace root detection
 
@@ -56,6 +65,9 @@ If the current directory has no `.git` directory (not a git repo) BUT contains m
    - Examine git commits for actual changes
    - Identify files modified (from git diff)
    - Note any deployed changes or releases
+   - Reconstruct the intended user story or user-facing outcome when possible
+   - Distinguish clearly between `implemented`, `verified`, and `assumed`
+   - Identify docs, README, guides, FAQ, onboarding, examples, pricing, changelog or support surfaces changed or made stale
 
 3. **Assess work quality**:
    - Are there tests for new features?
@@ -63,6 +75,9 @@ If the current directory has no `.git` directory (not a git repo) BUT contains m
    - Are there any quick fixes that need proper solutions?
    - Any technical debt introduced?
    - Security or performance concerns?
+   - Does the work preserve product coherence with the surrounding flow, terminology, permissions model, and expected user journey?
+   - Does the documentation preserve the same feature behavior, limits, setup steps and promises as the code?
+   - Are there evidence gaps where the review should explicitly avoid claiming `done` or `safe`?
 
 4. **Update CHANGELOG.md**:
    - Add new section for this review period if needed
@@ -87,12 +102,16 @@ If the current directory has no `.git` directory (not a git repo) BUT contains m
      - Features marked for removal
      ```
    - Keep entries user-focused (what changed, why it matters)
+   - Keep entries evidence-based; do not overstate readiness, safety, or completeness
 
 5. **Generate work summary**:
+   - **User Story / Outcome**: What user-facing promise this work aimed to advance
    - **Completed**: What was finished (with evidence)
    - **In Progress**: What's partially done
    - **Blocked**: What's stuck and why
    - **Learned**: Key insights or discoveries
+   - **Security / Product Risks**: Remaining risks, abuse cases, or coherence gaps
+   - **Documentation Coherence**: Docs updated, not impacted, or stale
    - **Metrics**: Commits, files changed, tests added, etc.
 
 6. **Plan next session**:
@@ -107,9 +126,44 @@ If the current directory has no `.git` directory (not a git repo) BUT contains m
    - Add completion dates
    - Move old completed tasks to CHANGELOG or separate archive
    - Ensure In Progress and Todo sections are current
+   - When evidence is partial, keep items in progress with a precise note instead of marking them done prematurely
+
+### Clarification prompts
+
+Ask a concise user question before concluding the review when the answer materially changes the closure or risk framing. Typical triggers:
+- the review period includes work that was merged or deployed but not functionally verified
+- it is unclear whether the intended outcome was internal tooling, a partial iteration, or a user-facing completion
+- security-sensitive changes were made and the available evidence is too thin to classify them confidently
+- user-facing behavior changed but docs/support/pricing/onboarding were not checked or updated
+- the review summary would otherwise imply stronger closure than the evidence supports
+
+Examples:
+- "Do you want this review to frame the work as iteration progress, or as feature closure?"
+- "This looks shipped but not fully validated on the user flow. Should I keep the summary explicit about partial verification?"
+- "There are security-sensitive changes with thin evidence. Do you want them called out as open risks in the review?"
+- "The feature behavior changed but docs were not clearly updated. Should I keep that as an open task?"
 
 8. **Create review report**:
    - Save to `REVIEW-[DATE].md` in project root or docs folder
+   - Start the report with YAML frontmatter:
+     ```yaml
+     ---
+     artifact: review
+     project: "[project name]"
+     created: "[YYYY-MM-DD]"
+     updated: "[YYYY-MM-DD]"
+     status: "[draft|reviewed|partial]"
+     source_skill: sf-review
+     scope: "[daily|weekly|sprint|release]"
+     user_story: "[main outcome if inferable]"
+     confidence: "[high|medium|low]"
+     risk_level: "[low|medium|high]"
+     security_impact: "[none|yes|unknown]"
+     docs_impact: "[none|yes|unknown]"
+     evidence: []
+     next_step: "[recommended command]"
+     ---
+     ```
    - Include all sections above
    - Add links to relevant commits, PRs, issues
    - Make it readable for stakeholders (team, future you)
@@ -119,9 +173,12 @@ If the current directory has no `.git` directory (not a git repo) BUT contains m
 - **Always update the master `/home/claude/shipflow_data/TASKS.md`** — check off completed tasks, update Dashboard statuses, refresh "Last updated" date
 - Be honest about progress - if less was done than planned, say why
 - Focus on outcomes, not just activity
+- Keep outcome claims tied to evidence; distinguish shipped, reviewed, verified, and assumed
 - Highlight wins and learnings
 - Use metrics to show progress (# of tests, coverage, performance improvements)
 - Flag technical debt clearly
+- Flag product coherence gaps and security risks clearly
+- Flag documentation coherence gaps clearly when feature behavior changed
 - Make next steps actionable and specific
 - Keep review concise but comprehensive
 - Update CHANGELOG.md for user-facing changes only

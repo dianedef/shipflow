@@ -1,8 +1,8 @@
 ---
 name: sf-audit-components
-description: Deep specialist audit of component architecture — atomic design inventory, duplication detection, god components, unused components, AHA rule application, variant systems adoption, headless primitives, composition vs configuration, API hygiene. Cross-platform (React/Vue/Svelte/Astro + Flutter).
+description: "Deep specialist audit of component architecture — atomic design inventory, duplication detection, god components, unused components, AHA rule application, variant systems adoption, headless primitives, composition vs configuration, API hygiene. Cross-platform (React/Vue/Svelte/Astro + Flutter)."
 disable-model-invocation: true
-argument-hint: [file-path | "global"] (omit for full project)
+argument-hint: '[file-path | "global"] (omit for full project)'
 ---
 
 ## Context
@@ -294,6 +294,13 @@ Same pattern as other audit skills: read `PROJECTS.md`, let user select projects
 ---
 
 ## Tracking
+
+Shared file write protocol for `AUDIT_LOG.md` and `TASKS.md`:
+- Treat the snapshots loaded at skill start as informational only.
+- Right before each write, re-read the target file from disk and use that version as authoritative.
+- Append or replace only the intended row or subsection; never rewrite the whole file from stale context.
+- If the expected anchor moved or changed, re-read once and recompute.
+- If it is still ambiguous after the second read, stop and ask the user instead of forcing the write.
 
 - Local `AUDIT_LOG.md` : row for "Components" audit with date + score
 - Local `TASKS.md` : `### Audit: Components` subsection with 🔴🟠🟡 findings

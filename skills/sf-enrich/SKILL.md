@@ -31,6 +31,47 @@ Si les fichiers existent mais semblent incomplets, signaler. Continuer dans tous
 
 ---
 
+## Metadata et versioning
+
+Cette skill enrichit souvent du contenu applicatif. Elle doit donc distinguer :
+- **Contenu applicatif runtime** (`src/content/**`, pages MD/MDX/Astro consommées par le site) : préserver le schéma existant et ajouter uniquement des champs compatibles.
+- **Artefacts ShipFlow business/content** (briefs, rapports, docs éditoriales, pages de stratégie hors runtime) : frontmatter ShipFlow obligatoire avec `metadata_schema_version`, `artifact_version` et `depends_on`.
+
+Avant l'enrichissement, lire le frontmatter complet de `BUSINESS.md`, `BRANDING.md` et des docs éditoriales/copywriting existantes (`docs/copywriting/persona.md`, `docs/copywriting/strategie.md`) quand elles existent. Le contenu enrichi doit respecter les versions de contexte utilisées.
+
+Champs compatibles à ajouter seulement si le schéma du projet les accepte :
+
+```yaml
+source_skill: sf-enrich
+content_status: updated
+confidence: medium
+business_intent: "[informational|conversion|editorial]"
+target_audience: "[persona]"
+primary_keyword: "[keyword]"
+business_context_version: "[BUSINESS.md artifact_version or unknown]"
+brand_context_version: "[BRANDING.md artifact_version or unknown]"
+depends_on:
+  - artifact: "BUSINESS.md"
+    artifact_version: "[version or unknown]"
+  - artifact: "BRANDING.md"
+    artifact_version: "[version or unknown]"
+  - artifact: "docs/copywriting/persona.md"
+    artifact_version: "[version or unknown]"
+```
+
+Si le schéma applicatif ne permet pas `depends_on` ou les champs ShipFlow, ne pas les forcer. Reporter les versions utilisées dans le rapport final sous `Context versions` et signaler les versions absentes comme `metadata gaps`.
+
+### Bump `artifact_version`
+
+Pour les artefacts ShipFlow enrichis :
+- `MAJOR` (`1.0.0` -> `2.0.0`) : changement de thèse, audience cible, promesse, positionnement, recommandation business centrale ou angle stratégique.
+- `MINOR` (`1.0.0` -> `1.1.0`) : ajout de sections importantes, nouvelles sources qui changent une recommandation, nouveau CTA stratégique, nouveau segment/persona ou mise à jour substantielle de données.
+- `PATCH` (`1.0.0` -> `1.0.1`) : correction de lien, typo, source, date, exemple ou reformulation sans changement de sens.
+
+Pour le contenu applicatif, ne bump `artifact_version` que si le champ existe déjà ou si le schéma le permet. Sinon, mettre à jour `dateModified`/`lastUpdated`/`updatedAt` selon la convention du projet et documenter les dépendances dans le rapport.
+
+---
+
 ## Your task
 
 Upgrade content to be genuinely useful, technically accurate, and action-driving. The reader should leave knowing more AND knowing exactly what to do next.
@@ -206,6 +247,8 @@ Before finishing, verify:
 - [ ] All code snippets are syntactically correct and up to date
 - [ ] No broken links or placeholder URLs
 - [ ] Frontmatter is complete (title, description, date updated, tags, author)
+- [ ] Frontmatter metadata is preserved and enriched when compatible: `dateModified`, `source_skill`, `content_status`, `confidence`, `primary_keyword`, `target_audience`, `evidence`, `docs_impact`, `business_context_version`, `brand_context_version`, `depends_on`
+- [ ] Application content schema is still valid; incompatible ShipFlow metadata is reported instead of forced into frontmatter
 - [ ] Meta description is rewritten to match the upgraded content
 - [ ] Reading flow is smooth when read top-to-bottom
 - [ ] The piece passes the "so what?" test — every section answers why the reader should care
@@ -240,6 +283,11 @@ Interactive elements:  [calculator, quiz, ...]
 Experience signals:    X first-person passages added
 Decay signals fixed:   [list]
 Changelog updated:     [Y/N]
+Context versions:
+  BUSINESS.md:         [artifact_version or unknown/not found]
+  BRANDING.md:         [artifact_version or unknown/not found]
+  Persona/strategy:    [artifact_version or unknown/not found]
+Metadata gaps:         [none / list]
 ─────────────────────────────────────
 Key changes:
 • [change 1]
@@ -271,4 +319,5 @@ Total CTAs added:     X
 - **Never delete the author's voice.** Enhance structure, add data, sharpen the message — but keep THEIR personality. You're a co-writer, not a replacement.
 - **Batch mode prioritization:** In a folder, process high-traffic pages first (homepage, pillar content) before long-tail articles. Skip files that are already strong — say so in the report.
 - **Update the frontmatter `date`** or `lastUpdated` field to today when content is significantly changed.
+- **Preserve existing frontmatter schema** and add compatible metadata only when it will not break the content collection parser. If business/brand version metadata cannot be stored in frontmatter, include it in the final report.
 - **Accents français obligatoires.** Lors de toute création ou modification de contenu en français, vérifier systématiquement que TOUS les accents sont présents et corrects (é, è, ê, à, â, ù, û, ô, î, ï, ç, œ, æ). Les accents manquants sont une faute d'orthographe. Relire chaque texte produit pour s'assurer qu'aucun accent n'a été oublié — c'est une erreur très fréquente à corriger impérativement.

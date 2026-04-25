@@ -1,8 +1,8 @@
 ---
 name: sf-audit-gtm
-description: Professional go-to-market review — single page (with argument) or full project audit (no argument)
+description: "Professional go-to-market review — single page (with argument) or full project audit (no argument)"
 disable-model-invocation: true
-argument-hint: [file-path | "global"] (omit for full project)
+argument-hint: '[file-path | "global"] (omit for full project)'
 ---
 
 ## Context
@@ -11,6 +11,7 @@ argument-hint: [file-path | "global"] (omit for full project)
 - Project CLAUDE.md: !`head -100 CLAUDE.md 2>/dev/null || echo "no CLAUDE.md"`
 - Business context: !`head -60 BUSINESS.md 2>/dev/null || echo "no BUSINESS.md — run /sf-init to generate"`
 - Brand voice: !`head -60 BRANDING.md 2>/dev/null || echo "no BRANDING.md — run /sf-init to generate"`
+- Business metadata: !`for f in BUSINESS.md BRANDING.md GUIDELINES.md; do if [ -f "$f" ]; then printf '%s: ' "$f"; sed -n '1,40p' "$f" | grep -E '^(metadata_schema_version|artifact_version|status|updated|confidence|next_review):' | tr '\n' ' '; printf '\n'; else echo "$f: missing"; fi; done`
 - All pages: !`find src/pages src/app -name "*.astro" -o -name "*.tsx" -o -name "*.vue" 2>/dev/null | grep -v node_modules | sort`
 - Analytics: !`grep -ri "analytics\|gtag\|plausible\|umami\|posthog\|vercel/analytics" src/ 2>/dev/null | head -10 || echo "no analytics found"`
 - Auth/payment: !`grep -ri "clerk\|stripe\|lemonsqueezy\|paddle\|auth" package.json 2>/dev/null | head -5 || echo "none"`
@@ -30,6 +31,33 @@ Avant de commencer, vérifier le contexte chargé ci-dessus. Si BUSINESS.md ou B
 ```
 
 Si les fichiers existent mais semblent incomplets, signaler. Continuer l'audit dans tous les cas.
+
+---
+
+## Metadata versioning doctrine
+
+`BUSINESS.md`, `BRANDING.md`, and `GUIDELINES.md` are ShipFlow decision contracts when present. Before scoring:
+- Read their frontmatter or first metadata block and report `artifact_version`, `status`, `updated`, `confidence`, and `next_review` when available.
+- If a contract is missing `artifact_version`, `status`, or `updated`, add a proof gap: `business doc metadata incomplete`.
+- If `status` is `draft`, `stale`, `outdated`, `deprecated`, or `confidence` is `low`, cap confidence and mention that GTM scoring depends on an unreviewed business contract.
+- If `next_review` is before today's absolute date, treat the document as stale unless the audit finds an explicit newer replacement.
+- If public pricing, positioning, ICP, funnel, onboarding, or security/compliance promises rely on stale or unversioned business docs, do not give `A` for the affected category.
+- Include a `Business metadata versions` section in every report, even when the section says `missing`.
+
+Use ShipFlow versioning semantics: patch = editorial clarification with no decision change, minor = changed decision guidance inside the same strategy, major = changed ICP, positioning, pricing model, promise, trust posture, market, or GTM strategy.
+
+---
+
+## Doctrine business
+
+Évaluer la promesse business comme un contrat, pas comme une préférence marketing :
+- la user story cible est claire : persona, déclencheur, résultat attendu, valeur business
+- les promesses publiques sont crédibles, prouvées, et alignées avec ce que le produit livre réellement
+- le parcours client est cohérent de la première page jusqu'à l'onboarding, le paiement, le support et la rétention
+- les claims sensibles (sécurité, gain financier, conformité, disponibilité, automatisation, IA, résultats chiffrés) ont une preuve vérifiable ou sont signalés comme risques
+- les changements produit récents sont reflétés dans les pages, docs, pricing, FAQ, onboarding, emails, mentions légales et support quand ils affectent la promesse
+
+Si une page vend une capacité que le produit, la documentation ou le flow ne confirme pas, noter un écart de cohérence produit/documentation. Ne pas attribuer un score A à une promesse non prouvée.
 
 ---
 
@@ -57,9 +85,15 @@ Audit ALL commercial projects in the workspace for go-to-market readiness.
 
    Agent prompt must include:
    - `cd [path]` then read `CLAUDE.md` for project context
+   - The absolute date, exact project path, and the GTM context already surfaced by this skill (`BUSINESS.md`, `BRANDING.md`, analytics, auth/payment hints, env hints)
    - The complete **PROJECT MODE** section from this skill (all 8 phases: Positioning Map → Conversion Funnel Map → Page-by-Page GTM → Trust Architecture → Analytics & Measurement → Launch Readiness → Fix → Report)
    - The **Tracking** section from this skill
    - Rule: **read-only analysis** — no code fixes, only update AUDIT_LOG.md and TASKS.md
+   - Rule: before scoring, identify funnel links, measurement dependencies, and downstream conversion consequences
+   - Rule: call out user-story drift, unproven claims, documentation mismatch, and risky business/security promises explicitly
+   - Rule: read/report `BUSINESS.md`, `BRANDING.md`, and `GUIDELINES.md` metadata versions; flag missing, stale, low-confidence, or unversioned contracts as proof gaps before scoring
+   - Rule: do not ask follow-up questions; if context is missing, state assumptions / confidence limits and continue
+   - Required sub-report sections: `Scope understood`, `User story / promise`, `Business metadata versions`, `Context read`, `Linked systems & consequences`, `Documentation coherence`, `Risky assumptions / proof gaps`, `Findings`, `Confidence / missing context`
 
 4. After all agents return, compile a **cross-project GTM report**:
 
@@ -104,6 +138,7 @@ Score each category **A/B/C/D**. Be strict — growth/marketing professional sta
 - [ ] Competitive differentiation is visible
 - [ ] Target audience is obvious from language, imagery, examples
 - [ ] Positioning is specific, not vague
+- [ ] Promise matches product/docs reality, not an aspirational roadmap claim
 
 #### 2. Conversion Architecture
 - [ ] Clear single goal (one primary conversion action)
@@ -127,6 +162,7 @@ Score each category **A/B/C/D**. Be strict — growth/marketing professional sta
 - [ ] "Who is this for / not for" clarity
 - [ ] Setup complexity addressed
 - [ ] Data/privacy concerns addressed if relevant
+- [ ] Security, compliance, AI, data, or payment claims are backed by visible proof or clear docs
 
 #### 5. Funnel Alignment
 - [ ] Page matches traffic source intent
@@ -148,6 +184,7 @@ Score each category **A/B/C/D**. Be strict — growth/marketing professional sta
 - [ ] Accessibility meets minimum legal requirements
 - [ ] Contact/support channel functional
 - [ ] Mobile experience equal to desktop
+- [ ] Public docs, FAQ, pricing, onboarding and support copy align with the feature promise
 
 ### Step 3: Fix
 
@@ -161,6 +198,10 @@ For each issue rated B or worse:
 ```
 GTM REVIEW: [page name] — funnel stage: [awareness/consideration/conversion/retention]
 ─────────────────────────────────────
+Business metadata:
+  BUSINESS.md    artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing]
+  BRANDING.md    artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing]
+  GUIDELINES.md  artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing]
 Positioning        [A/B/C/D] — one-line summary
 Conversion         [A/B/C/D] — one-line summary
 Trust & Proof      [A/B/C/D] — one-line summary
@@ -168,10 +209,11 @@ Objection Handling [A/B/C/D] — one-line summary
 Funnel Alignment   [A/B/C/D] — one-line summary
 Analytics          [A/B/C/D] — one-line summary
 Market Readiness   [A/B/C/D] — one-line summary
+Docs Coherence     [A/B/C/D] — product/docs/pricing/support aligned
 ─────────────────────────────────────
 OVERALL            [A/B/C/D]
 
-Fixed: X issues | Strategic recommendations: Y
+Fixed: X issues | Strategic recommendations: Y | Proof gaps: Z
 ```
 
 ---
@@ -254,6 +296,8 @@ Classify each page by funnel role and audit:
 - [ ] Mobile experience complete
 - [ ] Forms submit correctly
 - [ ] Payment flow works (if applicable)
+- [ ] Docs, pricing, FAQ, onboarding, transactional emails and support surfaces match current feature behavior
+- [ ] No launch-critical promise remains unproven or contradicted by product/docs
 - [ ] Email templates branded
 - [ ] 404 page helpful
 - [ ] Social previews look good
@@ -274,6 +318,12 @@ Fix all issues in code. Priority:
 ```
 GTM AUDIT: [project name]
 ═══════════════════════════════════════
+
+BUSINESS METADATA VERSIONS
+  BUSINESS.md    artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing] next_review=[date|missing]
+  BRANDING.md    artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing] next_review=[date|missing]
+  GUIDELINES.md  artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing] next_review=[date|missing]
+  Proof gaps: [missing/stale/unversioned docs that affected scoring, or none]
 
 POSITIONING
   Value proposition:     [clear / vague / missing]
@@ -308,6 +358,13 @@ Strategic recommendations: Z (detailed below)
 ---
 
 ## Tracking (all modes)
+
+Shared file write protocol for `AUDIT_LOG.md` and `TASKS.md`:
+- Treat the snapshots loaded at skill start as informational only.
+- Right before each write, re-read the target file from disk and use that version as authoritative.
+- Append or replace only the intended row or subsection; never rewrite the whole file from stale context.
+- If the expected anchor moved or changed, re-read once and recompute.
+- If it is still ambiguous after the second read, stop and ask the user instead of forcing the write.
 
 After generating the report and applying fixes:
 

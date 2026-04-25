@@ -40,13 +40,13 @@ NC='\033[0m' # No Color
 echo -e "${BLUE}🚇 Dev Tunnel Manager${NC}"
 echo ""
 
-# Resolve the server-side library from ShipFlow install paths.
+# Resolve the server-side library from canonical shipflow install paths.
 fetch_server_session_info() {
     ssh -o ConnectTimeout=5 "$REMOTE_HOST" "bash -lc '
         for lib_path in \
-            \"\$HOME/ShipFlow/lib.sh\" \
-            \"/home/claude/ShipFlow/lib.sh\" \
-            \"/root/ShipFlow/lib.sh\"
+            \"\$HOME/shipflow/lib.sh\" \
+            \"/home/claude/shipflow/lib.sh\" \
+            \"/root/shipflow/lib.sh\"
         do
             if [ -f \"\$lib_path\" ]; then
                 source \"\$lib_path\" 2>/dev/null

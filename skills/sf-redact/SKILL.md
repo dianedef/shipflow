@@ -1,8 +1,8 @@
 ---
 name: sf-redact
-description: Rédiger du contenu original long format — articles de blog, guides informationnels, éditoriaux — adapté à la marque, l'audience et la voix de l'auteur du projet
+description: "Rédiger du contenu original long format — articles de blog, guides informationnels, éditoriaux — adapté à la marque, l'audience et la voix de l'auteur du projet"
 disable-model-invocation: true
-argument-hint: <nombre> <format> [sujet] (ex: "3 blog", "1 editorial IA en éducation", "2 informational")
+argument-hint: '<nombre> <format> [sujet] (ex: "3 blog", "1 editorial IA en éducation", "2 informational")'
 ---
 
 ## Context
@@ -35,6 +35,55 @@ Avant de commencer, vérifier le contexte chargé ci-dessus. Signaler ce qui man
 ```
 
 N'afficher que les lignes correspondant aux fichiers réellement absents. Si tout est présent, ne rien afficher. Continuer dans tous les cas.
+
+---
+
+## Metadata et versioning
+
+Cette skill peut produire deux types de fichiers :
+- **Contenu applicatif** (`src/content/**`, `content/**`, posts MD/MDX consommés par le site) : respecter strictement le schéma du projet. Ne pas ajouter de champs incompatibles avec `content/config.ts`, Contentlayer, Astro, Next, Hugo ou le parser local.
+- **Artefact ShipFlow business/content** (brief éditorial, calendrier, stratégie, persona, doc de contenu, rapport sauvegardé hors runtime) : frontmatter ShipFlow obligatoire avec `metadata_schema_version`, `artifact_version` et `depends_on`.
+
+Avant de planifier ou rédiger, lire le frontmatter complet de `BUSINESS.md`, `BRANDING.md`, `GUIDELINES.md`, `FOUNDER.md`/`AUTHOR.md` quand ils existent. Si le contenu dépend de ces contrats, reporter leurs versions :
+
+```yaml
+depends_on:
+  - artifact: "BUSINESS.md"
+    artifact_version: "[version or unknown]"
+    required_status: "reviewed"
+  - artifact: "BRANDING.md"
+    artifact_version: "[version or unknown]"
+    required_status: "reviewed"
+```
+
+Pour un contenu applicatif dont le schéma accepte des champs libres, ajouter seulement les champs compatibles :
+
+```yaml
+source_skill: sf-redact
+content_status: draft
+confidence: medium
+business_intent: "[informational|conversion|editorial]"
+target_audience: "[persona]"
+primary_keyword: "[keyword]"
+business_context_version: "[BUSINESS.md artifact_version or unknown]"
+brand_context_version: "[BRANDING.md artifact_version or unknown]"
+depends_on:
+  - artifact: "BUSINESS.md"
+    artifact_version: "[version or unknown]"
+  - artifact: "BRANDING.md"
+    artifact_version: "[version or unknown]"
+```
+
+Si le schéma applicatif n'accepte pas ces champs, ne pas les forcer. Mentionner les versions utilisées dans le rapport final sous `Context versions` et signaler les versions manquantes comme `metadata gaps`.
+
+### Bump `artifact_version`
+
+Pour les artefacts ShipFlow générés par cette skill :
+- `MAJOR` (`1.0.0` -> `2.0.0`) : changement de stratégie éditoriale, audience cible, positionnement, promesse, langue principale, angle fondateur ou objectif business du contenu.
+- `MINOR` (`1.0.0` -> `1.1.0`) : ajout d'un pilier éditorial, nouveau cluster SEO, nouvelle série d'articles, nouveau persona secondaire ou source business importante.
+- `PATCH` (`1.0.0` -> `1.0.1`) : correction de formulation, typo, lien, tag, source ou précision sans changement stratégique.
+
+Pour le contenu applicatif, ne bump `artifact_version` que si le schéma projet contient déjà ce champ. Sinon, utiliser les champs existants (`dateModified`, `lastUpdated`, `updatedAt`) et reporter la dépendance business/brand dans le rapport.
 
 ---
 
@@ -180,14 +229,26 @@ Respecter le schéma de contenu du projet (depuis `content/config.ts`). Si pas d
 title: "[Titre accrocheur, spécifique — 50-70 caractères]"
 description: "[Meta description — 150-160 caractères, inclut la proposition de valeur]"
 date: [date du jour, format ISO]
+dateModified: [date du jour, format ISO]
 author: "[depuis FOUNDER.md ou convention du projet]"
 tags: [tags pertinents, taxonomie existante]
 category: "[catégories existantes]"
 readingTime: "[estimé : word count / 200]"
 image: "[placeholder : /images/blog/slug.webp — signaler dans le rapport que l'image est nécessaire]"
 draft: false
+source_skill: sf-redact
+content_status: draft
+confidence: medium
+business_intent: "[informational|conversion|editorial]"
+target_audience: "[persona]"
+primary_keyword: "[keyword]"
+evidence:
+  - "[source URL or title]"
+docs_impact: none
 ---
 ```
+
+Si le projet a déjà un schéma de frontmatter, préserver les champs requis et n'ajouter ces métadonnées que si elles sont compatibles. Ne jamais casser un schéma applicatif pour imposer les metadata ShipFlow ; reporter les versions utilisées dans le rapport final si le frontmatter ne peut pas les contenir.
 
 #### Écrire en tant que l'auteur
 
@@ -295,6 +356,11 @@ Sources citées : [nombre] (depuis [nombre] recherches web)
 Liens internes : [nombre]
 Liens externes : [nombre]
 Fichier :        [chemin du fichier créé]
+Context versions:
+  BUSINESS.md:  [artifact_version or unknown/not found]
+  BRANDING.md:  [artifact_version or unknown/not found]
+  GUIDELINES.md:[artifact_version or unknown/not found]
+Metadata gaps:  [none / list]
 ─────────────────────────────────────
 Sections :
   1. [titre H2]

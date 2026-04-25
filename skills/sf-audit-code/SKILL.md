@@ -1,14 +1,15 @@
 ---
 name: sf-audit-code
-description: Professional code review — single file (with argument) or full project audit (no argument). Architecture, performance, security, reliability, modern practices.
+description: "Professional code review — single file (with argument) or full project audit (no argument). User story fit, product coherence, workflow abuse/bypass, security, architecture, reliability, modern practices."
 disable-model-invocation: true
-argument-hint: [file-path | "global"] (omit for full project)
+argument-hint: '[file-path | "global"] (omit for full project)'
 ---
 
 ## Context
 
 - Current directory: !`pwd`
 - Project CLAUDE.md: !`head -120 CLAUDE.md 2>/dev/null || echo "no CLAUDE.md"`
+- Business metadata: !`for f in BUSINESS.md BRANDING.md GUIDELINES.md; do if [ -f "$f" ]; then printf '%s: ' "$f"; sed -n '1,40p' "$f" | grep -E '^(metadata_schema_version|artifact_version|status|updated|confidence|next_review):' | tr '\n' ' '; printf '\n'; else echo "$f: missing"; fi; done`
 - Package.json: !`cat package.json 2>/dev/null | head -80 || echo "no package.json"`
 - Dependencies: !`cat package.json 2>/dev/null | grep -E '"(dependencies|devDependencies)"' -A 100 | head -80 || pip list 2>/dev/null | head -40 || echo "unknown"`
 - Lockfile: !`ls -1 package-lock.json yarn.lock pnpm-lock.yaml requirements.txt Pipfile.lock 2>/dev/null | head -3 || echo "none"`
@@ -21,6 +22,39 @@ argument-hint: [file-path | "global"] (omit for full project)
 - **`$ARGUMENTS` is "global"** → GLOBAL MODE: audit ALL projects in the workspace.
 - **`$ARGUMENTS` is a file path** → FILE MODE: deep code review of that single file.
 - **`$ARGUMENTS` is empty** → PROJECT MODE: full architecture/perf/security/reliability audit.
+
+---
+
+## Audit doctrine
+
+Audit against the current ShipFlow doctrine:
+- start from the `User Story` or the most likely user-facing promise, not from implementation trivia
+- judge whether the product behavior is coherent for the actor, trigger, expected outcome, and scope boundaries
+- look for workflow bypass, replay, misuse, stale state, and inconsistent outcomes
+- review security with modern expectations, proportionate to risk
+- keep the audit actionable: concrete evidence, concrete impact, concrete next step
+
+If no explicit user story exists, reconstruct the most likely one from routes, UI labels, docs, tests, and task context. State clearly when it is inferred.
+
+Before scoring, always answer:
+- who is the actor?
+- what outcome is the code trying to deliver?
+- what user-visible or operator-visible behavior proves success?
+- what linked systems, invariants, and trust boundaries could break?
+
+If an ambiguity changes product meaning, permissions, data exposure, tenant isolation, money movement, destructive behavior, or external side effects, do not smooth it over. Ask the user a targeted question or mark the finding as blocking.
+
+## Metadata versioning doctrine
+
+`BUSINESS.md`, `BRANDING.md`, and `GUIDELINES.md` are ShipFlow decision contracts when code behavior implements a user promise, role model, trust posture, workflow, pricing boundary, onboarding path, or public claim. Before scoring:
+- Read/report `artifact_version`, `status`, `updated`, `confidence`, and `next_review` when available.
+- If `artifact_version`, `status`, or `updated` is missing, add a proof gap: `business doc metadata incomplete`.
+- If `status` is `draft`, `stale`, `outdated`, `deprecated`, or `confidence` is `low`, cap confidence and state that product-code scoring depends on an unreviewed decision contract.
+- If `next_review` is before today's absolute date, treat the document as stale unless a newer replacement is explicit.
+- If behavior, permissions, data retention, payment logic, AI behavior, security posture, or workflow expectations rely on stale or unversioned docs, do not give `A` to `User Story Fit`, `Workflow Integrity`, or `Security`.
+- Include a `Business metadata versions` section in every report.
+
+Use ShipFlow versioning semantics: patch = clarification with no behavior/decision change, minor = changed decision guidance inside the same product strategy, major = changed ICP, positioning, pricing model, trust posture, permission model, data posture, or core product promise.
 
 ---
 
@@ -40,9 +74,15 @@ Audit ALL projects in the workspace for code quality, architecture, security, an
 
    Agent prompt must include:
    - `cd [path]` then read `CLAUDE.md` for project context
-   - The complete **PROJECT MODE** section from this skill (all 7 phases: Architecture → Performance → Security → Reliability → Modern Best Practices → Fix → Report)
+   - The absolute date, exact project path, and the config/manifests already surfaced by this skill (`package.json`, lockfiles, config files, CI files)
+   - The complete **PROJECT MODE** section from this skill (all 9 phases: Scope & User Story → Workflow Integrity & Product Coherence → Architecture → Performance → Security → Reliability → Modern Best Practices → Fix → Report)
    - The **Tracking** section from this skill
    - Rule: **read-only analysis** — no code fixes, only update AUDIT_LOG.md and TASKS.md
+   - Rule: before scoring, identify the explicit or inferred user story, linked systems, consumers, contracts, trust boundaries, and probable downstream consequences
+   - Rule: do one adversarial pass for bypass, double submission, stale state, replay, partial failure, and unauthorized actor paths
+   - Rule: read/report `BUSINESS.md`, `BRANDING.md`, and `GUIDELINES.md` metadata versions when they affect product behavior, trust posture, roles, pricing, or claims; flag missing, stale, low-confidence, or unversioned contracts as proof gaps before scoring
+   - Rule: do not ask follow-up questions; if context is missing, state assumptions / confidence limits and continue
+   - Required sub-report sections: `Scope understood`, `User story`, `Business metadata versions`, `Context read`, `Linked systems & consequences`, `Adversarial review`, `Security review`, `Findings`, `Confidence / missing context`
 
 4. After all agents return, compile a **cross-project code report**:
 
@@ -76,7 +116,14 @@ Audit ALL projects in the workspace for code quality, architecture, security, an
 2. Read files it imports/depends on (follow the imports, 1 level deep).
 3. Read the types/interfaces it uses.
 4. Identify the file's role: component, page, API route, utility, config, test, etc.
-5. Identify project conventions this file must fit:
+5. Infer or locate the user story / product promise this file serves:
+   - Use nearby docs, route names, UI labels, tests, comments, and task context.
+   - State the actor, trigger, expected outcome, and value.
+   - If inferred rather than explicit, say so.
+6. Identify linked systems, trust boundaries, and consequences:
+   - consumers, routes, jobs, APIs, webhooks, storage, analytics, auth, tenant boundaries, admin surfaces
+   - preconditions, postconditions, invariants, and failure modes
+7. Identify project conventions this file must fit:
    - Look for existing equivalents before suggesting “new utils”:
      - Search for same responsibility by filename (`date*`, `error*`, `format*`, `validate*`, `client*`, `logger*`) and by key identifiers.
      - Check canonical folders (`utils/`, `lib/`, `shared/`, `common/`, `services/`, `core/`) for existing helpers.
@@ -88,7 +135,23 @@ Audit ALL projects in the workspace for code quality, architecture, security, an
 
 Score each category **A/B/C/D**. Be strict.
 
-#### 1. Architecture & Structure
+#### 1. User Story Fit & Product Coherence
+- [ ] The file clearly serves a user-facing or operator-facing outcome
+- [ ] Actor, trigger, expected result, and scope boundaries are understandable from code/context
+- [ ] Behavior matches the likely product promise, not just a technical proxy
+- [ ] Empty, error, loading, denied, expired, and retry states are coherent for the user
+- [ ] Copy, status, and side effects do not mislead the user about what really happened
+- [ ] If multiple actors/roles exist, each sees behavior consistent with permissions and intent
+
+#### 2. Workflow Integrity & Abuse Resistance
+- [ ] The flow cannot be trivially bypassed by skipping UI steps or calling internals directly
+- [ ] Duplicate submission, replay, refresh, back-button, stale state, and concurrent action risks are handled
+- [ ] Partial failure does not leave the workflow, data, or permissions in an incoherent state
+- [ ] State transitions are explicit and reject invalid orderings
+- [ ] Trust is not delegated to the UI when server/API enforcement is required
+- [ ] Abuse cases are considered for the file's role: unauthorized actor, malformed input, cross-tenant access, webhook spoofing, poisoned content, etc.
+
+#### 3. Architecture & Structure
 - [ ] Single responsibility — file does one thing well
 - [ ] Under 300 lines (if over, should it be split?)
 - [ ] Clear function/component boundaries (each function < 50 lines)
@@ -96,43 +159,47 @@ Score each category **A/B/C/D**. Be strict.
 - [ ] Proper separation: logic vs presentation vs data access
 - [ ] Exports are intentional (not exporting internals)
 
-#### 2. System Fit & Reuse (anti-duplication)
+#### 4. System Fit & Reuse (anti-duplication)
 - [ ] Uses existing utilities/modules instead of re-implementing
 - [ ] Naming/signatures match existing conventions (don’t create near-duplicates)
 - [ ] Follows the project’s established patterns (validation, errors, logging, data access)
 - [ ] No “context-free” helpers (generic utils that should live in shared modules)
 - [ ] If this introduces a new abstraction, it’s justified (measurable reuse / simplifies call sites)
 
-#### 3. Type Safety
+#### 5. Type Safety
 - [ ] No `any` types
 - [ ] Function parameters and return types are typed
 - [ ] API responses / external data validated at boundary (Zod, Valibot, runtime check)
 - [ ] No type assertions (`as`) that bypass safety
 - [ ] Enums or const maps instead of magic strings/numbers
 
-#### 4. Error Handling
+#### 6. Error Handling
 - [ ] Every async call has error handling
 - [ ] Errors are not swallowed (no empty `catch {}`)
 - [ ] User-facing errors are helpful and actionable
 - [ ] Edge cases handled: null, undefined, empty arrays, network failure
 - [ ] No unhandled promise rejections
 
-#### 5. Performance
+#### 7. Performance
 - [ ] No unnecessary re-renders (React: stable callbacks, proper deps arrays)
 - [ ] No expensive computations on every render (memoize if needed)
 - [ ] No N+1 queries or waterfall fetches
 - [ ] Large imports are tree-shakeable or lazy-loaded
 - [ ] Images/assets properly optimized if referenced
 
-#### 6. Security
-- [ ] User input is validated before use
-- [ ] No `dangerouslySetInnerHTML` / `set:html` with user data
+#### 8. Security
+- [ ] Authentication is explicit where required; identity is not assumed from the client
+- [ ] Authorization is enforced per action/resource, including server-side checks when needed
+- [ ] User or external input is validated before use, with bounds and format checks proportionate to risk
+- [ ] No `dangerouslySetInnerHTML` / `set:html` with unsafe data
 - [ ] No secrets or hardcoded credentials
 - [ ] No `eval()`, `new Function()`, or dynamic code execution
-- [ ] Auth/authorization checked if this is an API route or mutation
-- [ ] No open redirects or XSS vectors
+- [ ] No open redirects, XSS, injection, IDOR, or cross-tenant access vectors
+- [ ] Sensitive data is not leaked through logs, errors, cache, analytics, or client state
+- [ ] External integrations, webhooks, uploads, generated content, and async jobs have trust checks
+- [ ] Availability / abuse controls exist when relevant: rate limits, quotas, body size limits, retry discipline, idempotency
 
-#### 7. Modern Practices
+#### 9. Modern Practices
 - [ ] Uses current framework patterns (not deprecated APIs)
 - [ ] Hooks over class components (React)
 - [ ] Reactive queries over fetch-in-effect (Convex, React Query)
@@ -140,7 +207,7 @@ Score each category **A/B/C/D**. Be strict.
 - [ ] No commented-out code
 - [ ] Naming is clear and consistent
 
-#### 8. Reliability
+#### 10. Reliability
 - [ ] Tests exist for this file (or should they?)
 - [ ] Edge cases considered (empty state, max length, concurrent access)
 - [ ] Cleanup on unmount (subscriptions, timers, event listeners)
@@ -150,14 +217,21 @@ Score each category **A/B/C/D**. Be strict.
 
 For each issue rated B or worse:
 1. Explain the problem with the specific line.
-2. Fix it directly in the code (prefer **reuse over invention**: delete duplicates and call the existing helper/module).
-3. For architectural choices, propose 2 options and ask.
+2. Explain the concrete user impact, product incoherence, abuse path, or security risk.
+3. Fix it directly in the code (prefer **reuse over invention**: delete duplicates and call the existing helper/module).
+4. For architectural choices, propose 2 options and ask.
 
 ### Step 4: Report
 
 ```
 CODE REVIEW: [file name]
 ─────────────────────────────────────
+Business metadata:
+  BUSINESS.md    artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing]
+  BRANDING.md    artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing]
+  GUIDELINES.md  artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing]
+User Story Fit     [A/B/C/D] — one-line summary
+Workflow Integrity [A/B/C/D] — one-line summary
 Architecture       [A/B/C/D] — one-line summary
 System Fit & Reuse [A/B/C/D] — one-line summary
 Type Safety        [A/B/C/D] — one-line summary
@@ -170,6 +244,18 @@ Reliability        [A/B/C/D] — one-line summary
 OVERALL            [A/B/C/D]
 
 Fixed: X issues | Needs decision: Y
+
+User Story:
+- [explicit or inferred story]
+
+Product coherence:
+- [main coherence finding]
+
+Adversarial review:
+- [main bypass / abuse / bad-state finding]
+
+Security review:
+- [main security finding]
 ```
 
 ---
@@ -189,11 +275,60 @@ Use **AskUserQuestion**:
 
 Then proceed to **GLOBAL MODE** with the selected projects.
 
-### PHASE 1: ARCHITECTURE
+### PHASE 1: SCOPE & USER STORY
+
+Read the project structure, entry points, docs, route map, tests, and 10-15 key files. Establish the product contract before technical scoring.
+
+#### 1.1 User Story & Outcome
+- [ ] An explicit user story exists in docs/tasks/specs, or a credible inferred one can be reconstructed from the product
+- [ ] Actor, trigger, expected behavior, and value are identifiable
+- [ ] The main promise is observable in the product, not only implied in implementation details
+- [ ] Scope boundaries are visible: what this product deliberately does not do
+
+#### 1.2 Product Coherence
+- [ ] Main flows feel coherent from UI to backend to data side effects
+- [ ] Loading, empty, error, denied, expired, retry, and recovery states make sense to the user
+- [ ] Status labels and confirmations reflect actual system state
+- [ ] Cross-surface behavior is coherent: route guards, admin tools, jobs, emails, webhooks, exports, mobile vs web if relevant
+
+#### 1.3 Links, Consequences & Trust Boundaries
+- [ ] Upstream/downstream systems are identified
+- [ ] Data contracts, auth boundaries, tenant boundaries, and external trust assumptions are visible
+- [ ] Invariants and side effects are named before scoring
+
+If the user story is unclear but materially changes the audit conclusion, ask a targeted user question before proceeding. Otherwise, state the inferred story and confidence level.
+
+---
+
+### PHASE 2: WORKFLOW INTEGRITY & PRODUCT COHERENCE
+
+Critique the product as an adversary and as a disappointed user.
+
+#### 2.1 Workflow Integrity
+- [ ] Important flows cannot be bypassed by direct route/API access, skipping steps, or stale client state
+- [ ] Duplicate submissions, retries, refreshes, back/forward nav, and replayed webhooks or jobs are handled
+- [ ] Invalid state transitions are rejected
+- [ ] Partial failure, timeout, cancellation, and rollback paths are coherent
+- [ ] Async jobs and manual actions do not race into inconsistent outcomes
+
+#### 2.2 Abuse & Misuse Cases
+- [ ] Unauthorized user, malicious user, cross-tenant user, or low-privilege operator paths were considered
+- [ ] External service failure or poisoned input does not silently corrupt the workflow
+- [ ] The design does not assume "UI visibility = permission"
+- [ ] High-value operations have adequate confirmation, auditability, or idempotency where relevant
+
+#### 2.3 Product Quality Signals
+- [ ] The product solves the right problem, not a narrower technical surrogate
+- [ ] Feature behavior is consistent with surrounding product patterns
+- [ ] Naming, copy, and interaction patterns reduce user confusion instead of adding it
+
+---
+
+### PHASE 3: ARCHITECTURE
 
 Read the project structure, entry points, configs, and 10-15 key files. Audit:
 
-#### 1.1 Project Structure & Organization
+#### 3.1 Project Structure & Organization
 - [ ] Clear separation of concerns (pages/routes, components, utils, services, types)
 - [ ] No circular dependencies between modules
 - [ ] No god files (> 300 lines doing too many things)
@@ -201,7 +336,7 @@ Read the project structure, entry points, configs, and 10-15 key files. Audit:
 - [ ] Config is centralized
 - [ ] Environment variables are typed and validated at startup
 
-#### 1.2 Data Flow & State Management
+#### 3.2 Data Flow & State Management
 - [ ] Data flows in one direction (no prop drilling > 3 levels)
 - [ ] Server state and client state separated
 - [ ] No redundant state (derived values computed, not stored)
@@ -209,21 +344,21 @@ Read the project structure, entry points, configs, and 10-15 key files. Audit:
 - [ ] Real-time subscriptions cleaned up on unmount
 - [ ] No stale closures in effects/callbacks
 
-#### 1.3 Error Boundaries & Resilience
+#### 3.3 Error Boundaries & Resilience
 - [ ] Error boundaries at route level
 - [ ] API calls have proper error handling
 - [ ] Network failures show user-friendly messages
 - [ ] Retry logic for transient failures
 - [ ] Partial failures handled gracefully
 
-#### 1.4 Type Safety
+#### 3.4 Type Safety
 - [ ] `strict: true` in tsconfig
 - [ ] No `any` types
 - [ ] API responses validated at boundary
 - [ ] Shared types between frontend/backend
 - [ ] Enums or const maps instead of magic strings
 
-#### 1.5 Consistency & Reuse (anti-duplication / convention drift)
+#### 3.5 Consistency & Reuse (anti-duplication / convention drift)
 - [ ] Common utilities exist exactly once (no “near-duplicate” helpers across `utils/`, `lib/`, `shared/`)
 - [ ] Error handling is standardized (don’t have multiple competing patterns unless clearly scoped)
 - [ ] Validation is standardized at boundaries (pick one approach per layer)
@@ -231,7 +366,7 @@ Read the project structure, entry points, configs, and 10-15 key files. Audit:
 - [ ] No parallel state-management paradigms competing in the same app (unless intentionally isolated)
 - [ ] New code follows conventions set in the last 3–6 months (avoid regressions to legacy patterns)
 
-#### 1.6 Dependency Health (quick check)
+#### 3.6 Dependency Health (quick check)
 
 > Deep dependency analysis has moved to `/sf-deps`.
 
@@ -239,7 +374,7 @@ Read the project structure, entry points, configs, and 10-15 key files. Audit:
 
 ---
 
-### PHASE 2: PERFORMANCE (quick scan)
+### PHASE 4: PERFORMANCE (quick scan)
 
 > Deep performance analysis has moved to `/sf-perf`.
 
@@ -252,64 +387,79 @@ Quick architecture-level checks only:
 
 ---
 
-### PHASE 3: SECURITY
+### PHASE 5: SECURITY
 
-#### 3.1 Authentication & Authorization
-- [ ] Auth tokens stored securely (httpOnly cookies)
-- [ ] Every API route checks authentication
-- [ ] Authorization checked per resource
-- [ ] Session expiration and refresh rotation
-- [ ] OAuth state parameter validated
+#### 5.1 Authentication & Authorization
+- [ ] Auth tokens stored securely (httpOnly cookies or equivalent)
+- [ ] Every API route, action, job trigger, or webhook entry checks authentication when required
+- [ ] Authorization checked per resource and per action, not just per screen
+- [ ] Session expiration, refresh rotation, revocation, and privilege changes are handled
+- [ ] OAuth state parameter / callback integrity validated
+- [ ] Tenant, org, project, or account boundaries enforced server-side
 
-#### 3.2 Input Validation & Injection
+#### 5.2 Input Validation & Injection
 - [ ] All input validated server-side
 - [ ] Parameterized queries (no string concatenation)
 - [ ] HTML output escaped (check `dangerouslySetInnerHTML`, `set:html`)
 - [ ] File uploads validate type, size, content
 - [ ] No `eval()` or `new Function()` with user input
+- [ ] Markdown/rendered/generated content is sanitized or constrained
+- [ ] URL, redirect, search, filter, sort, and identifier inputs have allowlists or constraints
+- [ ] Webhooks and third-party callbacks verify authenticity and expected schema
 
-#### 3.3 Secrets & Configuration
+#### 5.3 Secrets & Configuration
 - [ ] No secrets in source code
 - [ ] `.env` files in `.gitignore`
 - [ ] Secrets via env vars or secret manager
 - [ ] No secrets in logs or error messages
 - [ ] `.env.example` exists
+- [ ] Sensitive config is least-privilege and scoped to the environment
 
-#### 3.4 HTTP Security
+#### 5.4 HTTP Security
 - [ ] HTTPS enforced
 - [ ] Security headers set (CSP, X-Frame-Options, etc.)
 - [ ] CORS restrictive (not `*`)
 - [ ] Cookies: `Secure`, `HttpOnly`, `SameSite`
 - [ ] Rate limiting on auth endpoints
+- [ ] CSRF protection exists where cookie-authenticated mutations need it
+- [ ] Download / upload endpoints do not expose broader files or origins than intended
 
-#### 3.5 Data Protection
+#### 5.5 Data Protection
 - [ ] PII not logged or cached publicly
 - [ ] User data deletion possible (RGPD)
 - [ ] File uploads stored outside web root
+- [ ] Sensitive data minimized in analytics, telemetry, caches, and client state
+- [ ] Backups, exports, and support/admin tools do not widen access accidentally
+
+#### 5.6 Availability & Abuse Resistance
+- [ ] Rate limiting, quotas, or job concurrency guards exist where abuse cost is meaningful
+- [ ] Expensive actions are idempotent or deduplicated where relevant
+- [ ] Fan-out, retry storms, infinite loops, or unbounded queue growth are unlikely
+- [ ] Public endpoints and automations have protections against spam, brute force, and cost explosion
 
 ---
 
-### PHASE 4: RELIABILITY
+### PHASE 6: RELIABILITY
 
-#### 4.1 Error Handling
+#### 6.1 Error Handling
 - [ ] Errors caught at every async boundary
 - [ ] Errors logged with context
 - [ ] External service failures have fallback
 - [ ] Unhandled rejections caught at process level
 
-#### 4.2 Testing
+#### 6.2 Testing
 - [ ] Coverage exists for critical paths
 - [ ] Tests not brittle
 - [ ] E2E tests cover main journey
 - [ ] Tests run in CI
 - [ ] Edge cases tested
 
-#### 4.3 Observability
+#### 6.3 Observability
 - [ ] Structured logging (not just `console.log`)
 - [ ] Error tracking configured or easy to add
 - [ ] Health check endpoint exists
 
-#### 4.4 Deployment & Recovery
+#### 6.4 Deployment & Recovery
 - [ ] Build reproducible
 - [ ] Zero-downtime deployment possible
 - [ ] Rollback straightforward
@@ -317,9 +467,9 @@ Quick architecture-level checks only:
 
 ---
 
-### PHASE 5: MODERN BEST PRACTICES
+### PHASE 7: MODERN BEST PRACTICES
 
-#### 5.1 Framework-Specific (detect and apply)
+#### 7.1 Framework-Specific (detect and apply)
 
 **Astro 5**: Content Collections v2, `<Image>`, View Transitions, minimal client JS, `astro:env`.
 
@@ -331,7 +481,7 @@ Quick architecture-level checks only:
 
 **Python**: Type hints, Pydantic, async for I/O, no mutable defaults, virtual env.
 
-#### 5.2 Code Quality
+#### 7.2 Code Quality
 - [ ] Formatter configured (Prettier, Black)
 - [ ] Linter configured and passing
 - [ ] No commented-out code
@@ -340,21 +490,38 @@ Quick architecture-level checks only:
 
 ---
 
-### PHASE 6: FIX
+### PHASE 8: FIX
 
 Fix all issues in code. Priority:
-1. **CRITICAL SECURITY** — secrets, injection, XSS, auth bypass
-2. **HIGH SECURITY** — missing validation, permissive CORS
-3. **ARCHITECTURE** — circular deps, god files, untyped boundaries
-4. **RELIABILITY** — silent error swallowing, missing error boundaries
-5. **PERFORMANCE** — critical issues only (N+1, blocking ops); run `/sf-perf` for deep analysis
-6. **BEST PRACTICES** — deprecated patterns, legacy APIs
+1. **CRITICAL USER / SECURITY** — broken user promise, auth bypass, cross-tenant leak, injection, secrets, destructive incoherence
+2. **WORKFLOW INTEGRITY** — replay, duplicate action, invalid state transition, missing idempotency, partial failure corruption
+3. **PRODUCT COHERENCE** — misleading status, wrong actor flow, missing denied/error/recovery states
+4. **ARCHITECTURE** — circular deps, god files, untyped boundaries, convention drift in critical paths
+5. **RELIABILITY** — silent error swallowing, missing error boundaries, weak observability on high-risk flows
+6. **PERFORMANCE** — critical issues only (N+1, blocking ops); run `/sf-perf` for deep analysis
+7. **BEST PRACTICES** — deprecated patterns, legacy APIs
 
-### PHASE 7: REPORT
+### PHASE 9: REPORT
 
 ```
 CODE AUDIT: [project name] — [stack detected]
 ═══════════════════════════════════════════════════
+
+BUSINESS METADATA VERSIONS
+  BUSINESS.md    artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing] next_review=[date|missing]
+  BRANDING.md    artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing] next_review=[date|missing]
+  GUIDELINES.md  artifact_version=[x|missing] status=[x|missing] updated=[date|missing] confidence=[x|missing] next_review=[date|missing]
+  Proof gaps: [missing/stale/unversioned docs that affected scoring, or none]
+
+USER STORY & PRODUCT COHERENCE         [A/B/C/D]
+  User Story / Outcome                 [A/B/C/D]
+  Product Coherence                    [A/B/C/D]
+  Links / Consequences / Trust         [A/B/C/D]
+
+WORKFLOW INTEGRITY                     [A/B/C/D]
+  Workflow Integrity                   [A/B/C/D]
+  Abuse & Misuse Cases                 [A/B/C/D]
+  Product Quality Signals              [A/B/C/D]
 
 ARCHITECTURE                           [A/B/C/D]
   Structure & Organization             [A/B/C/D]
@@ -371,6 +538,8 @@ SECURITY                               [A/B/C/D]
   Input Validation                     [A/B/C/D]
   Secrets Management                   [A/B/C/D]
   HTTP Security                        [A/B/C/D]
+  Data Protection                      [A/B/C/D]
+  Availability & Abuse Resistance      [A/B/C/D]
 
 RELIABILITY                            [A/B/C/D]
   Error Handling                       [A/B/C/D]
@@ -382,6 +551,19 @@ MODERN PRACTICES                       [A/B/C/D]
   Code Quality                         [A/B/C/D]
 ═══════════════════════════════════════════════════
 OVERALL                                [A/B/C/D]
+
+USER STORY
+- [explicit or inferred one-line story]
+- Story status: [well supported / partially supported / unclear]
+
+PRODUCT COHERENCE
+- [main coherence strength or failure]
+
+ADVERSARIAL REVIEW
+- [most important bypass / replay / bad-state / trust-boundary finding]
+
+SECURITY REVIEW
+- [most important security strength or gap]
 
 CRITICAL fixes applied:     X
 HIGH fixes applied:         X
@@ -396,6 +578,13 @@ TOP 5 IMPROVEMENTS (by impact):
 ---
 
 ## Tracking (all modes)
+
+Shared file write protocol for `AUDIT_LOG.md` and `TASKS.md`:
+- Treat the snapshots loaded at skill start as informational only.
+- Right before each write, re-read the target file from disk and use that version as authoritative.
+- Append or replace only the intended row or subsection; never rewrite the whole file from stale context.
+- If the expected anchor moved or changed, re-read once and recompute.
+- If it is still ambiguous after the second read, stop and ask the user instead of forcing the write.
 
 After generating the report and applying fixes:
 
@@ -420,6 +609,9 @@ Create either file if missing, using the table header from the master `/audit` s
 - Be ruthlessly honest. A-level means "I would deploy this to production with confidence today."
 - Detect the stack automatically. Only audit relevant sections.
 - Security findings are never optional — flag them regardless of focus.
+- User-story misfit and product incoherence are first-class findings, not "nice to have" comments.
+- Always do one adversarial pass: "How would this flow break, be bypassed, or be abused?"
+- Use modern security expectations: authn, authz, trust boundaries, multi-tenant isolation, abuse resistance, and secure failure modes, not only classic XSS/SQLi.
 - When a fix touches shared infrastructure, apply once at the source.
 - Be extra strict about duplication and “convention drift” (common in AI-assisted codebases): prefer consolidating existing patterns over adding new ones.
 - For shell/Bash projects: focus on input validation, quoting, `set -euo pipefail`, ShellCheck.
