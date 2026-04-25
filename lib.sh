@@ -4630,7 +4630,8 @@ CHANGELOG_EOF
       "command": "python3",
       "args": ["$mcp_server", "$project_dir"]
     }
-  }
+  },
+  "disabledMcpServers": ["codebase"]
 }
 MCP_EOF
             log INFO "Configured codebase-mcp for $project_name"
@@ -4646,6 +4647,9 @@ cfg.setdefault('mcpServers', {})['codebase'] = {
     'command': 'python3',
     'args': ['$mcp_server', '$project_dir']
 }
+disabled = cfg.setdefault('disabledMcpServers', [])
+if 'codebase' not in disabled:
+    disabled.append('codebase')
 print(json.dumps(cfg, indent=2))
 " > "$tmp_file" && mv "$tmp_file" "$settings_file"
             log INFO "Merged codebase-mcp into existing settings.json for $project_name"

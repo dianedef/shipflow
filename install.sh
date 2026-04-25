@@ -307,6 +307,7 @@ configure_codex_tui() {
 
     local has_status_line
     local has_terminal_title
+    local has_tui_table
 
     has_status_line=$(awk '
         BEGIN {
@@ -356,22 +357,81 @@ configure_codex_tui() {
         }
     ' "$cleaned_file")
 
-    {
-        cat "$cleaned_file"
-        if [ "$has_status_line" -eq 0 ] || [ "$has_terminal_title" -eq 0 ]; then
-            if [ -s "$cleaned_file" ]; then
+    has_tui_table=$(awk '
+        BEGIN {
+            found = 0
+        }
+        /^\[[[:space:]]*tui[[:space:]]*\][[:space:]]*$/ {
+            found = 1
+        }
+        END {
+            print found
+        }
+    ' "$cleaned_file")
+
+    if [ "$has_status_line" -eq 0 ] || [ "$has_terminal_title" -eq 0 ]; then
+        if [ "$has_tui_table" -eq 1 ]; then
+            awk \
+                -v add_status="$has_status_line" \
+                -v add_title="$has_terminal_title" '
+                BEGIN {
+                    in_tui = 0
+                    inserted = 0
+                }
+                /^\[[[:space:]]*tui[[:space:]]*\][[:space:]]*$/ {
+                    in_tui = 1
+                    print
+                    next
+                }
+                in_tui && /^\[[^]]+\][[:space:]]*$/ {
+                    if (inserted == 0) {
+                        print "# >>> shipflow codex tui >>>"
+                        if (add_status == 0) {
+                            print "status_line = [\"model-with-reasoning\", \"current-dir\", \"context-used\"]"
+                        }
+                        if (add_title == 0) {
+                            print "terminal_title = [\"spinner\", \"thread\", \"project\"]"
+                        }
+                        print "# <<< shipflow codex tui <<<"
+                        inserted = 1
+                    }
+                    in_tui = 0
+                    print
+                    next
+                }
+                {
+                    print
+                }
+                END {
+                    if (in_tui == 1 && inserted == 0) {
+                        print "# >>> shipflow codex tui >>>"
+                        if (add_status == 0) {
+                            print "status_line = [\"model-with-reasoning\", \"current-dir\", \"context-used\"]"
+                        }
+                        if (add_title == 0) {
+                            print "terminal_title = [\"spinner\", \"thread\", \"project\"]"
+                        }
+                        print "# <<< shipflow codex tui <<<"
+                    }
+                }
+            ' "$cleaned_file" > "$tmp_file"
+        else
+            {
+                printf '# >>> shipflow codex tui >>>\n'
+                if [ "$has_status_line" -eq 0 ]; then
+                    printf 'tui.status_line = ["model-with-reasoning", "current-dir", "context-used"]\n'
+                fi
+                if [ "$has_terminal_title" -eq 0 ]; then
+                    printf 'tui.terminal_title = ["spinner", "thread", "project"]\n'
+                fi
+                printf '# <<< shipflow codex tui <<<\n'
                 printf '\n'
-            fi
-            printf '# >>> shipflow codex tui >>>\n'
-            if [ "$has_status_line" -eq 0 ]; then
-                printf 'tui.status_line = ["model-with-reasoning", "current-dir", "context-used"]\n'
-            fi
-            if [ "$has_terminal_title" -eq 0 ]; then
-                printf 'tui.terminal_title = ["spinner", "thread", "project"]\n'
-            fi
-            printf '# <<< shipflow codex tui <<<\n'
+                cat "$cleaned_file"
+            } > "$tmp_file"
         fi
-    } > "$tmp_file"
+    else
+        cat "$cleaned_file" > "$tmp_file"
+    fi
 
     mv "$tmp_file" "$config_file"
     rm -f "$cleaned_file"

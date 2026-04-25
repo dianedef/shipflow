@@ -2,7 +2,13 @@
   "mcpServers": {
     "codebase": {
       "command": "python3",
-      "args": ["/home/claude/shipflow/tools/codebase-mcp/server.py", "/home/claude/contentflow"]
+      "args": [
+        "/home/claude/shipflow/tools/codebase-mcp/server.py",
+        "/home/claude/contentflow"
+      ]
     }
-  }
+  },
+  "disabledMcpServers": [
+    "codebase"
+  ]
 }

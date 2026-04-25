@@ -72,6 +72,8 @@ Use **AskUserQuestion** to let the user review and confirm:
 
 **Architecture**: TASKS.md lives in `~/shipflow_data/projects/[name]/TASKS.md` (personal data, not in git) and is symlinked into the project directory as `[project_dir]/TASKS.md`.
 
+`TASKS.md` is an operational tracker, not a metadata-bearing decision artifact. Do not add ShipFlow YAML frontmatter to generated `TASKS.md` files. Durable business, brand, guideline, spec, research, audit, review, or decision content belongs in separate artifacts with metadata.
+
 **Check first**: skip entirely if `TASKS.md` already exists (file or symlink) in the project directory.
 
 If it does not exist:
@@ -387,12 +389,14 @@ Configure the Shipflow MCP server for this project by writing (or updating) `.cl
       "command": "python3",
       "args": ["/home/claude/shipflow/tools/codebase-mcp/server.py", "[ABSOLUTE_PROJECT_PATH]"]
     }
-  }
+  },
+  "disabledMcpServers": ["codebase"]
 }
 ```
 
 - Replace `[ABSOLUTE_PROJECT_PATH]` with the actual absolute path of the project.
 - If `.claude/settings.json` already exists and has `mcpServers`, merge the `codebase` key without overwriting other entries.
+- Always add `codebase` to `disabledMcpServers` so the MCP is installed but inactive by default.
 - Create `.claude/` directory if needed.
 - Skip silently if `/home/claude/shipflow/tools/codebase-mcp/server.py` doesn't exist.
 
