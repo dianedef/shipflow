@@ -132,6 +132,10 @@ tools/shipflow_metadata_lint.py
 
 The linter is intentionally dependency-free. It checks the default ShipFlow artifact locations (`specs/`, `docs/`, `BUSINESS.md`, `BRANDING.md`, `GUIDELINES.md`) and can also receive explicit files or folders.
 
+For existing projects with legacy docs, follow [`shipflow-metadata-migration-guide.md`](./shipflow-metadata-migration-guide.md) and prefer additive frontmatter migration before deeper document rewrites.
+
+For legacy migration, the official default scope is `BUSINESS.md`, `BRANDING.md`, `GUIDELINES.md`, and `specs/*.md`. Do not expand the migration endlessly to every old markdown file unless that file is part of the active ShipFlow documentation set.
+
 Minimum metadata:
 
 ```yaml
