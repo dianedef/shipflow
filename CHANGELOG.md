@@ -8,12 +8,15 @@
 - `sf-resume` — fast current-thread recap skill with task status bullets, close/keep-open verdict, and one critical reminder
 - `sf-auth-debug` — browser-auth diagnostic skill for Clerk, OAuth, Google login, YouTube OAuth, Convex auth propagation, sessions, callbacks, protected routes, and Playwright-based reproduction
 - Cross-project auth reference docs for the ContentFlow Flutter web ClerkJS bridge and the TubeFlow Next.js + Convex YouTube OAuth flow
+- Public site tutorial page explaining how ShipFlow skill arguments can act as mode switches, structured inputs, or free-form tasks
+- Dedicated public FAQ page for common ShipFlow questions around skills, docs scope, and workflow behavior
 
 ### Changed
 - Existing Codex TUI spec migrated to the ShipFlow metadata frontmatter schema
 - Workflow documentation now links metadata doctrine to executable templates and linting
 - `sf-fix`, `sf-start`, `sf-verify`, and `sf-prod` now route auth/browser-flow uncertainty through `sf-auth-debug` when browser evidence is needed
 - Internal and public skill documentation now explain when to use `sf-auth-debug` and which auth references it carries
+- Internal linking across the public site now routes homepage, docs, about, and "Why not just prompts?" traffic toward the new skill-modes tutorial and FAQ surfaces
 
 ## [2026-04-25] - Contract metadata versioning across skills
 
