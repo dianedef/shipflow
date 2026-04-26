@@ -64,6 +64,7 @@ Prefer Playwright plus network/console evidence over speculation.
 - Use Clerk Testing Tokens to bypass bot protection in test suites.
 - Use Clerk test helpers where possible instead of driving every auth form manually.
 - For social/OAuth providers, expect some flows to still require browser-level observation or provider test accounts.
+- For the concrete testing playbook, load `references/clerk-testing.md`.
 
 ## Environment Warning
 
