@@ -150,6 +150,43 @@ fi
 
 echo ""
 
+# Supabase CLI — standalone binary install, because npm global install is not supported officially.
+if command -v supabase >/dev/null 2>&1; then
+    success "Supabase CLI déjà installé: $(supabase --version 2>/dev/null | head -n1)"
+else
+    info "Installation de Supabase CLI..."
+    ARCH=$(uname -m)
+    case "$ARCH" in
+        aarch64|arm64)
+            SUPABASE_ARCH="arm64"
+            ;;
+        x86_64|amd64)
+            SUPABASE_ARCH="amd64"
+            ;;
+        *)
+            error "Architecture non supportée pour Supabase CLI: $ARCH"
+            exit 1
+            ;;
+    esac
+
+    SUPABASE_TMP_DIR=$(mktemp -d)
+    SUPABASE_ARCHIVE="supabase_linux_${SUPABASE_ARCH}.tar.gz"
+    curl -L -o "$SUPABASE_TMP_DIR/$SUPABASE_ARCHIVE" "https://github.com/supabase/cli/releases/latest/download/$SUPABASE_ARCHIVE"
+    tar -xzf "$SUPABASE_TMP_DIR/$SUPABASE_ARCHIVE" -C "$SUPABASE_TMP_DIR"
+    install -m 0755 "$SUPABASE_TMP_DIR/supabase" /usr/local/bin/supabase
+    rm -rf "$SUPABASE_TMP_DIR"
+    hash -r 2>/dev/null
+
+    if command -v supabase >/dev/null 2>&1; then
+        success "Supabase CLI installé: $(supabase --version 2>/dev/null | head -n1)"
+    else
+        error "Échec de l'installation de Supabase CLI"
+        exit 1
+    fi
+fi
+
+echo ""
+
 # 4. Configurer PM2 pour démarrer au boot
 info "Configuration de PM2 pour démarrage automatique..."
 pm2 startup systemd -u root --hp /root >/dev/null 2>&1
@@ -396,6 +433,24 @@ configure_clerk_mcp() {
         jq '
             .mcpServers.clerk = {
                 "url": "https://mcp.clerk.com/mcp"
+            }
+        ' "$settings_file" > "${settings_file}.tmp" \
+            && mv "${settings_file}.tmp" "$settings_file"
+    fi
+}
+
+# Supabase MCP — remote MCP for project state, SQL, logs, and schema-aware assistance.
+configure_supabase_mcp() {
+    local target_home="$1"
+    local settings_file="$target_home/.claude/settings.json"
+    mkdir -p "$target_home/.claude"
+    if [ ! -f "$settings_file" ]; then
+        echo '{}' > "$settings_file"
+    fi
+    if command -v jq >/dev/null 2>&1; then
+        jq '
+            .mcpServers.supabase = {
+                "url": "https://mcp.supabase.com/mcp"
             }
         ' "$settings_file" > "${settings_file}.tmp" \
             && mv "${settings_file}.tmp" "$settings_file"
@@ -798,6 +853,36 @@ configure_codex_clerk_mcp() {
     mv "$tmp_file" "$config_file"
 }
 
+# Supabase MCP for Codex — remote HTTP transport, enabled by default.
+configure_codex_supabase_mcp() {
+    local target_home="$1"
+    local codex_dir="$target_home/.codex"
+    local config_file="$codex_dir/config.toml"
+    local tmp_file="$config_file.tmp.$$"
+
+    mkdir -p "$codex_dir"
+    [ -f "$config_file" ] || touch "$config_file"
+
+    awk '
+        /^# >>> shipflow codex supabase mcp >>>$/ { skip = 1; next }
+        /^# <<< shipflow codex supabase mcp <<</ { skip = 0; next }
+        /^\[mcp_servers\.supabase\]$/ { skip = 1; next }
+        /^\[/ && $0 !~ /^\[mcp_servers\.supabase\]$/ && skip == 1 { skip = 0 }
+        !skip { print }
+    ' "$config_file" > "$tmp_file"
+
+    {
+        printf '\n'
+        printf '# >>> shipflow codex supabase mcp >>>\n'
+        printf '[mcp_servers.supabase]\n'
+        printf 'url = "https://mcp.supabase.com/mcp"\n'
+        printf 'enabled = true\n'
+        printf '# <<< shipflow codex supabase mcp <<<\n'
+    } >> "$tmp_file"
+
+    mv "$tmp_file" "$config_file"
+}
+
 # Configure skills symlinks for a user
 ensure_skill_link() {
     local source_dir="$1"
@@ -888,12 +973,14 @@ setup_user() {
     configure_vercel_mcp "$user_home"
     configure_convex_mcp "$user_home"
     configure_clerk_mcp "$user_home"
+    configure_supabase_mcp "$user_home"
     configure_codex_tui "$user_home"
     configure_codex_rmcp "$user_home"
     configure_codex_context7_mcp "$user_home"
     configure_codex_vercel_mcp "$user_home"
     configure_codex_convex_mcp "$user_home"
     configure_codex_clerk_mcp "$user_home"
+    configure_codex_supabase_mcp "$user_home"
     configure_skills "$user_home"
     configure_aliases "$user_home"
     configure_data "$user_home"
@@ -945,6 +1032,7 @@ echo -e "  • PM2: $(command -v pm2 >/dev/null 2>&1 && echo '✅' || echo '❌'
 echo -e "  • Vercel CLI: $(command -v vercel >/dev/null 2>&1 && echo '✅' || echo '❌')"
 echo -e "  • Convex CLI: $(command -v convex >/dev/null 2>&1 && echo '✅' || echo '❌')"
 echo -e "  • Clerk CLI: $(command -v clerk >/dev/null 2>&1 && echo '✅' || echo '❌')"
+echo -e "  • Supabase CLI: $(command -v supabase >/dev/null 2>&1 && echo '✅' || echo '❌')"
 echo -e "  • Flox: $(command -v flox >/dev/null 2>&1 && echo '✅' || echo '⚠️ Installation manuelle requise')"
 echo -e "  • GitHub CLI: $(command -v gh >/dev/null 2>&1 && echo '✅' || echo '❌')"
 echo -e "  • Caddy: $(command -v caddy >/dev/null 2>&1 && echo '✅' || echo '⚠️ Installation manuelle requise')"

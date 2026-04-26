@@ -36,7 +36,8 @@ Analyze the project to determine:
 - **Content type**: blog, docs, app, CLI, API, library
 - **i18n**: locale dirs, i18n config, bilingual content
 - **Auth**: Clerk, Auth.js, Supabase Auth, none
-- **Backend**: Convex, Supabase, Firebase, custom API, none
+- **Backend / DB**: Convex, Supabase Postgres, Firebase, custom API, none
+- **Storage**: Supabase Storage, S3/R2, Firebase Storage, local, none
 - **Hosting / platform signals**: Vercel, Netlify, Cloudflare, none
 - **Payments**: Stripe, LemonSqueezy, none
 
@@ -394,6 +395,13 @@ Detection signals:
 - `.vercel/project.json`
 - `vercel` or `@vercel/*` in `package.json`
 
+If Supabase is detected in the project, propose adding the Supabase MCP and configure it when the user accepts.
+Detection signals:
+- `supabase/` directory
+- `supabase/config.toml`
+- `@supabase/*` or `supabase` in `package.json`
+- source-level Supabase integration such as `@supabase/*` imports, `supabase.auth`, or `createClient(...)`
+
 Base config:
 
 ```json
@@ -440,13 +448,21 @@ If Vercel is accepted, add:
 }
 ```
 
+If Supabase is accepted, add:
+
+```json
+"supabase": {
+  "url": "https://mcp.supabase.com/mcp"
+}
+```
+
 - Replace `[ABSOLUTE_PROJECT_PATH]` with the actual absolute path of the project.
 - If `.claude/settings.json` already exists and has `mcpServers`, merge the base keys plus accepted detected integrations without overwriting other entries.
 - Always add `codebase` to `disabledMcpServers` so the MCP is installed but inactive by default.
 - Do not add `clerk` to `disabledMcpServers` by default when it is enabled for the project.
 - Do not add `context7` to `disabledMcpServers` by default. Context7 should be available for current official docs, but only consumes model context when a tool call retrieves documentation.
 - Do not add `openaiDeveloperDocs` to `disabledMcpServers` by default. OpenAI Docs MCP should be available for current OpenAI product/API/model docs, but only consumes model context when a tool call retrieves documentation.
-- Do not add `convex` or `vercel` to `disabledMcpServers` by default when they are enabled for the project.
+- Do not add `convex`, `vercel`, or `supabase` to `disabledMcpServers` by default when they are enabled for the project.
 - Create `.claude/` directory if needed.
 - Skip silently if `/home/claude/shipflow/tools/codebase-mcp/server.py` doesn't exist.
 
@@ -454,6 +470,8 @@ Operational guidance:
 - OpenAI Docs MCP is the first source for current OpenAI API, Codex, model-selection, migration, and prompting guidance.
 - Clerk MCP is for current SDK snippets and implementation patterns, not live auth-state inspection.
 - Clerk CLI is for diagnostics and config operations such as `clerk doctor`, `clerk env pull`, `clerk config pull`, `clerk config patch`, and `clerk api`.
+- Supabase MCP is for project state, SQL/logs/docs access, and schema-aware assistance. Prefer development or staging projects, not production.
+- Supabase CLI is for local stack control, project linking, migrations, and type generation such as `supabase start`, `supabase link`, `supabase db pull`, `supabase db push`, and `supabase gen types`.
 - For real auth-flow proof, use browser automation such as Playwright.
 
 Also append the codebase-mcp usage protocol to the generated `CLAUDE.md` (after the Commands section):

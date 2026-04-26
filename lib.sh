@@ -4618,6 +4618,7 @@ CHANGELOG_EOF
     local enable_clerk_mcp=0
     local enable_vercel_mcp=0
     local enable_convex_mcp=0
+    local enable_supabase_mcp=0
     if [ -f "$project_dir/package.json" ] && grep -Eq '"@clerk/[^"]+"' "$project_dir/package.json" 2>/dev/null; then
         enable_clerk_mcp=1
     elif grep -RIsE \
@@ -4641,13 +4642,30 @@ CHANGELOG_EOF
     elif [ -f "$project_dir/package.json" ] && grep -Eq '"(convex|@convex-dev/[^"]+)"' "$project_dir/package.json" 2>/dev/null; then
         enable_convex_mcp=1
     fi
+    if [ -d "$project_dir/supabase" ] || [ -f "$project_dir/supabase/config.toml" ] || [ -f "$project_dir/supabase/.temp/project-ref" ]; then
+        enable_supabase_mcp=1
+    elif [ -f "$project_dir/package.json" ] && grep -Eq '"(@supabase/[^"]+|supabase)"' "$project_dir/package.json" 2>/dev/null; then
+        enable_supabase_mcp=1
+    elif grep -RIsE \
+        --exclude-dir=node_modules \
+        --exclude-dir=.git \
+        --exclude-dir=.next \
+        --exclude-dir=dist \
+        --exclude-dir=build \
+        --exclude-dir=.vercel \
+        '@supabase/|supabase\.auth|createClient\(' \
+        "$project_dir" >/dev/null 2>&1; then
+        enable_supabase_mcp=1
+    fi
 
     local clerk_block=""
     local vercel_block=""
     local convex_block=""
+    local supabase_block=""
     [ "$enable_clerk_mcp" -eq 1 ] && clerk_block=$',\n    "clerk": {\n      "url": "https://mcp.clerk.com/mcp"\n    }'
     [ "$enable_vercel_mcp" -eq 1 ] && vercel_block=$',\n    "vercel": {\n      "url": "https://mcp.vercel.com"\n    }'
     [ "$enable_convex_mcp" -eq 1 ] && convex_block=$',\n    "convex": {\n      "command": "npx",\n      "args": ["-y", "convex@latest", "mcp", "start"]\n    }'
+    [ "$enable_supabase_mcp" -eq 1 ] && supabase_block=$',\n    "supabase": {\n      "url": "https://mcp.supabase.com/mcp"\n    }'
 
     # Configure codebase-mcp, Context7, and detected project MCPs using the current ShipFlow checkout.
     local shipflow_root
@@ -4668,7 +4686,7 @@ CHANGELOG_EOF
     "context7": {
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp@latest"]
-    }${clerk_block}${vercel_block}${convex_block}
+    }${clerk_block}${vercel_block}${convex_block}${supabase_block}
   },
   "disabledMcpServers": ["codebase"]
 }
@@ -4750,6 +4768,20 @@ cfg.setdefault('mcpServers', {})['convex'] = {
 print(json.dumps(cfg, indent=2))
 " > "$tmp_file" && mv "$tmp_file" "$settings_file"
             log INFO "Merged Convex MCP into existing settings.json for $project_name"
+        fi
+        if [ "$enable_supabase_mcp" -eq 1 ] && ! grep -q '"supabase"' "$settings_file"; then
+            local tmp_file
+            tmp_file=$(mktemp)
+            python3 -c "
+import json, sys
+with open('$settings_file') as f:
+    cfg = json.load(f)
+cfg.setdefault('mcpServers', {})['supabase'] = {
+    'url': 'https://mcp.supabase.com/mcp'
+}
+print(json.dumps(cfg, indent=2))
+" > "$tmp_file" && mv "$tmp_file" "$settings_file"
+            log INFO "Merged Supabase MCP into existing settings.json for $project_name"
         fi
     fi
 

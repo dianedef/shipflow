@@ -77,11 +77,13 @@ It also provisions the default MCP set used by ShipFlow:
 - `vercel` in `~/.claude/settings.json` and `~/.codex/config.toml`
 - `convex` in `~/.claude/settings.json` and `~/.codex/config.toml`
 - `clerk` in `~/.claude/settings.json` and `~/.codex/config.toml`
+- `supabase` in `~/.claude/settings.json` and `~/.codex/config.toml`
 
 ShipFlow also installs the terminal tooling commonly needed to operate those integrations:
 - `vercel`
 - `convex`
 - `clerk`
+- `supabase` via the standalone CLI binary, because Supabase does not support `npm install -g supabase`
 
 If your Codex version does not expose one of these items (for example `thread`), adjust interactively in Codex:
 

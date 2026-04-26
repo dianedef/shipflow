@@ -39,6 +39,7 @@ It is designed for cases where static code reading is not enough because the fai
 
 - `references/clerk-tooling.md` for deciding when to use Clerk MCP, Clerk CLI, or Playwright for auth debugging
 - `references/clerk.md` for Clerk, Next.js middleware, redirects, sessions, and Google social connection through Clerk
+- `references/supabase-tooling.md` for deciding when to use Supabase MCP, Supabase CLI, or Playwright for auth and platform debugging
 - `references/vercel-tooling.md` for deciding when Vercel MCP or Vercel CLI is the right tool for deploy/runtime issues
 - `references/google-oauth.md` for Google OAuth redirect rules, consent, provider errors, and automation limits
 - `references/convex-tooling.md` for deciding when Convex MCP or Convex CLI is the right tool, especially for auth-config sync

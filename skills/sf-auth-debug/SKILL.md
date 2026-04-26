@@ -1,6 +1,6 @@
 ---
 name: sf-auth-debug
-description: Diagnostiquer un bug d'authentification dans un navigateur réel avec Playwright MCP — Clerk, OAuth, Google login, cookies, callbacks, middleware, redirects, sessions.
+description: Diagnostiquer un bug d'authentification dans un navigateur réel avec Playwright MCP — Clerk, Supabase Auth, OAuth, Google login, cookies, callbacks, middleware, redirects, sessions.
 argument-hint: <bug auth, URL, provider, ou flow à diagnostiquer>
 ---
 
@@ -11,7 +11,7 @@ argument-hint: <bug auth, URL, provider, ou flow à diagnostiquer>
 - Project name: !`basename $(pwd)`
 - Git branch: !`git branch --show-current 2>/dev/null || echo "unknown"`
 - Git status: !`git status --short 2>/dev/null || echo "Not a git repo"`
-- CLAUDE.md (constraints / URLs): !`grep -i "auth\\|clerk\\|google\\|oauth\\|domain\\|url\\|vercel\\|netlify" CLAUDE.md 2>/dev/null | head -20 || echo "no CLAUDE.md"`
+- CLAUDE.md (constraints / URLs): !`grep -i "auth\\|clerk\\|supabase\\|google\\|oauth\\|domain\\|url\\|vercel\\|netlify" CLAUDE.md 2>/dev/null | head -20 || echo "no CLAUDE.md"`
 - Local TASKS.md (if exists): !`cat TASKS.md 2>/dev/null | head -40 || echo "No local TASKS.md"`
 
 ## Your task
@@ -21,6 +21,7 @@ Diagnostiquer un flux d'authentification cassé avec un vrai navigateur, sans su
 `sf-auth-debug` est une skill de diagnostic spécialisée. Elle ne remplace pas `sf-spec`, `sf-fix`, `sf-start` ou `sf-verify`.
 Elle intervient quand le sujet touche à l'auth réelle côté navigateur:
 - Clerk
+- Supabase Auth
 - OAuth / Google login
 - redirects et callbacks
 - cookies / session
@@ -34,6 +35,7 @@ Le but est de localiser précisément le point de rupture et de produire un diag
 Références locales à charger selon le contexte:
 - `references/clerk-tooling.md` pour choisir entre Clerk MCP, Clerk CLI et Playwright selon le type de bug
 - `references/clerk.md` pour Clerk, Next.js, middleware, redirects, sessions, Google social connection via Clerk
+- `references/supabase-tooling.md` pour choisir entre Supabase MCP, Supabase CLI et Playwright selon le type de bug
 - `references/vercel-tooling.md` pour choisir entre Vercel MCP et Vercel CLI sur les sujets de déploiement, logs et runtime
 - `references/google-oauth.md` pour les règles OAuth Google, redirect URI, state, consent screen, limites d'automatisation
 - `references/convex-tooling.md` pour choisir entre Convex MCP, Convex CLI et sync de config d'auth
@@ -44,6 +46,7 @@ Références locales à charger selon le contexte:
 - `references/python-convex.md` pour scripts Python, jobs, imports et clients Convex
 - `references/sdk-policy.md` pour choisir stable/beta/non-officiel dans le stack ShipFlow
 - `references/flutter-web-clerkjs-bridge.md` pour le pattern ContentFlow: Flutter web + routes HTML ClerkJS + bridge Dart
+- `/home/claude/shipflow/skills/references/supabase-auth.md` pour Supabase Auth, `@supabase/ssr`, cookies, redirects, callbacks et limites `getUser()` / `getSession()`
 - `/home/claude/shipflow/skills/references/flutter-web-clerkjs-auth-pattern.md` comme documentation technique transverse à réutiliser dans les autres repos Flutter
 - `/home/claude/shipflow/skills/references/tubeflow-youtube-oauth-nextjs-convex-pattern.md` comme documentation technique transverse pour YouTube OAuth via Next.js + Convex
 
@@ -70,7 +73,7 @@ Extraire ou reformuler explicitement:
 - acteur concerné
 - environnement visé (`local`, `staging`, `prod`)
 - URL ou flow à tester
-- provider d'auth (`Clerk`, `Google`, autre)
+- provider d'auth (`Clerk`, `Supabase`, `Google`, autre)
 - comportement observé
 - comportement attendu
 
@@ -123,6 +126,7 @@ Lire seulement les fichiers les plus pertinents avant d'agir:
 
 Charger les références locales pertinentes avant de conclure:
 - Clerk ou `@clerk/*` détecté -> lire `references/clerk-tooling.md` puis `references/clerk.md`
+- Supabase Auth, `@supabase/ssr`, `@supabase/supabase-js`, `supabase.auth`, `auth/v1`, callback email/OAuth Supabase, ou dossier `supabase/` détecté -> lire `references/supabase-tooling.md` puis `/home/claude/shipflow/skills/references/supabase-auth.md`
 - Vercel ou problème de runtime/deploy/logs détecté -> lire `references/vercel-tooling.md`
 - Google OAuth direct ou social login Google -> lire `references/google-oauth.md`
 - Convex détecté -> lire `references/convex-tooling.md`
@@ -139,6 +143,7 @@ Charger les références locales pertinentes avant de conclure:
 Chercher notamment:
 - URL de callback attendue
 - domaines autorisés
+- `SITE_URL`, redirect allow list, et `redirectTo` attendu
 - clés d'environnement manquantes
 - middleware trop large ou mal ordonné
 - mauvaise distinction `public` / `protected`
@@ -195,10 +200,14 @@ Classifier le bug dans une catégorie principale:
   - mauvais domaine, mauvais callback, state invalide, mismatch d'environnement
 - `Clerk configuration`
   - publishable key, domain, allowed redirect, provider config
+- `Supabase SSR / token refresh`
+  - middleware/proxy absent, cookies non rafraichis, `getSession()` utilisé comme preuve serveur, callback ou redirectTo incohérent
 - `Session / cookies`
   - cookie absent, non persisté, domaine incohérent, secure/sameSite problématique
 - `Middleware / protection`
   - route protégée trop tôt, boucle login, redirect incorrecte
+- `Auth-to-DB boundary`
+  - session OK mais requêtes Supabase refusées par RLS, client serveur/admin mal choisi, identité non propagée
 - `App post-login flow`
   - callback ok mais app ne consomme pas la session correctement
 
