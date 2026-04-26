@@ -4614,7 +4614,26 @@ CHANGELOG_EOF
             echo "| $project_name | $project_dir | $stack |" >> "$projects_file"
     fi
 
-    # Configure codebase-mcp, Context7, and Vercel using the current ShipFlow checkout.
+    # Detect project-scoped MCP integrations from explicit project signals.
+    local enable_vercel_mcp=0
+    local enable_convex_mcp=0
+    if [ -f "$project_dir/vercel.json" ] || [ -f "$project_dir/.vercel/project.json" ]; then
+        enable_vercel_mcp=1
+    elif [ -f "$project_dir/package.json" ] && grep -Eq '"(@vercel/[^"]+|vercel)"' "$project_dir/package.json" 2>/dev/null; then
+        enable_vercel_mcp=1
+    fi
+    if [ -d "$project_dir/convex" ] || [ -f "$project_dir/convex.json" ] || [ -f "$project_dir/convex.config.ts" ] || [ -f "$project_dir/convex.config.js" ]; then
+        enable_convex_mcp=1
+    elif [ -f "$project_dir/package.json" ] && grep -Eq '"(convex|@convex-dev/[^"]+)"' "$project_dir/package.json" 2>/dev/null; then
+        enable_convex_mcp=1
+    fi
+
+    local vercel_block=""
+    local convex_block=""
+    [ "$enable_vercel_mcp" -eq 1 ] && vercel_block=$',\n    "vercel": {\n      "url": "https://mcp.vercel.com"\n    }'
+    [ "$enable_convex_mcp" -eq 1 ] && convex_block=$',\n    "convex": {\n      "command": "npx",\n      "args": ["-y", "convex@latest", "mcp", "start"]\n    }'
+
+    # Configure codebase-mcp, Context7, and detected project MCPs using the current ShipFlow checkout.
     local shipflow_root
     shipflow_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local mcp_server="$shipflow_root/tools/codebase-mcp/server.py"
@@ -4633,15 +4652,12 @@ CHANGELOG_EOF
     "context7": {
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp@latest"]
-    },
-    "vercel": {
-      "url": "https://mcp.vercel.com"
-    }
+    }${vercel_block}${convex_block}
   },
   "disabledMcpServers": ["codebase"]
 }
 MCP_EOF
-            log INFO "Configured codebase-mcp, Context7, and Vercel MCP for $project_name"
+            log INFO "Configured project MCPs for $project_name"
         elif ! grep -q "codebase-mcp" "$settings_file"; then
             # settings.json exists but no codebase entry — merge it
             local tmp_file
@@ -4676,7 +4692,7 @@ print(json.dumps(cfg, indent=2))
 " > "$tmp_file" && mv "$tmp_file" "$settings_file"
             log INFO "Merged Context7 MCP into existing settings.json for $project_name"
         fi
-        if ! grep -q '"vercel"' "$settings_file"; then
+        if [ "$enable_vercel_mcp" -eq 1 ] && ! grep -q '"vercel"' "$settings_file"; then
             local tmp_file
             tmp_file=$(mktemp)
             python3 -c "
@@ -4689,6 +4705,21 @@ cfg.setdefault('mcpServers', {})['vercel'] = {
 print(json.dumps(cfg, indent=2))
 " > "$tmp_file" && mv "$tmp_file" "$settings_file"
             log INFO "Merged Vercel MCP into existing settings.json for $project_name"
+        fi
+        if [ "$enable_convex_mcp" -eq 1 ] && ! grep -q '"convex"' "$settings_file"; then
+            local tmp_file
+            tmp_file=$(mktemp)
+            python3 -c "
+import json, sys
+with open('$settings_file') as f:
+    cfg = json.load(f)
+cfg.setdefault('mcpServers', {})['convex'] = {
+    'command': 'npx',
+    'args': ['-y', 'convex@latest', 'mcp', 'start']
+}
+print(json.dumps(cfg, indent=2))
+" > "$tmp_file" && mv "$tmp_file" "$settings_file"
+            log INFO "Merged Convex MCP into existing settings.json for $project_name"
         fi
     fi
 

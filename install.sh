@@ -311,6 +311,25 @@ configure_vercel_mcp() {
     fi
 }
 
+# Convex MCP — stdio MCP for Convex projects and deployments.
+configure_convex_mcp() {
+    local target_home="$1"
+    local settings_file="$target_home/.claude/settings.json"
+    mkdir -p "$target_home/.claude"
+    if [ ! -f "$settings_file" ]; then
+        echo '{}' > "$settings_file"
+    fi
+    if command -v jq >/dev/null 2>&1; then
+        jq '
+            .mcpServers.convex = {
+                "command": "npx",
+                "args": ["-y", "convex@latest", "mcp", "start"]
+            }
+        ' "$settings_file" > "${settings_file}.tmp" \
+            && mv "${settings_file}.tmp" "$settings_file"
+    fi
+}
+
 # Codex TUI defaults — idempotent and non-destructive
 configure_codex_tui() {
     local target_home="$1"
@@ -535,6 +554,37 @@ configure_codex_vercel_mcp() {
     mv "$tmp_file" "$config_file"
 }
 
+# Convex MCP for Codex — stdio transport, enabled by default.
+configure_codex_convex_mcp() {
+    local target_home="$1"
+    local codex_dir="$target_home/.codex"
+    local config_file="$codex_dir/config.toml"
+    local tmp_file="$config_file.tmp.$$"
+
+    mkdir -p "$codex_dir"
+    [ -f "$config_file" ] || touch "$config_file"
+
+    awk '
+        /^# >>> shipflow codex convex mcp >>>$/ { skip = 1; next }
+        /^# <<< shipflow codex convex mcp <<</ { skip = 0; next }
+        /^\[mcp_servers\.convex\]$/ { skip = 1; next }
+        /^\[/ && $0 !~ /^\[mcp_servers\.convex\]$/ && skip == 1 { skip = 0 }
+        !skip { print }
+    ' "$config_file" > "$tmp_file"
+
+    {
+        printf '\n'
+        printf '# >>> shipflow codex convex mcp >>>\n'
+        printf '[mcp_servers.convex]\n'
+        printf 'command = "npx"\n'
+        printf 'args = ["-y", "convex@latest", "mcp", "start"]\n'
+        printf 'enabled = true\n'
+        printf '# <<< shipflow codex convex mcp <<<\n'
+    } >> "$tmp_file"
+
+    mv "$tmp_file" "$config_file"
+}
+
 # Configure skills symlinks for a user
 ensure_skill_link() {
     local source_dir="$1"
@@ -623,9 +673,11 @@ setup_user() {
     configure_statusline "$user_home"
     configure_context7_mcp "$user_home"
     configure_vercel_mcp "$user_home"
+    configure_convex_mcp "$user_home"
     configure_codex_tui "$user_home"
     configure_codex_context7_mcp "$user_home"
     configure_codex_vercel_mcp "$user_home"
+    configure_codex_convex_mcp "$user_home"
     configure_skills "$user_home"
     configure_aliases "$user_home"
     configure_data "$user_home"

@@ -37,6 +37,7 @@ Analyze the project to determine:
 - **i18n**: locale dirs, i18n config, bilingual content
 - **Auth**: Clerk, Auth.js, Supabase Auth, none
 - **Backend**: Convex, Supabase, Firebase, custom API, none
+- **Hosting / platform signals**: Vercel, Netlify, Cloudflare, none
 - **Payments**: Stripe, LemonSqueezy, none
 
 ### Step 2: Generate CLAUDE.md template
@@ -371,9 +372,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 **Stack**: [summary] | **Phase**: Setup
 ```
 
-### Step 7: Configure codebase-mcp
+### Step 7: Configure MCP servers
 
-Configure the Shipflow MCP server for this project by writing (or updating) `.claude/settings.json`:
+Always configure the Shipflow codebase MCP server and Context7 MCP for this project by writing (or updating) `.claude/settings.json`.
+
+If Convex is detected in the project, propose adding the Convex MCP and configure it when the user accepts.
+Detection signals:
+- `convex/` directory
+- `convex.json`
+- `convex.config.ts` or `convex.config.js`
+- `convex` or `@convex-dev/*` in `package.json`
+
+If Vercel is detected in the project, propose adding the Vercel MCP and configure it when the user accepts.
+Detection signals:
+- `vercel.json`
+- `.vercel/project.json`
+- `vercel` or `@vercel/*` in `package.json`
+
+Base config:
 
 ```json
 {
@@ -381,15 +397,38 @@ Configure the Shipflow MCP server for this project by writing (or updating) `.cl
     "codebase": {
       "command": "python3",
       "args": ["/home/claude/shipflow/tools/codebase-mcp/server.py", "[ABSOLUTE_PROJECT_PATH]"]
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"]
     }
   },
   "disabledMcpServers": ["codebase"]
 }
 ```
 
+If Convex is accepted, add:
+
+```json
+"convex": {
+  "command": "npx",
+  "args": ["-y", "convex@latest", "mcp", "start"]
+}
+```
+
+If Vercel is accepted, add:
+
+```json
+"vercel": {
+  "url": "https://mcp.vercel.com"
+}
+```
+
 - Replace `[ABSOLUTE_PROJECT_PATH]` with the actual absolute path of the project.
-- If `.claude/settings.json` already exists and has `mcpServers`, merge the `codebase` key without overwriting other entries.
+- If `.claude/settings.json` already exists and has `mcpServers`, merge the base keys plus accepted detected integrations without overwriting other entries.
 - Always add `codebase` to `disabledMcpServers` so the MCP is installed but inactive by default.
+- Do not add `context7` to `disabledMcpServers` by default. Context7 should be available for current official docs, but only consumes model context when a tool call retrieves documentation.
+- Do not add `convex` or `vercel` to `disabledMcpServers` by default when they are enabled for the project.
 - Create `.claude/` directory if needed.
 - Skip silently if `/home/claude/shipflow/tools/codebase-mcp/server.py` doesn't exist.
 
