@@ -72,6 +72,10 @@ tui.terminal_title = ["spinner", "thread", "project"]
 
 The install is idempotent and keeps user config outside the ShipFlow-managed block.
 
+It also provisions the default MCP set used by ShipFlow:
+- `context7` in `~/.claude/settings.json` and `~/.codex/config.toml`
+- `vercel` in `~/.claude/settings.json` and `~/.codex/config.toml`
+
 If your Codex version does not expose one of these items (for example `thread`), adjust interactively in Codex:
 
 ```text

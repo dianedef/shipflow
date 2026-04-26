@@ -274,6 +274,43 @@ configure_statusline() {
     fi
 }
 
+# Context7 MCP — official current library docs, installed globally for Claude Code.
+configure_context7_mcp() {
+    local target_home="$1"
+    local settings_file="$target_home/.claude/settings.json"
+    mkdir -p "$target_home/.claude"
+    if [ ! -f "$settings_file" ]; then
+        echo '{}' > "$settings_file"
+    fi
+    if command -v jq >/dev/null 2>&1; then
+        jq '
+            .mcpServers.context7 = {
+                "command": "npx",
+                "args": ["-y", "@upstash/context7-mcp@latest"]
+            }
+        ' "$settings_file" > "${settings_file}.tmp" \
+            && mv "${settings_file}.tmp" "$settings_file"
+    fi
+}
+
+# Vercel MCP — remote MCP for Vercel deployments, logs, and toolbar.
+configure_vercel_mcp() {
+    local target_home="$1"
+    local settings_file="$target_home/.claude/settings.json"
+    mkdir -p "$target_home/.claude"
+    if [ ! -f "$settings_file" ]; then
+        echo '{}' > "$settings_file"
+    fi
+    if command -v jq >/dev/null 2>&1; then
+        jq '
+            .mcpServers.vercel = {
+                "url": "https://mcp.vercel.com"
+            }
+        ' "$settings_file" > "${settings_file}.tmp" \
+            && mv "${settings_file}.tmp" "$settings_file"
+    fi
+}
+
 # Codex TUI defaults — idempotent and non-destructive
 configure_codex_tui() {
     local target_home="$1"
@@ -437,6 +474,67 @@ configure_codex_tui() {
     rm -f "$cleaned_file"
 }
 
+# Context7 MCP for Codex — stdio transport, enabled by default.
+configure_codex_context7_mcp() {
+    local target_home="$1"
+    local codex_dir="$target_home/.codex"
+    local config_file="$codex_dir/config.toml"
+    local tmp_file="$config_file.tmp.$$"
+
+    mkdir -p "$codex_dir"
+    [ -f "$config_file" ] || touch "$config_file"
+
+    awk '
+        /^# >>> shipflow codex context7 mcp >>>$/ { skip = 1; next }
+        /^# <<< shipflow codex context7 mcp <<</ { skip = 0; next }
+        /^\[mcp_servers\.context7\]$/ { skip = 1; next }
+        /^\[/ && $0 !~ /^\[mcp_servers\.context7\]$/ && skip == 1 { skip = 0 }
+        !skip { print }
+    ' "$config_file" > "$tmp_file"
+
+    {
+        printf '\n'
+        printf '# >>> shipflow codex context7 mcp >>>\n'
+        printf '[mcp_servers.context7]\n'
+        printf 'command = "npx"\n'
+        printf 'args = ["-y", "@upstash/context7-mcp@latest"]\n'
+        printf 'enabled = true\n'
+        printf '# <<< shipflow codex context7 mcp <<<\n'
+    } >> "$tmp_file"
+
+    mv "$tmp_file" "$config_file"
+}
+
+# Vercel MCP for Codex — remote HTTP transport, enabled by default.
+configure_codex_vercel_mcp() {
+    local target_home="$1"
+    local codex_dir="$target_home/.codex"
+    local config_file="$codex_dir/config.toml"
+    local tmp_file="$config_file.tmp.$$"
+
+    mkdir -p "$codex_dir"
+    [ -f "$config_file" ] || touch "$config_file"
+
+    awk '
+        /^# >>> shipflow codex vercel mcp >>>$/ { skip = 1; next }
+        /^# <<< shipflow codex vercel mcp <<</ { skip = 0; next }
+        /^\[mcp_servers\.vercel\]$/ { skip = 1; next }
+        /^\[/ && $0 !~ /^\[mcp_servers\.vercel\]$/ && skip == 1 { skip = 0 }
+        !skip { print }
+    ' "$config_file" > "$tmp_file"
+
+    {
+        printf '\n'
+        printf '# >>> shipflow codex vercel mcp >>>\n'
+        printf '[mcp_servers.vercel]\n'
+        printf 'url = "https://mcp.vercel.com"\n'
+        printf 'enabled = true\n'
+        printf '# <<< shipflow codex vercel mcp <<<\n'
+    } >> "$tmp_file"
+
+    mv "$tmp_file" "$config_file"
+}
+
 # Configure skills symlinks for a user
 ensure_skill_link() {
     local source_dir="$1"
@@ -523,7 +621,11 @@ setup_user() {
     local username="$2"
 
     configure_statusline "$user_home"
+    configure_context7_mcp "$user_home"
+    configure_vercel_mcp "$user_home"
     configure_codex_tui "$user_home"
+    configure_codex_context7_mcp "$user_home"
+    configure_codex_vercel_mcp "$user_home"
     configure_skills "$user_home"
     configure_aliases "$user_home"
     configure_data "$user_home"

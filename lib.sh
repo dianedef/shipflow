@@ -4614,7 +4614,7 @@ CHANGELOG_EOF
             echo "| $project_name | $project_dir | $stack |" >> "$projects_file"
     fi
 
-    # Configure codebase-mcp using the current ShipFlow checkout.
+    # Configure codebase-mcp, Context7, and Vercel using the current ShipFlow checkout.
     local shipflow_root
     shipflow_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local mcp_server="$shipflow_root/tools/codebase-mcp/server.py"
@@ -4629,12 +4629,19 @@ CHANGELOG_EOF
     "codebase": {
       "command": "python3",
       "args": ["$mcp_server", "$project_dir"]
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"]
+    },
+    "vercel": {
+      "url": "https://mcp.vercel.com"
     }
   },
   "disabledMcpServers": ["codebase"]
 }
 MCP_EOF
-            log INFO "Configured codebase-mcp for $project_name"
+            log INFO "Configured codebase-mcp, Context7, and Vercel MCP for $project_name"
         elif ! grep -q "codebase-mcp" "$settings_file"; then
             # settings.json exists but no codebase entry — merge it
             local tmp_file
@@ -4653,6 +4660,35 @@ if 'codebase' not in disabled:
 print(json.dumps(cfg, indent=2))
 " > "$tmp_file" && mv "$tmp_file" "$settings_file"
             log INFO "Merged codebase-mcp into existing settings.json for $project_name"
+        fi
+        if ! grep -q '"context7"' "$settings_file"; then
+            local tmp_file
+            tmp_file=$(mktemp)
+            python3 -c "
+import json, sys
+with open('$settings_file') as f:
+    cfg = json.load(f)
+cfg.setdefault('mcpServers', {})['context7'] = {
+    'command': 'npx',
+    'args': ['-y', '@upstash/context7-mcp@latest']
+}
+print(json.dumps(cfg, indent=2))
+" > "$tmp_file" && mv "$tmp_file" "$settings_file"
+            log INFO "Merged Context7 MCP into existing settings.json for $project_name"
+        fi
+        if ! grep -q '"vercel"' "$settings_file"; then
+            local tmp_file
+            tmp_file=$(mktemp)
+            python3 -c "
+import json, sys
+with open('$settings_file') as f:
+    cfg = json.load(f)
+cfg.setdefault('mcpServers', {})['vercel'] = {
+    'url': 'https://mcp.vercel.com'
+}
+print(json.dumps(cfg, indent=2))
+" > "$tmp_file" && mv "$tmp_file" "$settings_file"
+            log INFO "Merged Vercel MCP into existing settings.json for $project_name"
         fi
     fi
 
