@@ -36,6 +36,7 @@ It helps operators run apps on servers, but its deeper job is to reduce ambiguit
 - [AGENT.md](./AGENT.md) — agent entrypoint: where to look first depending on the task
 - [CONTEXT.md](./CONTEXT.md) — compact operational map of the project, hotspots, invariants, and edit routing
 - [CONTEXT-FUNCTION-TREE.md](./CONTEXT-FUNCTION-TREE.md) — grouped function tree for the main shell scripts
+- [CONTENT_MAP.md](./CONTENT_MAP.md) — editorial map for blog, docs, landing pages, semantic clusters, and repurposing destinations
 - [BUSINESS.md](./BUSINESS.md) — target audience, value proposition, business assumptions, and market framing
 - [PRODUCT.md](./PRODUCT.md) — product scope, workflows, outcomes, and non-goals
 - [BRANDING.md](./BRANDING.md) — tone, trust posture, vocabulary, and claims boundaries
@@ -176,6 +177,7 @@ ShipFlow now uses a dedicated context layer for fast agent onboarding.
 - `AGENT.md` is the routing file: it tells an agent where to look first.
 - `CONTEXT.md` is the operational map: entry points, core flows, hotspots, invariants, and where to edit what.
 - `CONTEXT-FUNCTION-TREE.md` is a specialized companion for large procedural files such as `lib.sh`.
+- `CONTENT_MAP.md` is the editorial map: content surfaces, page roles, semantic clusters, pillar pages, and cross-surface update rules.
 
 This split is intentional. `CLAUDE.md` should hold constraints and critical rules, not the full project map. The context files exist to reduce repetitive discovery work at the start of a fresh thread without pretending to replace the code.
 
@@ -185,6 +187,7 @@ ShipFlow also separates decision contracts by role:
 - `PRODUCT.md` for what the product should do and not do
 - `BRANDING.md` for how the product should sound
 - `GTM.md` for how the product should be presented and distributed
+- `CONTENT_MAP.md` for where content lives and how ideas should move between blog, docs, landing pages, FAQ, and semantic clusters
 - `ARCHITECTURE.md` for how the system is organized
 - `GUIDELINES.md` for how contributors should work inside it
 
@@ -192,7 +195,7 @@ ShipFlow also separates decision contracts by role:
 
 The current documentation structure is already solid on three axes:
 
-- technical: `CLAUDE.md`, `CONTEXT.md`, `CONTEXT-FUNCTION-TREE.md`, `GUIDELINES.md`, and `specs/`
+- technical: `CLAUDE.md`, `CONTEXT.md`, `CONTEXT-FUNCTION-TREE.md`, `CONTENT_MAP.md`, `GUIDELINES.md`, and `specs/`
 - workflow: `sf-spec`, `sf-ready`, `sf-start`, `sf-verify`, `sf-docs`, and versioned metadata
 - product/business: `BUSINESS.md`, `BRANDING.md`, versioned docs, and `depends_on` relationships
 
@@ -261,6 +264,7 @@ ShipFlow provides skill-aligned artifact templates in `templates/artifacts/` and
 - `product_context.md`
 - `architecture_context.md`
 - `gtm_context.md`
+- `content_map.md`
 - `technical_guidelines.md`
 
 ```bash
@@ -271,22 +275,22 @@ This layer is wired into the documentation workflow, agent routing, project cont
 
 For legacy projects, use the migration playbook in [`shipflow-metadata-migration-guide.md`](./shipflow-metadata-migration-guide.md) before normalizing old docs.
 
-By default it checks `specs/`, `docs/`, `AGENT.md`, `CONTEXT.md`, `CONTEXT-FUNCTION-TREE.md`, `BUSINESS.md`, `BRANDING.md`, `PRODUCT.md`, `ARCHITECTURE.md`, `GTM.md`, and `GUIDELINES.md`. Pass explicit files or folders to validate a narrower scope.
+By default it checks `specs/`, `docs/`, `AGENT.md`, `CONTEXT.md`, `CONTEXT-FUNCTION-TREE.md`, `CONTENT_MAP.md`, `BUSINESS.md`, `BRANDING.md`, `PRODUCT.md`, `ARCHITECTURE.md`, `GTM.md`, and `GUIDELINES.md`. Pass explicit files or folders to validate a narrower scope.
 
-For internal ShipFlow files, this schema is mandatory for the active official artifact set. That set now includes `AGENT.md`, `CONTEXT.md`, promoted specialized context docs such as `CONTEXT-FUNCTION-TREE.md`, and the decision contracts `BUSINESS.md`, `PRODUCT.md`, `BRANDING.md`, `GTM.md`, `ARCHITECTURE.md`, and `GUIDELINES.md`. For legacy project adoption, the default migration scope is intentionally narrower: active context docs when they exist, active decision contracts when they exist, and `specs/*.md`. Historical ad hoc docs can stay out of scope until they are promoted into the active ShipFlow workflow.
+For internal ShipFlow files, this schema is mandatory for the active official artifact set. That set now includes `AGENT.md`, `CONTEXT.md`, promoted specialized context docs such as `CONTEXT-FUNCTION-TREE.md`, `CONTENT_MAP.md`, and the decision contracts `BUSINESS.md`, `PRODUCT.md`, `BRANDING.md`, `GTM.md`, `ARCHITECTURE.md`, and `GUIDELINES.md`. For legacy project adoption, the default migration scope is intentionally narrower: active context docs when they exist, active decision contracts when they exist, and `specs/*.md`. Historical ad hoc docs can stay out of scope until they are promoted into the active ShipFlow workflow.
 
 Operational tracking files are intentionally excluded from the mandatory artifact schema: `TASKS.md`, `AUDIT_LOG.md`, and `PROJECTS.md` are trackers/registries, not decision contracts. Keep them fast to edit. If a task entry contains a durable decision, spec, or business rule, extract that durable content into a dedicated artifact with metadata instead of adding frontmatter to the tracker itself.
 
 Location rule:
 - `shipflow_data` is the control plane for shared tracking and registry files.
-- Each project repository is the canonical home for its own `BUSINESS.md`, `BRANDING.md`, `GUIDELINES.md`, specs, research, and decision records.
+- Each project repository is the canonical home for its own `BUSINESS.md`, `BRANDING.md`, `CONTENT_MAP.md`, `GUIDELINES.md`, specs, research, and decision records.
 - Do not duplicate or symlink project decision-contract documents into `shipflow_data` by default. `shipflow_data` may reference that the contracts exist, but should not host the canonical copy of per-project business or technical documentation.
 
 Application runtime content keeps the schema required by the application. Blog posts, Astro content collections, MDX pages, and app-rendered docs must keep their framework-compatible frontmatter. ShipFlow can enrich compatible fields, but it must not break the app parser.
 
 ### Business documentation is technical documentation
 
-ShipFlow treats `BUSINESS.md`, `BRANDING.md`, `GUIDELINES.md`, personas, pricing notes, positioning, and GTM documents as technical artifacts because they drive technical decisions.
+ShipFlow treats `BUSINESS.md`, `BRANDING.md`, `GUIDELINES.md`, `CONTENT_MAP.md`, personas, pricing notes, positioning, and GTM documents as technical artifacts because they drive technical, product, and content-routing decisions.
 
 If `BUSINESS.md` says the product serves solo founders, then copy, onboarding, pricing, feature scope, support, and prioritization should be evaluated against that audience. If `BRANDING.md` says trust and clarity are core values, then UI copy, error messages, claims, screenshots, and documentation must preserve that trust. If a pricing or positioning document is stale, a technically correct feature can still be strategically wrong.
 

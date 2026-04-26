@@ -75,6 +75,8 @@ Read only the 3-5 most relevant files and classify the bug as `direct` or `spec-
 
 Apply the shared Documentation Freshness Gate from `/home/claude/shipflow/skills/references/documentation-freshness-gate.md` during triage when the bug may depend on current framework, SDK, service, API, auth/session, build, migration, cache, routing, or integration behavior. Local repo versions and patterns come first; Context7 official docs come next; official web docs are the fallback.
 
+If Supabase is detected and the bug touches auth, storage, upload, DB, or RLS behavior, load only the relevant references among `/home/claude/shipflow/skills/references/supabase-auth.md`, `/home/claude/shipflow/skills/references/supabase-storage.md`, `/home/claude/shipflow/skills/references/supabase-db.md` before classifying or patching.
+
 During triage, verify four things before choosing `direct`:
 - **User story fit**: the expected fix is clearly tied to the promised user outcome
 - **Product coherence**: the intended behavior matches adjacent flows, copy, permissions, and existing conventions
@@ -83,7 +85,7 @@ During triage, verify four things before choosing `direct`:
 - **Security impact**: the fix does not rely on UI-only protection or create a gap in auth, authz, validation, or data exposure
 - **Blast radius**: linked systems and regressions are still local enough for a direct fix
 
-If the bug touches browser authentication, protected routes, OAuth redirects, Clerk session state, callback handling, or "works in code but fails in browser" behavior:
+If the bug touches browser authentication, protected routes, OAuth redirects, Clerk or Supabase session state, callback handling, or "works in code but fails in browser" behavior:
 - prefer using `sf-auth-debug` as the diagnostic layer before or during the fix
 - use it to locate the exact failure step instead of inferring the auth break only from static code
 - keep `sf-fix` as the router and execution owner; `sf-auth-debug` provides evidence, not a separate workflow

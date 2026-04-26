@@ -1,5 +1,5 @@
 ---
-name: repurpose
+name: sf-repurpose
 description: Repurpose either the current work conversation or user-supplied source content into faithful documentation, marketing content, release notes, FAQs, or content angles. Use when a paragraph, article, feature discussion, or source text should be transformed into reusable content without inventing beyond the source.
 argument-hint: [optional focus such as "doc", "marketing", "full", "release notes", "faq", "newsletter", or a target surface]
 ---
@@ -20,6 +20,7 @@ argument-hint: [optional focus such as "doc", "marketing", "full", "release note
 - PRODUCT.md: !`head -60 PRODUCT.md 2>/dev/null || echo "no PRODUCT.md"`
 - GTM.md: !`head -60 GTM.md 2>/dev/null || echo "no GTM.md"`
 - GUIDELINES.md: !`head -60 GUIDELINES.md 2>/dev/null || echo "no GUIDELINES.md"`
+- CONTENT_MAP.md: !`head -120 CONTENT_MAP.md 2>/dev/null || echo "no CONTENT_MAP.md"`
 - Existing docs/pages: !`find docs src content app -maxdepth 2 -type f \( -name "*.md" -o -name "*.mdx" -o -name "*.tsx" -o -name "*.astro" \) 2>/dev/null | head -40 || echo "no docs/pages found"`
 
 ## Your task
@@ -31,6 +32,8 @@ Turn either:
 into a reusable content pack anchored in the source material.
 
 This skill is for repurposing, not inventing. Start from the source the user supplied in the current turn. If no source text was supplied, fall back to the current conversation. Use code, diffs, touched files, and project docs only when the source is a build conversation and only to confirm or sharpen what the conversation already established.
+
+If `CONTENT_MAP.md` exists, use it before recommending target surfaces. Treat it as the project's canonical map for blog paths, docs paths, landing pages, semantic clusters, pillar pages, FAQ/support surfaces, newsletters, and other content destinations. If it is missing, infer surfaces from the repo for this run and recommend creating it from `templates/artifacts/content_map.md`.
 
 Primary outcome:
 - extract the real product/technical signal from the work in progress
@@ -82,6 +85,15 @@ Pick the source in this order:
 If the user provides only a URL and not the content itself:
 - fetch it only if the user explicitly wants that
 - then treat the fetched page as external source material, not as product truth
+
+## Surface selection
+
+Before choosing output forms, check `CONTENT_MAP.md` when present:
+- prefer mapped surfaces over guessed paths
+- use declared pillar pages and semantic clusters to place blog/article/FAQ ideas
+- use declared cross-surface update rules to identify related docs, landing pages, or support content
+- if the map says a surface is missing, report that gap instead of inventing a path
+- if the map appears stale or contradicts the repo, mark the target as `needs verification`
 
 ## Mode detection
 

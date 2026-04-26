@@ -1,7 +1,7 @@
 ---
 artifact: product_context
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: "shipflow"
 created: "2026-04-26"
 updated: "2026-04-26"
@@ -19,6 +19,7 @@ security_impact: yes
 docs_impact: yes
 evidence:
   - "Repo artifacts strongly emphasize context routing, specs, readiness, verification, audits, and environment operations"
+  - "CONTENT_MAP.md and sf-repurpose skill add a content routing layer for documentation and marketing reuse"
 linked_artifacts:
   - "BUSINESS.md"
   - "ARCHITECTURE.md"
@@ -66,6 +67,7 @@ next_step: "/sf-docs audit PRODUCT.md"
 - Explore -> Spec -> Ready -> Start -> Verify -> End.
 - Fix-first path for bounded bugs.
 - Docs and metadata path for keeping context and decision artifacts consistent.
+- Content map and sf-repurpose path for turning product work or source ideas into faithful docs, marketing, landing-page, FAQ, and semantic-cluster material.
 - Server environment lifecycle path for deploy, restart, publish, and health management.
 
 ## Scope In
@@ -89,6 +91,7 @@ next_step: "/sf-docs audit PRODUCT.md"
 - Specs and docs become usable contracts rather than passive notes.
 - Workflow-critical changes are less likely to ship with silent success, silent failure, or stale docs.
 - A founder can move from repo state to executable change with less manual framing overhead.
+- Content and documentation updates are routed through a known content map instead of being rediscovered in each conversation.
 
 ## Risks
 
@@ -96,3 +99,4 @@ next_step: "/sf-docs audit PRODUCT.md"
 - The tool can be mistaken for “just a PM2 server script with helpers” if the AI framing layer is underexplained.
 - The tool can be mistaken for “just a prompting method” if the environment-delivery layer is underexplained.
 - Documentation volume can grow faster than its clarity if doc roles are not kept exclusive.
+- Content repurposing can drift into generic marketing if `CONTENT_MAP.md`, `PRODUCT.md`, `BRANDING.md`, and `GTM.md` are not kept current.

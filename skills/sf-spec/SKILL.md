@@ -62,6 +62,7 @@ Les snapshots de `TASKS.md` lus ici sont informatifs seulement.
 - Si l'utilisateur mentionne du code spécifique, scanner les fichiers concernés
 - Repérer le stack technique, les patterns, la structure du projet
 - Si la feature ou le bug dépend d'un framework, SDK, service, API, auth, build, migration, cache, routing ou intégration externe, appliquer `/home/claude/shipflow/skills/references/documentation-freshness-gate.md` avant de figer l'approche.
+- Si Supabase est dans le stack et que le scope touche auth, storage, upload, ou DB/RLS, charger seulement les références utiles parmi `/home/claude/shipflow/skills/references/supabase-auth.md`, `/home/claude/shipflow/skills/references/supabase-storage.md`, `/home/claude/shipflow/skills/references/supabase-db.md`.
 
 **Poser des questions informées** — pas des questions génériques, mais des questions ancrées dans ce qu'on a trouvé :
 - "Le `AuthService` valide dans le controller — on suit ce pattern ou on crée un validateur dédié ?"
@@ -118,6 +119,11 @@ Explorer le codebase en profondeur pour ancrer la spec dans la réalité techniq
 - **Cohérence documentaire** : docs, README, guides, FAQ, changelog, exemples, screenshots, onboarding ou support à mettre à jour si la feature change
 - **Fresh external docs** : dépendances externes dont le comportement gouverne la spec, version locale quand disponible, source Context7 ou docs officielles consultée, ou justification `fresh-docs not needed`
 - **Patterns de test** : comment les tests sont structurés
+
+Si Supabase est impliqué, préciser explicitement dans le contexte technique:
+- quel client est utilisé (`browser`, `server`, `service-role`)
+- où se trouvent les politiques RLS, callbacks auth, buckets storage, et migrations
+- quel couplage existe entre Auth, Storage et DB
 
 **Si aucun code existant** (clean slate) :
 - Identifier le dossier cible

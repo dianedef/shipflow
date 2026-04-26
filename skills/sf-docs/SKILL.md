@@ -15,6 +15,7 @@ argument-hint: [file-path | "readme" | "api" | "components" | "audit" | "update"
 - Architecture context: !`head -40 ARCHITECTURE.md 2>/dev/null || echo "no ARCHITECTURE.md"`
 - GTM context: !`head -40 GTM.md 2>/dev/null || echo "no GTM.md"`
 - Guidelines: !`head -40 GUIDELINES.md 2>/dev/null || echo "no GUIDELINES.md"`
+- Content map: !`head -40 CONTENT_MAP.md 2>/dev/null || echo "no CONTENT_MAP.md"`
 - Package.json: !`cat package.json 2>/dev/null | head -40 || echo "no package.json"`
 - Existing README: !`head -20 README.md 2>/dev/null || echo "no README.md"`
 - Project structure: !`find . -maxdepth 3 -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.astro" -o -name "*.vue" -o -name "*.py" \) 2>/dev/null | grep -v node_modules | grep -v .git | grep -v dist | sort | head -40`
@@ -67,7 +68,7 @@ next_step: "[recommended command]"
 ---
 ```
 
-Business, product, GTM, architecture, and technical context files are ShipFlow artifacts too. BUSINESS.md, BRANDING.md, PRODUCT.md, ARCHITECTURE.md, GTM.md, and GUIDELINES.md must use the ShipFlow schema with these minimum fields:
+Business, product, GTM, architecture, content map, and technical context files are ShipFlow artifacts too. BUSINESS.md, BRANDING.md, PRODUCT.md, ARCHITECTURE.md, GTM.md, CONTENT_MAP.md, and GUIDELINES.md must use the ShipFlow schema with these minimum fields:
 
 ```yaml
 ---
@@ -95,7 +96,7 @@ next_step: "[recommended command]"
 
 Use `depends_on` when an artifact relies on another decision contract, for example BRANDING.md depending on BUSINESS.md, GTM.md depending on BUSINESS.md plus BRANDING.md, ARCHITECTURE.md depending on GUIDELINES.md, GUIDELINES.md depending on CLAUDE.md, or a spec depending on BUSINESS.md plus GUIDELINES.md. Use `supersedes` when the artifact replaces an older file, a renamed doc, or a previous version whose assumptions are no longer current.
 
-This ShipFlow schema is mandatory for project documentation produced by ShipFlow (`docs/`, specs, reports, API docs, component docs, reviews, audits, research, `AGENT.md`, `CONTEXT.md`, `CONTEXT-FUNCTION-TREE.md`, `BUSINESS.md`, `BRANDING.md`, `PRODUCT.md`, `ARCHITECTURE.md`, `GTM.md`, `GUIDELINES.md`). Application runtime content keeps its own schema (`src/content/**`, app-rendered MD/MDX/blog files, framework-specific collections).
+This ShipFlow schema is mandatory for project documentation produced by ShipFlow (`docs/`, specs, reports, API docs, component docs, reviews, audits, research, `AGENT.md`, `CONTEXT.md`, `CONTEXT-FUNCTION-TREE.md`, `CONTENT_MAP.md`, `BUSINESS.md`, `BRANDING.md`, `PRODUCT.md`, `ARCHITECTURE.md`, `GTM.md`, `GUIDELINES.md`). Application runtime content keeps its own schema (`src/content/**`, app-rendered MD/MDX/blog files, framework-specific collections).
 
 Operational tracking files are explicitly excluded from mandatory metadata frontmatter:
 - `TASKS.md`
@@ -106,7 +107,7 @@ They are trackers/registries, not decision contracts. Do not add frontmatter to 
 
 Location rule:
 - `shipflow_data` hosts tracking and registry files, not the canonical copy of per-project decision documents.
-- `BUSINESS.md`, `BRANDING.md`, `PRODUCT.md`, `ARCHITECTURE.md`, `GTM.md`, `GUIDELINES.md`, specs, research, and decision records should live in the project repository they govern.
+- `BUSINESS.md`, `BRANDING.md`, `PRODUCT.md`, `ARCHITECTURE.md`, `GTM.md`, `CONTENT_MAP.md`, `GUIDELINES.md`, specs, research, and decision records should live in the project repository they govern.
 - During docs audit/update, do not "centralize" project decision docs into `shipflow_data` unless the user explicitly wants an inventory or backup copy. Prefer updating the in-repo source of truth.
 
 When adopting ShipFlow in an existing project, migrate old ShipFlow docs without metadata by adding the standard frontmatter. Preserve the body and only infer fields that are evident; use `unknown` or `medium|low` confidence instead of inventing proof.
@@ -139,7 +140,7 @@ When bumping `artifact_version`:
 - search for specs, audits, reviews and docs that reference the old version in `depends_on`
 - mark dependent artifacts as needing recheck when their `depends_on` version no longer matches the current decision contract
 
-If BUSINESS.md, BRANDING.md, PRODUCT.md, ARCHITECTURE.md, GTM.md, or GUIDELINES.md is `stale`, `draft` with low confidence, or has an outdated dependency, do not silently use it as authoritative. Ask a targeted question or report a blocking documentation risk before changing product behavior, copy, onboarding, pricing, security, GTM claims, API or architecture.
+If BUSINESS.md, BRANDING.md, PRODUCT.md, ARCHITECTURE.md, GTM.md, CONTENT_MAP.md, or GUIDELINES.md is `stale`, `draft` with low confidence, or has an outdated dependency, do not silently use it as authoritative. Ask a targeted question or report a blocking documentation risk before changing product behavior, copy, onboarding, pricing, security, GTM claims, API, content routing, or architecture.
 
 ---
 
@@ -254,7 +255,7 @@ Vérifier que la doc existante est cohérente avec le code, à jour, et respecte
 ### Flow
 
 1. **Inventorier toute la doc existante :**
-   - README.md, CLAUDE.md, AGENT.md, CONTEXT.md, CONTEXT-FUNCTION-TREE.md, CHANGELOG.md
+   - README.md, CLAUDE.md, AGENT.md, CONTEXT.md, CONTEXT-FUNCTION-TREE.md, CONTENT_MAP.md, CHANGELOG.md
    - BUSINESS.md, BRANDING.md, PRODUCT.md, ARCHITECTURE.md, GTM.md, GUIDELINES.md
    - FOUNDER.md / AUTHOR.md, INSPIRATION.md, SOURCE.md
    - Dossier `docs/` (tous les fichiers .md)
@@ -324,6 +325,7 @@ Vérifier que la doc existante est cohérente avec le code, à jour, et respecte
 - [ ] BUSINESS.md absent — audience, proposition de valeur, business model non documentés
 - [ ] PRODUCT.md absent — problèmes, workflows et non-goals non documentés
 - [ ] GTM.md absent — promesse publique, canaux et objections non documentés
+- [ ] CONTENT_MAP.md absent — surfaces de contenu, blog, docs, landing pages et cocons sémantiques non cartographiés
 - [ ] BRANDING.md incomplet — section "Valeurs" contient `<!-- à confirmer -->`
 - [ ] ARCHITECTURE.md stale — composants, flux ou invariants ne correspondent plus au code
 - [ ] GUIDELINES.md stale — stack détecté ≠ stack documenté
@@ -354,7 +356,7 @@ Harmoniser et mettre à jour la doc existante pour la rendre cohérente.
 
 2. **Vérifier les fichiers de contexte business/produit/architecture/GTM/marque :**
 
-   Pour chaque fichier (BUSINESS.md, BRANDING.md, PRODUCT.md, ARCHITECTURE.md, GTM.md, GUIDELINES.md) :
+   Pour chaque fichier (BUSINESS.md, BRANDING.md, PRODUCT.md, ARCHITECTURE.md, GTM.md, CONTENT_MAP.md, GUIDELINES.md) :
 
    **Si absent** → le créer en posant les questions nécessaires :
    - BUSINESS.md : **AskUserQuestion** "Décris ton projet en une phrase — qu'est-ce que ça fait et pour qui ?" puis générer
@@ -362,6 +364,7 @@ Harmoniser et mettre à jour la doc existante pour la rendre cohérente.
    - PRODUCT.md : poser les questions minimales sur le problème, les workflows cœur, et les non-goals si le code ne suffit pas
    - ARCHITECTURE.md : auto-générer depuis la structure, les entry points, les flux et les dépendances détectées, puis affiner si nécessaire
    - GTM.md : poser les questions minimales sur segment prioritaire, promesse publique, canaux et preuves si le repo ne suffit pas
+   - CONTENT_MAP.md : auto-générer depuis les dossiers de contenu détectés, les pages publiques, les docs, les collections, les routes marketing et les clusters sémantiques visibles; utiliser `templates/artifacts/content_map.md` comme base
    - GUIDELINES.md : auto-généré depuis le stack détecté, pas de question
    - Chaque fichier créé doit inclure le frontmatter ShipFlow obligatoire, démarrer en `artifact_version: "0.1.0"` si une partie est inférée, et documenter `evidence`, `depends_on`, `supersedes`, `next_review`, `status`, `confidence` et `risk_level`.
 
@@ -378,6 +381,7 @@ Harmoniser et mettre à jour la doc existante pour la rendre cohérente.
    - PRODUCT.md : les workflows et non-goals décrits correspondent-ils aux capacités réellement visibles ?
    - ARCHITECTURE.md : les composants, flux et invariants décrits correspondent-ils au code réel ?
    - GTM.md : les promesses, preuves et canaux sont-ils compatibles avec ce que le produit et les docs peuvent soutenir honnêtement ?
+   - CONTENT_MAP.md : les chemins blog/docs/landing/FAQ/support/newsletter, les cocons sémantiques, les pages piliers et les règles de mise à jour correspondent-ils aux surfaces réelles ?
    - GUIDELINES.md : le stack documenté correspond-il au stack réel ?
    - Metadata : `metadata_schema_version`, `artifact_version`, `status`, `confidence`, `risk_level`, `evidence`, `next_review`, `depends_on` et `supersedes` sont-ils présents et cohérents ?
    - Version sync : les dépendances référencées existent-elles encore avec la version attendue ? Les specs/reviews/audits qui dépendent d'une ancienne version doivent-ils être marqués à rechecker ?
@@ -418,6 +422,7 @@ Harmoniser et mettre à jour la doc existante pour la rendre cohérente.
 - PRODUCT.md : [créé / complété / mis à jour / OK]
 - ARCHITECTURE.md : [créé / complété / mis à jour / OK]
 - GTM.md : [créé / complété / mis à jour / OK]
+- CONTENT_MAP.md : [créé / complété / mis à jour / OK]
 - GUIDELINES.md : [créé / mis à jour / OK]
 
 **Doc technique corrigée :**
@@ -431,6 +436,7 @@ Harmoniser et mettre à jour la doc existante pour la rendre cohérente.
 - PRODUCT.md — workflows cœur clarifiés
 - ARCHITECTURE.md — flux et invariants ajoutés
 - GTM.md — segment, promesse et objections formalisés
+- CONTENT_MAP.md — surfaces blog/docs/landing et cocons sémantiques cartographiés
 - README.md — arborescence mise à jour, compteur skills corrigé
 - CLAUDE.md — section Framework actualisée
 - docs/API.md — 3 endpoints ajoutés, 1 endpoint supprimé retiré
@@ -460,6 +466,7 @@ Use this mode for:
      - `AGENT.md`
      - `CONTEXT.md`
      - `CONTEXT-FUNCTION-TREE.md`
+     - `CONTENT_MAP.md`
      - `BUSINESS.md`
      - `BRANDING.md`
      - `PRODUCT.md`
@@ -510,7 +517,7 @@ tools/shipflow_metadata_lint.py
    - Si le scope est explicite, préférer :
 
 ```bash
-tools/shipflow_metadata_lint.py AGENT.md CONTEXT.md CONTEXT-FUNCTION-TREE.md BUSINESS.md BRANDING.md PRODUCT.md ARCHITECTURE.md GTM.md GUIDELINES.md specs docs
+tools/shipflow_metadata_lint.py AGENT.md CONTEXT.md CONTEXT-FUNCTION-TREE.md CONTENT_MAP.md BUSINESS.md BRANDING.md PRODUCT.md ARCHITECTURE.md GTM.md GUIDELINES.md specs docs
 ```
 
    - Pour une vérification large volontaire, utiliser `--all-markdown` seulement si l'utilisateur a explicitement demandé de contrôler tous les Markdown, en sachant que les contenus runtime et archives peuvent produire des faux positifs.

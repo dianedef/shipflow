@@ -457,6 +457,80 @@ configure_supabase_mcp() {
     fi
 }
 
+# DataForSEO MCP — stdio MCP for SEO data APIs. Enabled only when credentials
+# are available in the install environment.
+configure_dataforseo_mcp() {
+    local target_home="$1"
+    local settings_file="$target_home/.claude/settings.json"
+    mkdir -p "$target_home/.claude"
+    if [ ! -f "$settings_file" ]; then
+        echo '{}' > "$settings_file"
+    fi
+    if command -v jq >/dev/null 2>&1; then
+        jq '
+            .mcpServers.dataforseo = {
+                "command": "npx",
+                "args": ["-y", "dataforseo-mcp-server"]
+            }
+        ' "$settings_file" > "${settings_file}.tmp" \
+            && mv "${settings_file}.tmp" "$settings_file"
+
+        if [ -z "${DATAFORSEO_USERNAME:-}" ] || [ -z "${DATAFORSEO_PASSWORD:-}" ]; then
+            jq '
+                .disabledMcpServers = ((.disabledMcpServers // []) + ["dataforseo"] | unique)
+            ' "$settings_file" > "${settings_file}.tmp" \
+                && mv "${settings_file}.tmp" "$settings_file"
+        else
+            jq '
+                .disabledMcpServers = ((.disabledMcpServers // []) - ["dataforseo"])
+            ' "$settings_file" > "${settings_file}.tmp" \
+                && mv "${settings_file}.tmp" "$settings_file"
+        fi
+    fi
+}
+
+playwright_mcp_args_json() {
+    local target_home="$1"
+    local arch
+    local chromium_path=""
+
+    arch="$(uname -m)"
+    if [ "$arch" = "aarch64" ] || [ "$arch" = "arm64" ]; then
+        chromium_path=$(find "$target_home/.cache/ms-playwright" \
+            -path '*/chrome-linux/chrome' \
+            -type f -perm -111 2>/dev/null | sort -Vr | head -n 1 || true)
+    fi
+
+    if [ -n "$chromium_path" ]; then
+        printf '["-y","@playwright/mcp@latest","--executable-path","%s","--headless","--no-sandbox"]' "$chromium_path"
+    else
+        printf '["-y","@playwright/mcp@latest"]'
+    fi
+}
+
+# Playwright MCP — uses the local Playwright Chromium on ARM where Chrome stable
+# is not available as /opt/google/chrome/chrome.
+configure_playwright_mcp() {
+    local target_home="$1"
+    local settings_file="$target_home/.claude/settings.json"
+    local args_json
+
+    mkdir -p "$target_home/.claude"
+    if [ ! -f "$settings_file" ]; then
+        echo '{}' > "$settings_file"
+    fi
+    if command -v jq >/dev/null 2>&1; then
+        args_json="$(playwright_mcp_args_json "$target_home")"
+        jq --argjson args "$args_json" '
+            .mcpServers.playwright = {
+                "command": "npx",
+                "args": $args
+            }
+        ' "$settings_file" > "${settings_file}.tmp" \
+            && mv "${settings_file}.tmp" "$settings_file"
+    fi
+}
+
 # Codex TUI defaults — idempotent and non-destructive
 configure_codex_tui() {
     local target_home="$1"
@@ -883,6 +957,91 @@ configure_codex_supabase_mcp() {
     mv "$tmp_file" "$config_file"
 }
 
+# DataForSEO MCP for Codex — stdio transport. Kept disabled unless credentials
+# are exported when ShipFlow runs the installer.
+configure_codex_dataforseo_mcp() {
+    local target_home="$1"
+    local codex_dir="$target_home/.codex"
+    local config_file="$codex_dir/config.toml"
+    local tmp_file="$config_file.tmp.$$"
+    local enabled="false"
+
+    mkdir -p "$codex_dir"
+    [ -f "$config_file" ] || touch "$config_file"
+
+    if [ -n "${DATAFORSEO_USERNAME:-}" ] && [ -n "${DATAFORSEO_PASSWORD:-}" ]; then
+        enabled="true"
+    fi
+
+    awk '
+        /^# >>> shipflow codex dataforseo mcp >>>$/ { skip = 1; next }
+        /^# <<< shipflow codex dataforseo mcp <<</ { skip = 0; next }
+        /^\[mcp_servers\.dataforseo\]$/ { skip = 1; next }
+        /^\[/ && $0 !~ /^\[mcp_servers\.dataforseo\]$/ && skip == 1 { skip = 0 }
+        !skip { print }
+    ' "$config_file" > "$tmp_file"
+
+    {
+        printf '\n'
+        printf '# >>> shipflow codex dataforseo mcp >>>\n'
+        printf '[mcp_servers.dataforseo]\n'
+        printf 'command = "npx"\n'
+        printf 'args = ["-y", "dataforseo-mcp-server"]\n'
+        printf 'enabled = %s\n' "$enabled"
+        printf '# <<< shipflow codex dataforseo mcp <<<\n'
+    } >> "$tmp_file"
+
+    mv "$tmp_file" "$config_file"
+}
+
+# Playwright MCP for Codex — stdio transport, enabled by default.
+configure_codex_playwright_mcp() {
+    local target_home="$1"
+    local codex_dir="$target_home/.codex"
+    local config_file="$codex_dir/config.toml"
+    local tmp_file="$config_file.tmp.$$"
+    local args_json
+
+    mkdir -p "$codex_dir"
+    [ -f "$config_file" ] || touch "$config_file"
+
+    awk '
+        /^# >>> shipflow codex playwright mcp >>>$/ { skip = 1; next }
+        /^# <<< shipflow codex playwright mcp <<</ { skip = 0; next }
+        /^\[mcp_servers\.playwright(\.|\])?/ { skip = 1; next }
+        /^\[/ && $0 !~ /^\[mcp_servers\.playwright(\.|\])?/ && skip == 1 { skip = 0 }
+        !skip { print }
+    ' "$config_file" > "$tmp_file"
+
+    args_json="$(playwright_mcp_args_json "$target_home")"
+    {
+        printf '\n'
+        printf '# >>> shipflow codex playwright mcp >>>\n'
+        printf '[mcp_servers.playwright]\n'
+        printf 'command = "npx"\n'
+        printf 'args = %s\n' "$args_json"
+        printf 'enabled = true\n'
+        printf '\n'
+        printf '[mcp_servers.playwright.tools]\n'
+        printf 'browser_snapshot = true\n'
+        printf 'browser_click = true\n'
+        printf 'browser_type = true\n'
+        printf 'browser_take_screenshot = true\n'
+        printf 'browser_console_messages = true\n'
+        printf 'browser_network_requests = true\n'
+        printf 'browser_run_code = true\n'
+        printf '\n'
+        printf '[mcp_servers.playwright.tools.browser_navigate]\n'
+        printf 'approval_mode = "approve"\n'
+        printf '\n'
+        printf '[mcp_servers.playwright.tools.browser_resize]\n'
+        printf 'approval_mode = "approve"\n'
+        printf '# <<< shipflow codex playwright mcp <<<\n'
+    } >> "$tmp_file"
+
+    mv "$tmp_file" "$config_file"
+}
+
 # Configure skills symlinks for a user
 ensure_skill_link() {
     local source_dir="$1"
@@ -974,6 +1133,8 @@ setup_user() {
     configure_convex_mcp "$user_home"
     configure_clerk_mcp "$user_home"
     configure_supabase_mcp "$user_home"
+    configure_dataforseo_mcp "$user_home"
+    configure_playwright_mcp "$user_home"
     configure_codex_tui "$user_home"
     configure_codex_rmcp "$user_home"
     configure_codex_context7_mcp "$user_home"
@@ -981,6 +1142,8 @@ setup_user() {
     configure_codex_convex_mcp "$user_home"
     configure_codex_clerk_mcp "$user_home"
     configure_codex_supabase_mcp "$user_home"
+    configure_codex_dataforseo_mcp "$user_home"
+    configure_codex_playwright_mcp "$user_home"
     configure_skills "$user_home"
     configure_aliases "$user_home"
     configure_data "$user_home"

@@ -18,7 +18,7 @@ Quick reference for the skill system, modes, and workflows.
 | Skill | Purpose | Arguments |
 |-------|---------|-----------|
 | `/sf-fix` | Bug-first intake and routing (direct fix vs spec-first) | `<bug description>` |
-| `/sf-auth-debug` | Browser-auth diagnosis for Clerk, OAuth, Google/YouTube, Convex, sessions, callbacks | `<bug/URL/flow>` |
+| `/sf-auth-debug` | Browser-auth diagnosis for Clerk, Supabase Auth, OAuth, Google/YouTube, Convex, sessions, callbacks | `<bug/URL/flow>` |
 | `/sf-model` | Choose model, reasoning level, and fast/cheap fallback before execution | `<task description>` or `<spec path>` |
 | `/sf-tasks` | Track work, check off items, suggest next | `[focus area]` |
 | `/sf-priorities` | Re-rank by impact/effort matrix | `impact`, `effort`, `blockers`, `quick-wins` |

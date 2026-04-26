@@ -165,11 +165,11 @@ Before editing `/home/claude/shipflow_data/PROJECTS.md` here, or `/home/claude/s
 
 Créer les fichiers de contexte business/marque directement dans le repo du projet. Ces documents sont des contrats de décision du projet et leur source canonique doit rester au plus près du code, des specs et de la documentation qu'ils gouvernent.
 
-`shipflow_data` reste réservé au tracking partagé (`TASKS.md`, `AUDIT_LOG.md`, `PROJECTS.md`). Ne pas y déplacer `BUSINESS.md`, `BRANDING.md` ou `GUIDELINES.md` par défaut.
+`shipflow_data` reste réservé au tracking partagé (`TASKS.md`, `AUDIT_LOG.md`, `PROJECTS.md`). Ne pas y déplacer `BUSINESS.md`, `BRANDING.md`, `CONTENT_MAP.md` ou `GUIDELINES.md` par défaut.
 
 **Pour chaque fichier** : vérifier d'abord s'il existe déjà dans le projet. Si oui, sauter.
 
-BUSINESS.md, BRANDING.md et GUIDELINES.md sont des artefacts ShipFlow, pas de simples notes. Ils doivent commencer par un frontmatter YAML ShipFlow avec `metadata_schema_version`, `artifact_version`, `status`, `confidence`, `risk_level`, `evidence`, `next_review`, `depends_on` et `supersedes`. À l'initialisation, utiliser `metadata_schema_version: "1.0"` et `artifact_version: "0.1.0"` tant que le contenu n'a pas été revu explicitement par l'utilisateur; passer à `artifact_version: "1.0.0"` seulement si les réponses utilisateur couvrent les décisions essentielles sans placeholder.
+BUSINESS.md, BRANDING.md, CONTENT_MAP.md et GUIDELINES.md sont des artefacts ShipFlow, pas de simples notes. Ils doivent commencer par un frontmatter YAML ShipFlow avec `metadata_schema_version`, `artifact_version`, `status`, `confidence`, `risk_level`, `evidence`, `next_review`, `depends_on` et `supersedes`. À l'initialisation, utiliser `metadata_schema_version: "1.0"` et `artifact_version: "0.1.0"` tant que le contenu n'a pas été revu explicitement par l'utilisateur; passer à `artifact_version: "1.0.0"` seulement si les réponses utilisateur couvrent les décisions essentielles sans placeholder.
 
 #### 5a. BUSINESS.md
 
@@ -490,6 +490,20 @@ This project uses a local codebase MCP server for efficient context management.
 See `/home/claude/shipflow/tools/codebase-mcp/README.md` for full tool reference.
 ```
 
+#### 5d. CONTENT_MAP.md
+
+Générer automatiquement depuis les dossiers détectés (`src/content`, `content`, `docs`, `app`, `pages`, routes marketing, collections Astro/MDX, changelog, FAQ/support si présents). Utiliser `templates/artifacts/content_map.md` comme structure.
+
+`[project_dir]/CONTENT_MAP.md` doit cartographier :
+- blog et articles
+- documentation produit/API/support
+- landing pages et pages marketing
+- FAQ, changelog, newsletter/social si présents
+- cocons sémantiques, pages piliers et pages de support
+- règles de mise à jour entre surfaces
+
+Ne pas le transformer en calendrier éditorial ou backlog. Si aucun blog/newsletter/FAQ n'existe, noter la surface comme absente ou `planned`, pas comme chemin inventé.
+
 ### Step 8: Confirm domain applicability
 
 Use **AskUserQuestion**:
@@ -512,6 +526,7 @@ CLAUDE.md:   [created / skipped / already existed]
 TASKS.md:    [created / skipped / already existed]
 BUSINESS.md: [created / skipped / already existed]
 BRANDING.md: [created / skipped / already existed]
+CONTENT_MAP.md: [created / skipped / already existed]
 GUIDELINES.md: [created / skipped / already existed]
 MCP:         [configured / skipped]
 PROJECTS:    [registered / already registered]

@@ -93,6 +93,8 @@ If the request appears to create a new public-facing surface, read enough nearby
 - what level of polish/structure is expected
 - where auth, validation, analytics, SEO, and error handling are usually enforced
 
+If Supabase is detected and the scaffold touches auth, uploads, storage, or DB-backed CRUD, load only the relevant references among `/home/claude/shipflow/skills/references/supabase-auth.md`, `/home/claude/shipflow/skills/references/supabase-storage.md`, `/home/claude/shipflow/skills/references/supabase-db.md` before generating code.
+
 ### Step 3: Analyze patterns
 
 From the examples, extract:
@@ -112,6 +114,11 @@ Also analyze product and risk coherence:
 - **Quality bar**: baseline for copy clarity, accessibility, validation, feedback states, loading states, responsiveness
 - **Security model**: where auth/authz, input validation, server enforcement, tenant scoping, and audit-sensitive behavior are handled
 - **Documentation model**: where similar features are documented, linked, exampled, onboarded, or explained to support users
+
+If Supabase is part of the flow, also extract:
+- which client boundary the project uses for the operation (`browser`, `server`, `service-role`)
+- how RLS and tenant ownership are enforced
+- how storage paths and DB rows stay consistent
 
 If the requested scaffold would conflict with existing terminology, route structure, component API shape, trust boundary patterns, or active documentation, stop and surface the conflict before generating.
 

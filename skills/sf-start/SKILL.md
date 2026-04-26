@@ -74,6 +74,7 @@ If `spec-first` and no matching `Status: ready` spec exists:
 ### Step 3 — Load context, derive execution contract, and track task (silent)
 
 - Read `/home/claude/shipflow/skills/references/documentation-freshness-gate.md` when the task depends on framework, SDK, service, API, auth/session, build, migration, cache, routing, or integration behavior. Preserve the gate verdict in the execution contract.
+- If Supabase is in the stack and the task touches auth, storage, uploads, DB, or RLS, load only the relevant references among `/home/claude/shipflow/skills/references/supabase-auth.md`, `/home/claude/shipflow/skills/references/supabase-storage.md`, `/home/claude/shipflow/skills/references/supabase-db.md` before editing.
 - Si la tâche est `spec-first`, préférer une exécution sur contexte frais :
   - lancer un subagent sans historique si c'est possible
   - sinon demander explicitement à l'utilisateur d'ouvrir un nouveau thread avant de continuer
@@ -122,6 +123,7 @@ If `spec-first` and no matching `Status: ready` spec exists:
 - Read only the files needed to implement plus the linked systems that must be sanity-checked
 - Include associated tests or entry points
 - If the task touches auth, redirects, protected pages, callback flows, or browser session state, include the relevant login/callback entrypoints and the minimum routes needed for `sf-auth-debug`
+- If the task touches Supabase, include the matching schema/policy/migration files, storage path conventions, and the exact client split (`browser`, `server`, `service-role`) in the read-first set
 - Update task tracking to `🔄 in progress` in master TASKS.md
 - Update local TASKS.md too when present
 - Treat the TASKS content loaded in Context as informational only.

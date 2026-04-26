@@ -19,6 +19,7 @@ DEFAULT_TARGETS = (
     "AGENT.md",
     "CONTEXT.md",
     "CONTEXT-FUNCTION-TREE.md",
+    "CONTENT_MAP.md",
     "BUSINESS.md",
     "BRANDING.md",
     "PRODUCT.md",
@@ -65,6 +66,7 @@ ARTIFACT_REQUIRED = {
     "review_report": {"period", "verified_outcomes", "assumptions"},
     "research_report": {"source_count", "primary_sources", "recommendation"},
     "decision_record": {"decision", "rationale", "consequences"},
+    "content_map": {"content_surfaces", "next_review"},
 }
 
 
@@ -73,7 +75,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "paths",
         nargs="*",
-        help="Files or directories to lint. Defaults to specs/, docs/, AGENT.md, CONTEXT.md, CONTEXT-FUNCTION-TREE.md, BUSINESS.md, BRANDING.md, PRODUCT.md, ARCHITECTURE.md, GTM.md, GUIDELINES.md.",
+        help="Files or directories to lint. Defaults to specs/, docs/, AGENT.md, CONTEXT.md, CONTEXT-FUNCTION-TREE.md, CONTENT_MAP.md, BUSINESS.md, BRANDING.md, PRODUCT.md, ARCHITECTURE.md, GTM.md, GUIDELINES.md.",
     )
     parser.add_argument(
         "--all-markdown",
@@ -131,6 +133,7 @@ def should_lint(path: Path, fields: dict[str, str], all_markdown: bool) -> bool:
         "AGENT.md",
         "CONTEXT.md",
         "CONTEXT-FUNCTION-TREE.md",
+        "CONTENT_MAP.md",
         "BUSINESS.md",
         "BRANDING.md",
         "PRODUCT.md",

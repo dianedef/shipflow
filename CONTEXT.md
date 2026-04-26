@@ -1,7 +1,7 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "0.2.0"
 project: "shipflow"
 created: "2026-04-25"
 updated: "2026-04-25"
@@ -13,10 +13,10 @@ confidence: "high"
 risk_level: "medium"
 security_impact: "none"
 docs_impact: "yes"
-linked_systems: ["shipflow.sh", "lib.sh", "config.sh", "install.sh", "local/local.sh", "skills/", "shipflow-spec-driven-workflow.md", "CONTEXT-FUNCTION-TREE.md"]
+linked_systems: ["shipflow.sh", "lib.sh", "config.sh", "install.sh", "local/local.sh", "skills/", "shipflow-spec-driven-workflow.md", "CONTEXT-FUNCTION-TREE.md", "CONTENT_MAP.md"]
 depends_on: []
 supersedes: []
-evidence: ["README.md", "CLAUDE.md", function extraction from core shell scripts"]
+evidence: ["README.md", "CLAUDE.md", "CONTENT_MAP.md", function extraction from core shell scripts]
 next_step: "/sf-docs update CONTEXT.md"
 ---
 
@@ -51,6 +51,7 @@ ShipFlow combine deux couches :
 - `tools/shipflow_metadata_lint.py`: linter des frontmatters ShipFlow.
 - `shipflow-spec-driven-workflow.md`: doctrine de workflow.
 - `shipflow-metadata-migration-guide.md`: doctrine de migration metadata.
+- `CONTENT_MAP.md`: carte des surfaces de contenu, pages piliers, cocons semantiques et destinations de repurposing.
 - `BUSINESS.md`, `PRODUCT.md`, `BRANDING.md`, `GTM.md`: contrats business, produit et promesse publique.
 - `ARCHITECTURE.md`, `GUIDELINES.md`: contrats structurels et techniques.
 
@@ -113,6 +114,7 @@ Fast paths existent aussi :
 - Les operations destructives doivent rester idempotentes.
 - Les paths projet doivent etre absolus et valides.
 - Les docs ShipFlow actives doivent avoir un frontmatter versionne.
+- `CONTENT_MAP.md` doit rester structurel : surfaces, roles, clusters et regles de mise a jour, pas backlog editorial.
 - Les trackers operationnels (`TASKS.md`, `AUDIT_LOG.md`, `PROJECTS.md`) ne recoivent pas de frontmatter.
 - Les contenus runtime applicatifs gardent leur propre schema de frontmatter.
 
@@ -141,6 +143,7 @@ Fast paths existent aussi :
 - Changer les tunnels locaux : `local/local.sh` et `local/dev-tunnel.sh`.
 - Changer le workflow d'agent : `skills/` + `shipflow-spec-driven-workflow.md`.
 - Changer les regles metadata : `skills/sf-docs/SKILL.md`, `tools/shipflow_metadata_lint.py`, `shipflow-metadata-migration-guide.md`, `templates/artifacts/`.
+- Changer la cartographie editoriale, les destinations de contenu ou les cocons semantiques : `CONTENT_MAP.md`, puis `site/src/pages/docs.astro` ou les surfaces concernees.
 - Changer le positionnement, l'audience ou le scope produit : `BUSINESS.md`, `PRODUCT.md`, `GTM.md`, `BRANDING.md`.
 - Changer la structure technique globale : `ARCHITECTURE.md`, `GUIDELINES.md`, puis `lib.sh` ou les scripts concernes.
 
@@ -152,6 +155,7 @@ Fast paths existent aussi :
 - Metadata docs : `shipflow-metadata-migration-guide.md`, `skills/sf-docs/SKILL.md`, `tools/shipflow_metadata_lint.py`.
 - Tunnels / acces local : `local/README.md`, `local/local.sh`, `local/dev-tunnel.sh`.
 - Produit / business / site : `BUSINESS.md`, `PRODUCT.md`, `BRANDING.md`, `GTM.md`.
+- Contenu / repurposing : `CONTENT_MAP.md`, `skills/sf-repurpose/SKILL.md`, puis la surface cible.
 - Architecture / conventions : `ARCHITECTURE.md`, `GUIDELINES.md`, `CLAUDE.md`.
 
 ## Linked Docs
@@ -160,6 +164,7 @@ Fast paths existent aussi :
 - [CLAUDE.md](/home/claude/shipflow/CLAUDE.md)
 - [README.md](/home/claude/shipflow/README.md)
 - [CONTEXT-FUNCTION-TREE.md](/home/claude/shipflow/CONTEXT-FUNCTION-TREE.md)
+- [CONTENT_MAP.md](/home/claude/shipflow/CONTENT_MAP.md)
 - [shipflow-spec-driven-workflow.md](/home/claude/shipflow/shipflow-spec-driven-workflow.md)
 - [shipflow-metadata-migration-guide.md](/home/claude/shipflow/shipflow-metadata-migration-guide.md)
 - [BUSINESS.md](/home/claude/shipflow/BUSINESS.md)
@@ -178,3 +183,4 @@ Mettre a jour `CONTEXT.md` quand un changement modifie :
 - les hotspots
 - un invariant critique
 - la destination officielle des docs de contexte
+- les surfaces de contenu ou regles de repurposing officielles

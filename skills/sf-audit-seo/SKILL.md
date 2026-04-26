@@ -61,6 +61,14 @@ Le SEO doit attirer les bons utilisateurs vers une promesse vraie :
 
 Signaler explicitement les écarts `docs mismatch`, `outdated feature claim`, `unproven claim` et `wrong-intent traffic`.
 
+### OpenAI / ChatGPT freshness gate
+
+Quand une page ou un corpus contient des claims sur OpenAI, ChatGPT, GPT, Codex, OpenAI API, Responses API, Agents/Assistants, function/tool calling, structured outputs, Whisper/transcription, embeddings, génération d'images, GPTBot, OAI-SearchBot, pricing OpenAI ou prompt guidance :
+- utiliser d'abord `mcp__openaiDeveloperDocs__search_openai_docs` / `fetch_openai_doc` pour les claims officiels OpenAI ;
+- pour les claims "latest/current/default/best model", fetcher `https://developers.openai.com/api/docs/guides/latest-model.md` ;
+- signaler `OpenAI freshness risk` si la page cite des modèles/prix/API obsolètes, de vieux plugins/browsing, des exemples `chat.completions` présentés comme recommandation actuelle, ou des conseils prompt non sourcés ;
+- utiliser aussi une recherche web large pour les claims AEO/GEO, taux de citation, adoption marché, benchmarks SEO ou études tierces ; ne pas les présenter comme des recommandations OpenAI sauf preuve dans la doc OpenAI.
+
 ---
 
 ## Mode detection
@@ -211,6 +219,7 @@ Score each category **A/B/C/D**. Be strict — production SEO standard.
 - [ ] Primary source citations inside content (outbound links to research, gov data, official docs)
 - [ ] Canonical brand name used consistently everywhere (never "Our Product" vs "ProductX" vs "the tool")
 - [ ] Public docs, changelog or support references corroborate feature claims that AI engines may cite
+- [ ] OpenAI/ChatGPT claims use OpenAI Docs MCP for official behavior and broader web research for third-party AEO/GEO evidence
 
 ### Step 3: Fix
 
@@ -353,6 +362,7 @@ Map the internal link graph:
 - [ ] Brand name used consistently everywhere (never "Our Product" vs "ProductX" vs "the tool")
 - [ ] Flag if client lacks Wikipedia presence or Reddit discussion (GEO gap — 46.7% of Perplexity citations reference Reddit; 47.9% of ChatGPT factual citations reference Wikipedia)
 - [ ] Recent publish/update date prominently visible in body (Perplexity freshness filter <90 days)
+- [ ] OpenAI/ChatGPT claims are current: official claims checked with OpenAI Docs MCP; third-party citation/SEO claims backed by external research sources
 
 ### Phase 6: Fix
 

@@ -121,6 +121,15 @@ For each piece of content, search the web for:
 
 Use `WebSearch` and `mcp__exa__web_search_exa` for research. Search in the **same language** as the content (French topics → French queries + English queries for technical depth).
 
+#### OpenAI freshness gate
+
+If the target content mentions OpenAI, ChatGPT, GPT models, Codex, OpenAI API, Responses API, Assistants/Agents, function/tool calling, structured outputs, Whisper/transcription, image generation, embeddings, GPTBot, OAI-SearchBot, OpenAI pricing, or OpenAI prompt guidance:
+- Use `mcp__openaiDeveloperDocs__search_openai_docs` / `fetch_openai_doc` before rewriting any OpenAI-specific claim.
+- For model-selection or "latest/current/default/best model" claims, fetch `https://developers.openai.com/api/docs/guides/latest-model.md`.
+- Treat OpenAI Docs MCP as authoritative for OpenAI product/API/model behavior; fallback only to official OpenAI domains and report the fallback.
+- For ChatGPT citation behavior, AEO/GEO benchmarks, market adoption, SEO impact, or third-party studies, use broader web research too; do not attribute non-OpenAI claims to OpenAI docs.
+- If the content contains outdated claims such as old browsing/plugin behavior, legacy model names, stale pricing, old prompt-engineering guidance, or deprecated API examples, flag it as `OpenAI freshness risk` in the report.
+
 ---
 
 ### PHASE 3: REWRITE
@@ -199,6 +208,7 @@ Optimize the content to be found, extracted, and cited by ChatGPT, Perplexity, C
 - [ ] **Claim-source proximity**: every stat or fact cited in the same sentence or immediately after, not in a bibliography
 - [ ] **Fact density**: one statistic or specific number per 150-200 words
 - [ ] **Entity-rich language**: named tools, companies, standards, people, dates (15+ recognized entities → 4.8x citation rate)
+- [ ] **OpenAI claims checked when relevant**: any ChatGPT/OpenAI/Codex/API/model statement is supported by OpenAI Docs MCP or clearly marked as broader market research.
 
 #### E-E-A-T concrete checklist (every article)
 - [ ] **Named author** with bio page (credentials, LinkedIn, years of experience on topic)
