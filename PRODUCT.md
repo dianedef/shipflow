@@ -1,11 +1,11 @@
 ---
 artifact: product_context
 metadata_schema_version: "1.0"
-artifact_version: "0.2.0"
+artifact_version: "1.0.0"
 project: "shipflow"
 created: "2026-04-26"
 updated: "2026-04-26"
-status: draft
+status: reviewed
 source_skill: manual
 scope: product
 owner: "unknown"
@@ -25,8 +25,8 @@ linked_artifacts:
   - "GUIDELINES.md"
 depends_on:
   - artifact: "BUSINESS.md"
-    artifact_version: "0.2.0"
-    required_status: "draft"
+    artifact_version: "1.0.0"
+    required_status: "reviewed"
 supersedes: []
 next_review: "2026-05-26"
 next_step: "/sf-docs audit PRODUCT.md"
@@ -53,6 +53,13 @@ next_step: "/sf-docs audit PRODUCT.md"
 - Non-trivial work is shaped before coding through explicit contracts.
 - Success and failure behavior are made observable and testable.
 - Verification catches contract drift instead of just syntax or lint errors.
+
+## Product Principles
+
+- Reduce ambiguity before increasing automation.
+- Prefer explicit contracts over hidden conventions.
+- Keep fast paths for local work, but force structure when the task becomes risky or cross-cutting.
+- Make success and failure visible to the operator.
 
 ## Core Workflows
 
@@ -81,6 +88,7 @@ next_step: "/sf-docs audit PRODUCT.md"
 - Less context loss and fewer failed handoffs in real agent-assisted delivery work.
 - Specs and docs become usable contracts rather than passive notes.
 - Workflow-critical changes are less likely to ship with silent success, silent failure, or stale docs.
+- A founder can move from repo state to executable change with less manual framing overhead.
 
 ## Risks
 

@@ -1,11 +1,11 @@
 ---
 artifact: brand_context
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "shipflow"
 created: "2026-04-26"
 updated: "2026-04-26"
-status: draft
+status: reviewed
 source_skill: manual
 scope: brand
 owner: "unknown"
@@ -23,8 +23,8 @@ linked_artifacts:
   - "GTM.md"
 depends_on:
   - artifact: "BUSINESS.md"
-    artifact_version: "0.1.0"
-    required_status: "draft"
+    artifact_version: "1.0.0"
+    required_status: "reviewed"
 supersedes: []
 next_review: "2026-05-26"
 next_step: "/sf-docs audit BRANDING.md"
@@ -51,12 +51,24 @@ next_step: "/sf-docs audit BRANDING.md"
 - Avoid: magic, autonomous genius, instant, effortless, perfect, seamless unless the constraint is truly negligible.
 - Prefer “reduces ambiguity” over “solves everything”.
 
+## Personality
+
+- Rigorous without sounding bureaucratic.
+- Technical without sounding exclusionary.
+- Calm, explicit, and evidence-oriented.
+
 ## Claims Boundaries
 
 - Allowed: ShipFlow improves clarity, structure, and repeatability of AI-assisted development work.
 - Allowed: ShipFlow helps agents start with better context and verify against explicit contracts.
 - Not allowed without stronger proof: guaranteed productivity gains, guaranteed correctness, guaranteed security, zero-regression shipping.
 - Not allowed: marketing language that implies the framework replaces engineering judgment.
+
+## Style Of Address
+
+- Speak to a capable operator, not to a passive buyer.
+- Prefer concrete framing over slogans.
+- State tradeoffs when they matter; do not hide them behind generic reassurance.
 
 ## Visual Direction
 

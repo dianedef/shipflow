@@ -1,11 +1,11 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "shipflow"
 created: "2026-04-26"
 updated: "2026-04-26"
-status: draft
+status: reviewed
 source_skill: manual
 scope: guidelines
 owner: "unknown"
@@ -29,6 +29,10 @@ next_step: "/sf-docs audit GUIDELINES.md"
 ---
 
 # Technical Guidelines
+
+## Scope Of This Document
+
+This file defines stable engineering and documentation rules for working inside ShipFlow. It is not the place for product positioning, system topology walkthroughs, or public messaging.
 
 ## Stack
 
@@ -65,6 +69,12 @@ next_step: "/sf-docs audit GUIDELINES.md"
 - Technical checks are necessary but not sufficient.
 - User-facing success and error behavior should be observable or explicitly justified.
 - Docs that affect product understanding must be checked when behavior changes.
+
+## Change Routing
+
+- Runtime orchestration changes belong first in `lib.sh`, `config.sh`, `shipflow.sh`, or `local/`.
+- Workflow and artifact-governance changes belong first in `skills/`, templates, and workflow docs.
+- Product, business, GTM, and brand decisions belong in their dedicated contracts before they are repeated elsewhere.
 
 ## Documentation Expectations
 

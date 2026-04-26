@@ -1,0 +1,33 @@
+---
+import CallToAction from "../components/CallToAction.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import DocsCta from "../components/DocsCta.astro";
+import FaqSection from "../components/FaqSection.astro";
+import FeatureGrid from "../components/FeatureGrid.astro";
+import Footer from "../components/Footer.astro";
+import Hero from "../components/Hero.astro";
+import NavBar from "../components/NavBar.astro";
+import PricingHypothesis from "../components/PricingHypothesis.astro";
+import ProductSurface from "../components/ProductSurface.astro";
+import ProofStrip from "../components/ProofStrip.astro";
+import RoleMap from "../components/RoleMap.astro";
+---
+
+<BaseLayout
+  title="ShipFlow | Ship with agents without losing context"
+  description="ShipFlow is a unified framework for server delivery and AI-assisted execution discipline for solo founders and autonomous builders."
+>
+  <main class="page-shell">
+    <NavBar />
+    <Hero />
+    <FeatureGrid />
+    <ProductSurface />
+    <RoleMap />
+    <ProofStrip />
+    <PricingHypothesis />
+    <FaqSection />
+    <DocsCta />
+    <CallToAction />
+  </main>
+  <Footer />
+</BaseLayout>

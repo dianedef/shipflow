@@ -152,14 +152,6 @@ The key rule is simple:
 
 ShipFlow now uses a dedicated context layer for fast agent onboarding.
 
-ShipFlow documentation is not meant to be encyclopedic. It is meant to be complete for fast agent navigation:
-
-- point of entry
-- operational context
-- function tree for large scripts
-- routing toward business, product, GTM, architecture, and guidelines
-- recognition by `sf-docs` and by the metadata linter
-
 - `AGENT.md` is the routing file: it tells an agent where to look first.
 - `CONTEXT.md` is the operational map: entry points, core flows, hotspots, invariants, and where to edit what.
 - `CONTEXT-FUNCTION-TREE.md` is a specialized companion for large procedural files such as `lib.sh`.
@@ -174,15 +166,6 @@ ShipFlow also separates decision contracts by role:
 - `GTM.md` for how the product should be presented and distributed
 - `ARCHITECTURE.md` for how the system is organized
 - `GUIDELINES.md` for how contributors should work inside it
-
-This layer gives ShipFlow a clearer product surface:
-
-- `BUSINESS.md` = for whom / what value / what model
-- `PRODUCT.md` = what / workflows / non-goals
-- `BRANDING.md` = how we speak
-- `GTM.md` = how we present and distribute it
-- `ARCHITECTURE.md` = how it is organized
-- `GUIDELINES.md` = how we work inside it
 
 ## Documentation Frame
 
@@ -200,25 +183,6 @@ The recent step forward is structural clarity:
 - a cleaner separation between active docs, trackers, and runtime content
 
 This means the framework is no longer just documented. It is organized so a fresh agent can enter, locate the right contract, and distinguish decision artifacts from operational tracking or app-rendered content.
-
-Documentation role map:
-
-- `README.md` -> public overview and repo onboarding
-- `AGENT.md` -> fast agent routing
-- `CONTEXT.md` -> operational map of the system
-- `CONTEXT-FUNCTION-TREE.md` -> structural index for large procedural files
-- `CLAUDE.md` -> critical repository constraints and rules
-- `shipflow-spec-driven-workflow.md` -> ShipFlow work doctrine
-- `shipflow-metadata-migration-guide.md` -> frontmatter migration procedure
-- `BUSINESS.md` -> business/product contract: for whom, what problem, what value, what model
-- `BRANDING.md` -> brand contract: tone, posture, vocabulary, claims
-- `GTM.md` -> public promise and sales contract: offer, funnel, objections, proof, channels, KPIs
-- `GUIDELINES.md` -> technical constraints and conventions
-- `PRODUCT.md` -> operational product contract
-- `ARCHITECTURE.md` -> system view and structuring invariants
-- `specs/` -> local execution of a change
-
-Each document has an explicit and exclusive role to avoid duplication, stale context, and conflicting contracts.
 
 ## ShipFlow as a Professional Work Framework
 

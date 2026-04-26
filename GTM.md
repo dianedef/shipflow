@@ -1,15 +1,15 @@
 ---
 artifact: gtm_context
 metadata_schema_version: "1.0"
-artifact_version: "0.2.0"
+artifact_version: "1.0.0"
 project: "shipflow"
 created: "2026-04-26"
 updated: "2026-04-26"
-status: draft
+status: reviewed
 source_skill: manual
 scope: gtm
 owner: "unknown"
-confidence: medium
+confidence: low
 risk_level: medium
 target_segment: "solo founders and autonomous technical builders evaluating a clearer way to ship with AI agents"
 offer: "a unified framework that combines server delivery operations, explicit task contracts, and verification-oriented agent workflows"
@@ -25,11 +25,11 @@ linked_artifacts:
   - "PRODUCT.md"
 depends_on:
   - artifact: "BUSINESS.md"
-    artifact_version: "0.2.0"
-    required_status: "draft"
+    artifact_version: "1.0.0"
+    required_status: "reviewed"
   - artifact: "BRANDING.md"
-    artifact_version: "0.1.0"
-    required_status: "draft"
+    artifact_version: "1.0.0"
+    required_status: "reviewed"
 supersedes: []
 next_review: "2026-05-26"
 next_step: "/sf-docs audit GTM.md"
@@ -46,6 +46,7 @@ next_step: "/sf-docs audit GTM.md"
 
 - ShipFlow should be presented as a unified framework for reliable AI-assisted software delivery and simple server operations.
 - The offer is stronger when framed around reduced ambiguity, explicit contracts, better verification, and stronger handoffs, not raw coding speed.
+- The first public story should stay simple: ShipFlow helps solo founders ship with agents without losing context.
 
 ## Positioning
 
@@ -92,3 +93,8 @@ next_step: "/sf-docs audit GTM.md"
 - To be defined once there is an explicit site and funnel.
 - Early candidate signals: activated repos, repeated use of spec/verify loop, reduction in context-restatement, docs adoption across projects.
 - Business model is not defined yet; pricing and revenue KPIs remain open hypotheses.
+
+## Evidence Limits
+
+- The current GTM contract is reviewed enough to guide wording and funnel experiments.
+- It is not reviewed enough to justify aggressive commercial claims or mature revenue assumptions.

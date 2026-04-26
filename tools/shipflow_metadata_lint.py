@@ -73,7 +73,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "paths",
         nargs="*",
-        help="Files or directories to lint. Defaults to specs/, docs/, AGENT.md, CONTEXT.md, CONTEXT-FUNCTION-TREE.md, BUSINESS.md, BRANDING.md, GUIDELINES.md.",
+        help="Files or directories to lint. Defaults to specs/, docs/, AGENT.md, CONTEXT.md, CONTEXT-FUNCTION-TREE.md, BUSINESS.md, BRANDING.md, PRODUCT.md, ARCHITECTURE.md, GTM.md, GUIDELINES.md.",
     )
     parser.add_argument(
         "--all-markdown",
@@ -128,6 +128,9 @@ def should_lint(path: Path, fields: dict[str, str], all_markdown: bool) -> bool:
     if fields.get("metadata_schema_version") or fields.get("artifact_version"):
         return True
     if path.name in {
+        "AGENT.md",
+        "CONTEXT.md",
+        "CONTEXT-FUNCTION-TREE.md",
         "BUSINESS.md",
         "BRANDING.md",
         "PRODUCT.md",

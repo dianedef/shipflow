@@ -1,0 +1,38 @@
+---
+const items = [
+  {
+    q: "Is ShipFlow a server tool or an AI workflow framework?",
+    a: "Both. The point is to keep agent execution discipline and server delivery inside one coherent operating model."
+  },
+  {
+    q: "Why not just prompt agents harder?",
+    a: "Because the main failure mode is not only prompt quality. It is lost context, weak handoffs, silent ambiguity, and drift between docs, product intent, and implementation."
+  },
+  {
+    q: "Do I need the full documentation layer to get value?",
+    a: "No. But the docs become more valuable as the work gets less trivial. The framework is designed so a fresh agent can orient quickly without rebuilding the same context from scratch."
+  },
+  {
+    q: "Is this a general-purpose PaaS?",
+    a: "No. ShipFlow is not trying to abstract every hosting model. It is a practical framework for running and shipping real projects while guiding AI-assisted delivery more tightly."
+  }
+];
+---
+
+<section class="section" id="faq">
+  <div class="section-heading">
+    <p class="eyebrow">FAQ</p>
+    <h2>The obvious questions, answered directly.</h2>
+  </div>
+
+  <div class="faq-list">
+    {
+      items.map((item) => (
+        <details class="faq-item">
+          <summary>{item.q}</summary>
+          <p>{item.a}</p>
+        </details>
+      ))
+    }
+  </div>
+</section>

@@ -1,11 +1,11 @@
 ---
 artifact: architecture_context
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "shipflow"
 created: "2026-04-26"
 updated: "2026-04-26"
-status: draft
+status: reviewed
 source_skill: manual
 scope: architecture
 owner: "unknown"
@@ -37,8 +37,8 @@ evidence:
   - "CLAUDE.md documents PM2 caching, port allocation, idempotence, and validation rules"
 depends_on:
   - artifact: "GUIDELINES.md"
-    artifact_version: "0.1.0"
-    required_status: "draft"
+    artifact_version: "1.0.0"
+    required_status: "reviewed"
 supersedes: []
 next_review: "2026-05-26"
 next_step: "/sf-docs audit ARCHITECTURE.md"
@@ -62,6 +62,14 @@ The repo is not split into small services. It is centered around shell-based orc
 - `install.sh` for server bootstrap and user environment setup.
 - `skills/*/SKILL.md` plus templates and linter for workflow execution.
 
+## Runtime Boundaries
+
+- Runtime control lives in shell orchestration and external tools rather than in a long-running application server.
+- Process truth lives in PM2.
+- Environment isolation lives in Flox.
+- Public exposure lives in Caddy and DuckDNS.
+- Workflow governance lives in Markdown artifacts, skills, and metadata validation.
+
 ## Major Components
 
 - `lib.sh`: main orchestration library and the largest functional hotspot.
@@ -76,6 +84,12 @@ The repo is not split into small services. It is centered around shell-based orc
 - CLI flow: `shipflow.sh` -> `lib.sh` -> menu actions -> PM2/Flox/Caddy operations.
 - Local tunnel flow: `local/local.sh` -> SSH connection selection -> remote state inspection -> tunnel lifecycle.
 - Doc/workflow flow: skills -> templates -> markdown artifacts -> metadata lint -> verification.
+
+## Data And State
+
+- PM2 state is cached locally for responsiveness and must be invalidated after mutations.
+- Secrets and connection state are stored separately from the main workflow docs.
+- Decision state is carried in versioned Markdown artifacts, not in operational trackers.
 
 ## External Dependencies
 

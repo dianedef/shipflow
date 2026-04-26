@@ -1,11 +1,11 @@
 ---
 artifact: business_context
 metadata_schema_version: "1.0"
-artifact_version: "0.2.0"
+artifact_version: "1.0.0"
 project: "shipflow"
 created: "2026-04-26"
 updated: "2026-04-26"
-status: draft
+status: reviewed
 source_skill: manual
 scope: business
 owner: "unknown"
@@ -31,6 +31,10 @@ next_step: "/sf-docs audit BUSINESS.md"
 ---
 
 # Business Context
+
+## Mission
+
+ShipFlow exists to help solo founders ship and operate software with AI agents without accepting fragile handoffs, repeated context rebuilding, or unclear execution contracts.
 
 ## Audience
 
@@ -68,6 +72,11 @@ next_step: "/sf-docs audit BUSINESS.md"
 - Buyers will care about reduced ambiguity, cleaner execution framing, and fewer weak handoffs across specs, docs, code, and operations.
 - The highest-value users already feel pain from context loss and fragile agent loops.
 - The product should be positioned as neither a generic PaaS nor a generic AI prompting method.
+
+## Decision Status
+
+- The audience, problem frame, and value proposition are reviewed enough to guide product and documentation work now.
+- The business model remains intentionally open and should not be treated as settled strategy.
 
 ## Risks
 

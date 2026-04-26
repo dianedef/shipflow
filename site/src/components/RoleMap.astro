@@ -1,0 +1,36 @@
+---
+const docs = [
+  ["AGENT.md", "point of entry for a fresh agent"],
+  ["CONTEXT.md", "operational map of the repository"],
+  ["CONTEXT-FUNCTION-TREE.md", "structural index for large procedural files"],
+  ["BUSINESS.md", "for whom, what value, what model"],
+  ["PRODUCT.md", "what, workflows, non-goals"],
+  ["BRANDING.md", "how the product speaks"],
+  ["GTM.md", "how the product is presented and distributed"],
+  ["ARCHITECTURE.md", "how the system is organized"],
+  ["GUIDELINES.md", "how contributors should work inside it"]
+];
+---
+
+<section class="section">
+  <div class="section-heading">
+    <p class="eyebrow">How It Stays Coherent</p>
+    <h2>Every document has one job.</h2>
+    <p>
+      ShipFlow documentation is not trying to be encyclopedic. It is designed
+      to be complete for fast agent navigation, with one explicit and exclusive
+      role per artifact.
+    </p>
+  </div>
+
+  <div class="role-list">
+    {
+      docs.map(([name, role]) => (
+        <div class="role-row">
+          <code>{name}</code>
+          <span>{role}</span>
+        </div>
+      ))
+    }
+  </div>
+</section>

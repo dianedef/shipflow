@@ -1,0 +1,47 @@
+---
+const features = [
+  {
+    title: "You stop paying the context tax",
+    body:
+      "Fresh agents do not start from zero. They get a point of entry, an operational map, and explicit contracts instead of vague chat residue."
+  },
+  {
+    title: "Handoffs become tighter",
+    body:
+      "Specs, readiness, verification, and metadata turn a loose request into a clearer execution path with visible consequences."
+  },
+  {
+    title: "You still run the server side",
+    body:
+      "This is not only about agent discipline. It also covers deploy, publish, ports, PM2 processes, tunnels, and environment operations."
+  },
+  {
+    title: "The docs stay usable",
+    body:
+      "Business, product, GTM, branding, architecture, and guidelines each keep one role so the system stays navigable for both humans and agents."
+  }
+];
+---
+
+<section class="section">
+  <div class="section-heading">
+    <p class="eyebrow">Why ShipFlow Exists</p>
+    <h2>The main problem is not slower coding. It is weaker execution.</h2>
+    <p>
+      Solo founders already know how to ship. The real drag appears when the
+      context leaks, the handoff gets fuzzy, and every new agent thread starts
+      paying the same ambiguity bill again.
+    </p>
+  </div>
+
+  <div class="card-grid">
+    {
+      features.map((feature) => (
+        <article class="card">
+          <h3>{feature.title}</h3>
+          <p>{feature.body}</p>
+        </article>
+      ))
+    }
+  </div>
+</section>
