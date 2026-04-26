@@ -49,7 +49,7 @@ It is designed for cases where static code reading is not enough because the fai
 - `references/playwright-auth.md` for browser evidence collection, session strategies, and secret handling
 - `references/astro-clerk.md` for Astro sites using `@clerk/astro`, SSR, middleware, and Account Portal
 - `references/flutter-clerk-convex.md` for Flutter apps using Clerk beta SDKs and Convex access
-- `references/flutter-web-clerkjs-bridge.md` for the ContentFlow-style Flutter web pattern using ClerkJS routes and a Dart bridge
+- `references/flutter-web-clerkjs-bridge.md` for the Flutter web ClerkJS bridge implementation pattern in other repos
 - `references/python-convex.md` for Python scripts and jobs that call Convex
 - `references/sdk-policy.md` for stable, beta, and unofficial SDK choices in the ShipFlow stack
 - `/home/claude/shipflow/skills/references/flutter-web-clerkjs-auth-pattern.md` as the cross-repo technical guide for implementing this pattern in Flutter web apps
