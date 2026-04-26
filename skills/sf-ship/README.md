@@ -26,6 +26,15 @@ The skill is designed to keep iteration fast without pretending that a successfu
 - optionally a commit message
 - optionally `skip-check`
 - optionally an end-of-task keyword such as `end`, `fin`, or `close task`
+- optionally `all-dirty`, `ship-all`, or `tout-dirty` when you explicitly want every dirty file in the repo included
+
+## Arguments And Scope
+
+By default, `sf-ship` stages only changes that clearly belong to the current task or intentionally selected shipping scope. This keeps unrelated work from being bundled into a commit by accident.
+
+- `skip-check` skips pre-commit checks and the report must say validation was skipped.
+- `end`, `fin`, `close task`, or `end la tache` switches to the full closeout flow.
+- `all-dirty`, `ship-all`, or `tout-dirty` stages the whole dirty repo after the secret check, including modified, deleted, and untracked files that were not touched in the current conversation.
 
 ## What You Get Back
 
@@ -39,6 +48,7 @@ The skill is designed to keep iteration fast without pretending that a successfu
 /sf-ship fix login redirect
 /sf-ship skip-check
 /sf-ship end add billing retry handling
+/sf-ship ship release notes all-dirty
 ```
 
 ## Limits

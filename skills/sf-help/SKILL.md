@@ -19,6 +19,7 @@ Quick reference for the skill system, modes, and workflows.
 |-------|---------|-----------|
 | `/sf-fix` | Bug-first intake and routing (direct fix vs spec-first) | `<bug description>` |
 | `/sf-auth-debug` | Browser-auth diagnosis for Clerk, Supabase Auth, OAuth, Google/YouTube, Convex, sessions, callbacks | `<bug/URL/flow>` |
+| `/sf-test` | Guided manual QA: prompts the user through real flow tests, logs evidence, and opens bug records | `[feature]`, `--retest BUG-ID`, `--prod` |
 | `/sf-model` | Choose model, reasoning level, and fast/cheap fallback before execution | `<task description>` or `<spec path>` |
 | `/sf-tasks` | Track work, check off items, suggest next | `[focus area]` |
 | `/sf-priorities` | Re-rank by impact/effort matrix | `impact`, `effort`, `blockers`, `quick-wins` |
@@ -51,6 +52,7 @@ Quick reference for the skill system, modes, and workflows.
 
 Note: `/sf-verify` now includes guided next-step prompting when verdict is not ready (`corriger maintenant`, `repasser par spec`, `stop/reprendre`).
 Note: `/sf-auth-debug` is the required diagnostic path for auth bugs that need browser evidence before implementation.
+Note: `/sf-test` sits after verification and before shipping when a human needs to confirm the real user flow; it writes `TEST_LOG.md` and `BUGS.md` instead of leaving QA evidence in chat.
 Note: `/sf-start` now reuses the `sf-model` routing matrix and can choose `single-agent` vs `multi-agent` execution with explicit file ownership and per-group model overrides.
 Note: `/sf-spec` → `/sf-ready` → `/sf-start` → `/sf-verify` now share a `User Story` contract and should ask targeted user questions whenever behavior, scope, or security is still ambiguous.
 

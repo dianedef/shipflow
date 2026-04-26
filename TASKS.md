@@ -28,6 +28,14 @@
 
 ---
 
+## Skills
+
+| Pri | Task | Status |
+|-----|------|--------|
+| ✅ | Créer `sf-test` pour guider les tests manuels, loguer `TEST_LOG.md` et ouvrir `BUGS.md` | ✅ done |
+
+---
+
 ## Historical completed work
 
 > Imported from the master tracker to keep local ShipFlow context coherent. These items are historical context, not active backlog.

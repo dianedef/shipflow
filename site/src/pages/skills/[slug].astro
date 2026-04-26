@@ -87,6 +87,39 @@ const relatedSkills = skill.data.related_skills
     </section>
 
     {
+      skill.data.argument_modes.length > 0 && (
+        <section class="section">
+          <div class="section-heading">
+            <p class="eyebrow">Arguments</p>
+            <h2>Some arguments change the workflow, not just the wording.</h2>
+            <p>
+              These are the argument switches documented for this skill. For
+              the general rule behind skill arguments, read the skill modes
+              tutorial.
+            </p>
+          </div>
+
+          <div class="argument-grid">
+            {skill.data.argument_modes.map((mode) => (
+              <article class="argument-card">
+                <h3><code>{mode.argument}</code></h3>
+                <p>{mode.effect}</p>
+                <div class="argument-consequence">
+                  <span>Consequence</span>
+                  <p>{mode.consequence}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div class="hero-actions">
+            <a class="button button-secondary" href="/skill-modes">Read the arguments tutorial</a>
+          </div>
+        </section>
+      )
+    }
+
+    {
       relatedSkills.length > 0 && (
         <section class="section">
           <div class="section-heading">

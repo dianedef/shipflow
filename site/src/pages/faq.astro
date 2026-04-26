@@ -1,0 +1,93 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Footer from "../components/Footer.astro";
+import NavBar from "../components/NavBar.astro";
+
+const items = [
+  {
+    q: "Is ShipFlow a server tool or an AI workflow framework?",
+    a: "Both. It handles real server-delivery work while giving agents a stronger execution frame through context, contracts, and verification."
+  },
+  {
+    q: "Do all skills work like free-text prompts?",
+    a: "No. Some skills treat the argument as plain task text, but others use it as a mode switch or a structured input. That is why reading the skill contract matters."
+  },
+  {
+    q: "What is a skill mode?",
+    a: "A skill mode is a specialized workflow triggered by a specific argument pattern or keyword. For example, a docs skill may switch into metadata migration mode instead of normal documentation-writing mode."
+  },
+  {
+    q: "Why not just prompt agents harder?",
+    a: "Because stronger prompting does not remove weak handoffs, stale docs, ambiguous task framing, or drift between product intent and implementation."
+  },
+  {
+    q: "Do I need every ShipFlow document before I can use it?",
+    a: "No. The framework still helps on smaller work. But the more expensive or ambiguous the work becomes, the more the context layer and decision contracts start to pay off."
+  },
+  {
+    q: "Does every Markdown file need ShipFlow frontmatter?",
+    a: "No. ShipFlow targets explicit active artifacts, not every Markdown file in a repo. Some files can be officialized later, but that should be a conscious doctrine decision."
+  },
+  {
+    q: "Is sf-migrate the skill for metadata migration?",
+    a: "No. sf-migrate is for framework or dependency upgrades. Metadata and frontmatter migration belongs to the documentation workflow instead."
+  }
+];
+---
+
+<BaseLayout
+  title="ShipFlow FAQ | Direct answers about workflow, docs, and skills"
+  description="Direct answers to the most common ShipFlow questions: what it is, how skills work, and why the framework is structured the way it is."
+>
+  <main class="page-shell">
+    <NavBar />
+
+    <section class="section">
+      <div class="section-heading">
+        <p class="eyebrow">FAQ</p>
+        <h1 class="page-title">The common questions, without the soft-focus version.</h1>
+        <p>
+          ShipFlow mixes product workflow, documentation discipline, and server
+          delivery. That combination raises the same questions repeatedly. This
+          page answers them directly.
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="faq-list">
+        {
+          items.map((item) => (
+            <details class="faq-item">
+              <summary>{item.q}</summary>
+              <p>{item.a}</p>
+            </details>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="doc-grid">
+        <article class="doc-card">
+          <h3>Want the detailed version?</h3>
+          <p>
+            If your question is really about how skills interpret arguments,
+            start with the tutorial on skill modes and mode detection.
+          </p>
+          <a class="doc-action" href="/skill-modes">Read the skill modes tutorial</a>
+        </article>
+
+        <article class="doc-card">
+          <h3>Want the structural version?</h3>
+          <p>
+            If your question is really about documentation roles, context
+            routing, and contracts, the docs overview is the better entrypoint.
+          </p>
+          <a class="doc-action" href="/docs">Open the docs overview</a>
+        </article>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</BaseLayout>

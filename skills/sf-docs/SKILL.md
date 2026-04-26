@@ -96,7 +96,7 @@ next_step: "[recommended command]"
 
 Use `depends_on` when an artifact relies on another decision contract, for example BRANDING.md depending on BUSINESS.md, GTM.md depending on BUSINESS.md plus BRANDING.md, ARCHITECTURE.md depending on GUIDELINES.md, GUIDELINES.md depending on CLAUDE.md, or a spec depending on BUSINESS.md plus GUIDELINES.md. Use `supersedes` when the artifact replaces an older file, a renamed doc, or a previous version whose assumptions are no longer current.
 
-This ShipFlow schema is mandatory for project documentation produced by ShipFlow (`docs/`, specs, reports, API docs, component docs, reviews, audits, research, `AGENT.md`, `CONTEXT.md`, `CONTEXT-FUNCTION-TREE.md`, `CONTENT_MAP.md`, `BUSINESS.md`, `BRANDING.md`, `PRODUCT.md`, `ARCHITECTURE.md`, `GTM.md`, `GUIDELINES.md`). Application runtime content keeps its own schema (`src/content/**`, app-rendered MD/MDX/blog files, framework-specific collections).
+This ShipFlow schema is mandatory for project documentation produced by ShipFlow (`docs/`, specs, reports, API docs, component docs, reviews, audits, research, `AGENT.md`, `CONTEXT.md`, `CONTEXT-FUNCTION-TREE.md`, `CONTENT_MAP.md`, `BUSINESS.md`, `BRANDING.md`, `PRODUCT.md`, `ARCHITECTURE.md`, `GTM.md`, `GUIDELINES.md`). `CLAUDE.md` is an optional official ShipFlow artifact when the repo explicitly adopts it as the maintained repository-guidance contract; in that case it should carry ShipFlow frontmatter too. Application runtime content keeps its own schema (`src/content/**`, app-rendered MD/MDX/blog files, framework-specific collections).
 
 Operational tracking files are explicitly excluded from mandatory metadata frontmatter:
 - `TASKS.md`
@@ -475,6 +475,7 @@ Use this mode for:
      - `GUIDELINES.md`
      - `specs/*.md`
      - `docs/**/*.md` seulement si le dossier existe et contient des artefacts ShipFlow actifs
+   - `CLAUDE.md` n'entre dans ce scope que si le repo l'a explicitement promu comme artefact officiel de guidance.
    - Ne pas élargir automatiquement à tous les `.md` du repo.
    - Ne pas migrer `archive/`, anciennes notes ad hoc, rapports historiques, ou docs expérimentales sauf si l'utilisateur les promeut explicitement comme artefacts actifs.
    - Si l'utilisateur demande "toutes les docs", interpréter comme "tous les artefacts ShipFlow actifs" et rapporter les exclusions.
@@ -519,6 +520,8 @@ tools/shipflow_metadata_lint.py
 ```bash
 tools/shipflow_metadata_lint.py AGENT.md CONTEXT.md CONTEXT-FUNCTION-TREE.md CONTENT_MAP.md BUSINESS.md BRANDING.md PRODUCT.md ARCHITECTURE.md GTM.md GUIDELINES.md specs docs
 ```
+
+   - Si `CLAUDE.md` est officialisé dans le repo, l'ajouter explicitement au scope de validation au lieu de l'imposer partout par défaut.
 
    - Pour une vérification large volontaire, utiliser `--all-markdown` seulement si l'utilisateur a explicitement demandé de contrôler tous les Markdown, en sachant que les contenus runtime et archives peuvent produire des faux positifs.
    - Si le linter échoue, corriger les erreurs de frontmatter dans les fichiers migrés. Ne pas "corriger" en ajoutant du frontmatter à des fichiers exclus.

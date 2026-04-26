@@ -462,29 +462,55 @@ configure_supabase_mcp() {
 configure_dataforseo_mcp() {
     local target_home="$1"
     local settings_file="$target_home/.claude/settings.json"
+    local doppler_project="${SHIPFLOW_DATAFORSEO_DOPPLER_PROJECT:-contentflow_app}"
+    local doppler_config="${SHIPFLOW_DATAFORSEO_DOPPLER_CONFIG:-prd}"
+    local enabled="${SHIPFLOW_ENABLE_DATAFORSEO_MCP:-0}"
     mkdir -p "$target_home/.claude"
     if [ ! -f "$settings_file" ]; then
         echo '{}' > "$settings_file"
     fi
     if command -v jq >/dev/null 2>&1; then
-        jq '
-            .mcpServers.dataforseo = {
-                "command": "npx",
-                "args": ["-y", "dataforseo-mcp-server"]
-            }
-        ' "$settings_file" > "${settings_file}.tmp" \
-            && mv "${settings_file}.tmp" "$settings_file"
-
-        if [ -z "${DATAFORSEO_USERNAME:-}" ] || [ -z "${DATAFORSEO_PASSWORD:-}" ]; then
-            jq '
-                .disabledMcpServers = ((.disabledMcpServers // []) + ["dataforseo"] | unique)
+        if command -v doppler >/dev/null 2>&1; then
+            jq --arg project "$doppler_project" --arg config "$doppler_config" '
+                .mcpServers.dataforseo = {
+                    "command": "doppler",
+                    "args": [
+                        "run",
+                        "--project", $project,
+                        "--config", $config,
+                        "--",
+                        "bash",
+                        "-lc",
+                        "export DATAFORSEO_USERNAME=\"${DATAFORSEO_USERNAME:-${DATAFORSEO_LOGIN:-}}\"; exec npx -y dataforseo-mcp-server"
+                    ]
+                }
+                | .disabledMcpServers = if $enabled == "1" then
+                    ((.disabledMcpServers // []) - ["dataforseo"])
+                  else
+                    ((.disabledMcpServers // []) + ["dataforseo"] | unique)
+                  end
             ' "$settings_file" > "${settings_file}.tmp" \
                 && mv "${settings_file}.tmp" "$settings_file"
         else
             jq '
-                .disabledMcpServers = ((.disabledMcpServers // []) - ["dataforseo"])
+            .mcpServers.dataforseo = {
+                "command": "npx",
+                "args": ["-y", "dataforseo-mcp-server"]
+            }
             ' "$settings_file" > "${settings_file}.tmp" \
                 && mv "${settings_file}.tmp" "$settings_file"
+
+            if [ "$enabled" != "1" ] || [ -z "${DATAFORSEO_USERNAME:-${DATAFORSEO_LOGIN:-}}" ] || [ -z "${DATAFORSEO_PASSWORD:-}" ]; then
+                jq '
+                    .disabledMcpServers = ((.disabledMcpServers // []) + ["dataforseo"] | unique)
+                ' "$settings_file" > "${settings_file}.tmp" \
+                    && mv "${settings_file}.tmp" "$settings_file"
+            else
+                jq '
+                    .disabledMcpServers = ((.disabledMcpServers // []) - ["dataforseo"])
+                ' "$settings_file" > "${settings_file}.tmp" \
+                    && mv "${settings_file}.tmp" "$settings_file"
+            fi
         fi
     fi
 }
@@ -965,11 +991,20 @@ configure_codex_dataforseo_mcp() {
     local config_file="$codex_dir/config.toml"
     local tmp_file="$config_file.tmp.$$"
     local enabled="false"
+    local enable_dataforseo="${SHIPFLOW_ENABLE_DATAFORSEO_MCP:-0}"
+    local command="npx"
+    local args='["-y", "dataforseo-mcp-server"]'
+    local doppler_project="${SHIPFLOW_DATAFORSEO_DOPPLER_PROJECT:-contentflow_app}"
+    local doppler_config="${SHIPFLOW_DATAFORSEO_DOPPLER_CONFIG:-prd}"
 
     mkdir -p "$codex_dir"
     [ -f "$config_file" ] || touch "$config_file"
 
-    if [ -n "${DATAFORSEO_USERNAME:-}" ] && [ -n "${DATAFORSEO_PASSWORD:-}" ]; then
+    if command -v doppler >/dev/null 2>&1; then
+        [ "$enable_dataforseo" = "1" ] && enabled="true"
+        command="doppler"
+        args="[\"run\", \"--project\", \"$doppler_project\", \"--config\", \"$doppler_config\", \"--\", \"bash\", \"-lc\", \"export DATAFORSEO_USERNAME=\\\"\${DATAFORSEO_USERNAME:-\${DATAFORSEO_LOGIN:-}}\\\"; exec npx -y dataforseo-mcp-server\"]"
+    elif [ "$enable_dataforseo" = "1" ] && [ -n "${DATAFORSEO_USERNAME:-${DATAFORSEO_LOGIN:-}}" ] && [ -n "${DATAFORSEO_PASSWORD:-}" ]; then
         enabled="true"
     fi
 
@@ -985,8 +1020,8 @@ configure_codex_dataforseo_mcp() {
         printf '\n'
         printf '# >>> shipflow codex dataforseo mcp >>>\n'
         printf '[mcp_servers.dataforseo]\n'
-        printf 'command = "npx"\n'
-        printf 'args = ["-y", "dataforseo-mcp-server"]\n'
+        printf 'command = "%s"\n' "$command"
+        printf 'args = %s\n' "$args"
         printf 'enabled = %s\n' "$enabled"
         printf '# <<< shipflow codex dataforseo mcp <<<\n'
     } >> "$tmp_file"

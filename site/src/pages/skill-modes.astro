@@ -1,0 +1,206 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Footer from "../components/Footer.astro";
+import NavBar from "../components/NavBar.astro";
+---
+
+<BaseLayout
+  title="Skill Modes | How ShipFlow arguments change behavior"
+  description="A practical tutorial explaining how ShipFlow skills use arguments as mode switches, structured inputs, or free-form task descriptions."
+>
+  <main class="page-shell">
+    <NavBar />
+
+    <section class="section">
+      <div class="section-heading">
+        <p class="eyebrow">Tutorial</p>
+        <h1 class="page-title">Some skill arguments describe the task. Others switch the workflow entirely.</h1>
+        <p>
+          ShipFlow skills are not all simple free-text commands. Many of them
+          inspect the argument you pass and choose a different execution path
+          from it. If you understand that mechanism, the skills stop feeling
+          magical and start feeling predictable.
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="pricing-grid">
+        <article class="price-card">
+          <p class="eyebrow">The Short Version</p>
+          <h2>A skill argument can be one of three things.</h2>
+          <p>
+            It can be a mode keyword, a structured input such as a package
+            target, or a plain-text task description. The skill decides which
+            one it is by reading its own mode-detection rules.
+          </p>
+        </article>
+
+        <article class="price-card accent-card">
+          <p class="eyebrow">Why It Matters</p>
+          <h2>You get more reliable behavior when you call the right mode on purpose.</h2>
+          <p>
+            The point is not to memorize syntax. The point is to recognize when
+            a skill exposes distinct workflows behind one command name.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="doc-grid">
+        <article class="doc-card">
+          <h3>1. Mode keyword</h3>
+          <p>
+            A specific word acts as a switch. The skill recognizes it and
+            enters a specialized workflow instead of treating it as ordinary
+            task text.
+          </p>
+        </article>
+
+        <article class="doc-card">
+          <h3>2. Structured input</h3>
+          <p>
+            The argument has a recognizable shape. The skill parses that shape
+            and derives a target from it, such as a package and a version.
+          </p>
+        </article>
+
+        <article class="doc-card">
+          <h3>3. Free-form task</h3>
+          <p>
+            If no special keyword or input pattern matches, the argument is
+            usually treated as the actual work description or content focus.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-heading">
+        <p class="eyebrow">Example: sf-docs</p>
+        <h2>Some words do not mean “topic.” They mean “enter a different mode.”</h2>
+        <p>
+          The documentation skill is a clear example. Certain arguments are not
+          content scopes. They are direct mode switches.
+        </p>
+      </div>
+
+      <div class="doc-grid">
+        <article class="doc-card">
+          <h3><code>sf-docs metadata</code></h3>
+          <p>
+            This switches to the frontmatter and metadata workflow. The skill
+            reads migration doctrine, classifies files, and validates the
+            result against the metadata rules.
+          </p>
+        </article>
+
+        <article class="doc-card">
+          <h3><code>sf-docs migrate-frontmatter</code></h3>
+          <p>
+            This is another explicit trigger for the same family of metadata
+            work. It does not mean “write docs about frontmatter.” It means
+            “run the frontmatter migration workflow.”
+          </p>
+        </article>
+
+        <article class="doc-card">
+          <h3><code>sf-docs readme</code></h3>
+          <p>
+            Here the argument acts more like a target surface. The skill is now
+            being steered toward a documentation area rather than a dedicated
+            metadata mode.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-heading">
+        <p class="eyebrow">Example: sf-migrate</p>
+        <h2>The shape of the argument can change the route too.</h2>
+        <p>
+          The migration skill does not only react to keywords. It also reacts
+          to how the argument is structured.
+        </p>
+      </div>
+
+      <div class="doc-grid">
+        <article class="doc-card">
+          <h3><code>sf-migrate astro@5</code></h3>
+          <p>
+            A structured target. The skill interprets this as “migrate Astro to
+            version 5” and builds the upgrade workflow around that exact goal.
+          </p>
+        </article>
+
+        <article class="doc-card">
+          <h3><code>sf-migrate astro</code></h3>
+          <p>
+            A package target without version. The skill treats it as a request
+            to resolve the latest version first, then confirm the path.
+          </p>
+        </article>
+
+        <article class="doc-card">
+          <h3><code>sf-migrate</code></h3>
+          <p>
+            No argument means discovery mode. The skill looks for possible
+            upgrades and asks which migration you actually want to run.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-heading">
+        <p class="eyebrow">How To Read A Skill</p>
+        <h2>Look for the mode rules before you guess what the command means.</h2>
+      </div>
+
+      <div class="doc-grid">
+        <article class="doc-card">
+          <h3>Check <code>argument-hint</code></h3>
+          <p>
+            This tells you whether the skill expects a free-form task, a target
+            surface, a package pattern, or a small set of known trigger words.
+          </p>
+        </article>
+
+        <article class="doc-card">
+          <h3>Find the mode-detection section</h3>
+          <p>
+            If the file contains lines such as “If $ARGUMENTS is ...”, you are
+            looking at an explicit routing layer rather than a loose prompt.
+          </p>
+        </article>
+
+        <article class="doc-card">
+          <h3>Do not assume consistency by name alone</h3>
+          <p>
+            Two skills can both accept one argument and still interpret it in
+            completely different ways. The contract lives in the skill file.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="cta-panel">
+        <p class="eyebrow">Next Step</p>
+        <h2>If a skill feels ambiguous, read it like an interface definition.</h2>
+        <p>
+          Start with the mode rules, not with your intuition. That is the
+          fastest way to understand what the skill will actually do once
+          execution starts.
+        </p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="/skills">Browse public skill pages</a>
+          <a class="button button-secondary" href="/faq">Open the FAQ</a>
+        </div>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</BaseLayout>

@@ -22,6 +22,15 @@ const skills = defineCollection({
     what_you_give: z.array(z.string()),
     what_you_get: z.array(z.string()),
     example_prompts: z.array(z.string()),
+    argument_modes: z
+      .array(
+        z.object({
+          argument: z.string(),
+          effect: z.string(),
+          consequence: z.string()
+        })
+      )
+      .default([]),
     limits: z.array(z.string()),
     related_skills: z.array(z.string()),
     featured: z.boolean().default(false),

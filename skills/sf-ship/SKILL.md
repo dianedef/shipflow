@@ -1,7 +1,7 @@
 ---
 name: sf-ship
 description: Ship changes quickly by default (commit + push). Run full session-closing flow only when explicitly requested.
-argument-hint: [optional: commit message | "end la tache" for full close | skip-check]
+argument-hint: [optional: commit message | "end la tache" for full close | skip-check | all-dirty]
 ---
 
 ## Context
@@ -37,6 +37,8 @@ Quick mode is optimized for fast iteration:
 Do NOT update TASKS.md or CHANGELOG.md in quick mode.
 Do NOT claim the work is product-complete, user-story-complete, or security-validated just because it was committed and pushed.
 
+By default, stage only changes that are clearly part of the current task/session or intentionally selected for this ship. If `$ARGUMENTS` includes `all-dirty`, ship the entire dirty Git state in the selected repo, including files not touched during the current conversation.
+
 ### Mode 2 — Full close + ship (explicit)
 
 Only when `$ARGUMENTS` includes one of the end-of-task keywords above:
@@ -68,6 +70,10 @@ Inspect `$ARGUMENTS`:
 - if it contains `end la tache`, `end`, `fin`, or `close task` -> `full`
 - otherwise -> `quick`
 
+Also inspect `$ARGUMENTS` for staging scope:
+- if it contains `all-dirty`, `ship-all`, or `tout-dirty` -> stage every tracked, modified, deleted, and untracked file in the selected repo after the secret check
+- otherwise -> stage only the current task/session changes or ask if the staging scope is ambiguous
+
 ## Step 2.5 — Clarify shipping intent when ambiguous
 
 If the current context suggests uncertainty about whether the work is actually ready to ship, ask a concise user question before staging. Ask only when the answer changes the closure level, release framing, or safety posture.
@@ -88,6 +94,7 @@ Examples:
 
 Check for secrets:
 - if untracked `.env`, credential, or token files are not ignored, stop and warn
+- when using `all-dirty`, inspect the complete dirty file list before staging and explicitly exclude nothing unless it is a secret/safety issue; if a secret/safety issue is present, stop instead of partially staging
 
 ## Step 4 — Pre-checks
 
@@ -131,9 +138,20 @@ Skip this step entirely in quick mode.
 
 ## Step 6 — Stage and commit
 
-Stage and commit:
+Stage and commit.
+
+If `$ARGUMENTS` includes `all-dirty`, `ship-all`, or `tout-dirty`, stage the entire dirty repo:
 ```bash
 git add -A
+```
+
+Otherwise, stage only the files that belong to the current task/session, using explicit paths:
+```bash
+git add -- path/to/file path/to/other-file
+```
+
+Then commit:
+```bash
 git commit -m "[message from $ARGUMENTS or derived summary]
 Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 ```
@@ -156,6 +174,7 @@ Quick mode report:
 [SHORT_SHA] — "[commit message]" -> [branch]
 Checks: [passed / skipped / failed]
 Mode: quick (commit + push only)
+Scope: [current task/session changes / all dirty repo files]
 User story / product status: [not assessed / partially validated / validated enough for this iteration]
 Documentation coherence: [updated / not impacted / gap remains / not assessed]
 Security / risk note: [none / partial validation / specific remaining risk]
@@ -168,6 +187,7 @@ Full mode report:
 
 [SHORT_SHA] — "[commit message]" -> [branch]
 Checks: [passed / skipped / failed]
+Scope: [current task/session changes / all dirty repo files]
 Tasks/Changelog: updated
 Session closed: [completed/in-progress summary]
 User story closure: [what outcome is actually complete, partially complete, or still assumed]
@@ -180,6 +200,7 @@ Evidence limits / remaining risks: [brief, explicit]
 
 - Quick mode is the default
 - Full close flow requires explicit end-of-task keyword
+- Use `all-dirty` only when the user explicitly asks to ship all dirty files, all repo changes, unrelated changes, or changes not made in the current conversation
 - Do NOT force push to main/master
 - Do NOT commit secrets
 - If nothing to commit, say so clearly
