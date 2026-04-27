@@ -2,7 +2,7 @@
 title: "sf-start"
 slug: "sf-start"
 tagline: "Start implementation when the task is ready, and force a stronger path when it is not."
-summary: "The main execution entrypoint for beginning real work after the problem and contract are clear enough."
+summary: "The main execution entrypoint for beginning real work after the problem and contract are clear enough, while keeping the chantier flow visible."
 category: "Core Workflow"
 audience:
   - "Founders moving from task definition into coding"
@@ -20,6 +20,7 @@ what_you_give:
 what_you_get:
   - "An implementation start path"
   - "Either direct execution or a reroute to stronger contract work"
+  - "A chantier trace when a unique spec-first workstream is in scope"
   - "Focused validation tied to the task being built"
 example_prompts:
   - "/sf-start"

@@ -92,6 +92,24 @@ The goal is not to remove iteration. The goal is to move ambiguity reduction bef
 - business, brand, and documentation artifacts are decision contracts, not passive notes.
 - every reusable ShipFlow artifact should be traceable through metadata, evidence, status, risk, and next step.
 
+## Specs As Chantier Registry
+
+`specs/` is the global registry for spec-first chantiers. A chantier spec is not only an implementation contract; it also keeps the durable run history for the skills that acted on that chantier.
+
+Each chantier spec should expose:
+
+- `source_model` in frontmatter when `sf-spec` creates or materially updates the spec
+- `Skill Run History` with `Date UTC`, `Skill`, `Model`, `Action`, `Result`, and `Next step`
+- `Current Chantier Flow` for the readable status of `sf-spec`, `sf-ready`, `sf-start`, `sf-verify`, `sf-end`, and `sf-ship`
+
+Skill application categories:
+
+- `obligatoire`: `sf-spec`, `sf-ready`, `sf-start`, `sf-verify`, `sf-end`, and `sf-ship` trace their current run when exactly one chantier spec is in scope.
+- `conditionnel`: audits, docs, checks, fixes, deps, perf, migrations, scaffold, content, research, test, prod, backlog, priorities, tasks, changelog, review, and veille skills trace only when the run is explicitly attached to one unique chantier spec.
+- `non-applicable`: help, context, model selection, exploration, status, resume, and session naming do not write to specs; if invoked inside a chantier flow, they report `Chantier: non applicable` or `Chantier: non trace` when useful.
+
+No skill should create a separate chantier registry in `TASKS.md`, `AUDIT_LOG.md`, `PROJECTS.md`, or `shipflow_data`. If a spec cannot be identified or multiple specs match, the skill must stop or report non-trace instead of guessing.
+
 ## Artifact Doctrine
 
 ShipFlow separates application content from ShipFlow work artifacts.

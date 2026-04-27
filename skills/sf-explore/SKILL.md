@@ -8,6 +8,13 @@ argument-hint: [optional: sujet ou question à explorer]
 
 Before resolving any ShipFlow-owned file, load `$SHIPFLOW_ROOT/skills/references/canonical-paths.md` (`$SHIPFLOW_ROOT` defaults to `/home/claude/shipflow`). ShipFlow tools, shared references, skill-local `references/*`, templates, workflow docs, and internal scripts must resolve from `$SHIPFLOW_ROOT`, not from the project repo where the skill is running. Project artifacts and source files still resolve from the current project root unless explicitly stated otherwise.
 
+## Chantier Tracking
+
+Category: `non-applicable`.
+
+This skill does not write to chantier specs. If invoked inside a spec-first flow, do not modify `Skill Run History`; include `Chantier: non applicable` or `Chantier: non trace` in the final report when useful, with the reason and the next lifecycle command if one is obvious.
+
+
 Mode réflexion. Penser en profondeur. Visualiser librement. Suivre la conversation où elle mène.
 
 **IMPORTANT : Le mode explore est fait pour réfléchir, pas pour implémenter.** Tu peux lire des fichiers, chercher dans le code, investiguer le codebase, mais tu ne dois JAMAIS écrire du code ni implémenter de fonctionnalités. Si l'utilisateur te demande d'implémenter, rappelle-lui de sortir du mode explore d'abord (ex: `/sf-start`). Tu PEUX créer des documents de réflexion (comparaisons, notes) si demandé — c'est capturer la pensée, pas implémenter.

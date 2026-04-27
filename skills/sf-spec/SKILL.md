@@ -8,6 +8,12 @@ argument-hint: [optional: description de ce qu'on veut construire]
 
 Before resolving any ShipFlow-owned file, load `$SHIPFLOW_ROOT/skills/references/canonical-paths.md` (`$SHIPFLOW_ROOT` defaults to `/home/claude/shipflow`). ShipFlow tools, shared references, skill-local `references/*`, templates, workflow docs, and internal scripts must resolve from `$SHIPFLOW_ROOT`, not from the project repo where the skill is running. Project artifacts and source files still resolve from the current project root unless explicitly stated otherwise.
 
+## Chantier Tracking
+
+Category: `obligatoire`.
+
+Before creating or updating a spec-first chantier, load `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`. `sf-spec` must initialize the chantier registry entry inside the spec itself: frontmatter includes `created_at`, `updated_at`, and `source_model`, the body includes `Skill Run History` and `Current Chantier Flow`, and the first history row records the current `sf-spec` run. End the report with a `Chantier` block and `Verdict sf-spec: ...`. If no chantier spec is created or updated, report `Chantier: non applicable` or `Chantier: non trace` with the reason.
+
 ## Context
 
 - Current directory: !`pwd`
@@ -155,9 +161,12 @@ metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
 project: "[project name]"
 created: "[YYYY-MM-DD]"
+created_at: "[YYYY-MM-DD HH:MM:SS UTC]"
 updated: "[YYYY-MM-DD]"
+updated_at: "[YYYY-MM-DD HH:MM:SS UTC]"
 status: draft
 source_skill: sf-spec
+source_model: "[model name, GPT-5 Codex, or unknown]"
 scope: "[feature / bug / migration / audit-fix]"
 owner: "[user or team if known]"
 user_story: "[En tant que..., je veux..., afin de...]"
@@ -209,6 +218,8 @@ Utiliser ces titres de sections exacts pour que `/sf-ready` et `/sf-verify` puis
 - `Risks`
 - `Execution Notes`
 - `Open Questions`
+- `Skill Run History`
+- `Current Chantier Flow`
 
 **Tâches d'implémentation :**
 ```markdown
@@ -266,6 +277,8 @@ Couvrir : promesse principale de la user story, `Success Behavior`, `Error Behav
 - **Documentation Coherence** : docs, README, guides, FAQ, onboarding, pricing, changelog, exemples ou support à aligner, ou `None, because ...`
 - **Execution Notes** : 3-5 fichiers à lire d'abord, approche d'implémentation en étapes avant code, contraintes explicites (packages à utiliser/éviter, patterns existants, flux de données, abstractions à éviter, limites de scope), ordre d'exécution, commandes de validation, stop conditions / cas de reroute
 - **Fresh External Docs** : inclure dans `Dependencies` ou `Execution Notes` les docs officielles consultées quand `/home/claude/shipflow/skills/references/documentation-freshness-gate.md` se déclenche, ou `fresh-docs not needed` si le changement est entièrement local
+- **Skill Run History** : table persistante `Date UTC | Skill | Model | Action | Result | Next step`, avec une première ligne `sf-spec` pour la création ou mise à jour de la spec.
+- **Current Chantier Flow** : résumé lisible des statuts `sf-spec`, `sf-ready`, `sf-start`, `sf-verify`, `sf-end`, `sf-ship` et de la prochaine commande.
 
 Quand le scope touche auth, permissions, données, intégrations, paiement, admin, contenu riche, prompts, fichiers, ou automatisations, exiger dans la spec :
 - hypothèses de confiance
@@ -353,6 +366,28 @@ Spec enregistrée : specs/[slug].md
 Prochaine étape :
 - Lancer /sf-start [titre] pour commencer l'implémentation
 - Ou continuer à explorer avec /sf-explore
+
+## Chantier
+
+Skill courante: sf-spec
+Chantier: specs/[slug].md
+Trace spec: ecrite
+Flux:
+- sf-spec: done
+- sf-ready: not launched
+- sf-start: not launched
+- sf-verify: not launched
+- sf-end: not launched
+- sf-ship: not launched
+
+Reste a faire:
+- Lancer la readiness gate.
+
+Prochaine etape:
+- /sf-ready [titre]
+
+Verdict sf-spec:
+- draft saved
 ```
 
 ---

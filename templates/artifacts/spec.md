@@ -4,9 +4,12 @@ metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
 project: "[project name]"
 created: "YYYY-MM-DD"
+created_at: "YYYY-MM-DD HH:MM:SS UTC"
 updated: "YYYY-MM-DD"
+updated_at: "YYYY-MM-DD HH:MM:SS UTC"
 status: draft
 source_skill: sf-spec
+source_model: "[model name or unknown]"
 scope: feature
 owner: "[owner]"
 user_story: "En tant que..., je veux..., afin de..."
@@ -138,3 +141,20 @@ En tant que [actor], je veux [capability], afin de [value].
 ## Open Questions
 
 None
+
+## Skill Run History
+
+| Date UTC | Skill | Model | Action | Result | Next step |
+|----------|-------|-------|--------|--------|-----------|
+| YYYY-MM-DD HH:MM:SS UTC | sf-spec | [model name or unknown] | Created spec for [slug] | draft | /sf-ready [title] |
+
+## Current Chantier Flow
+
+- `sf-spec`: done, draft spec created.
+- `sf-ready`: not launched.
+- `sf-start`: not launched.
+- `sf-verify`: not launched.
+- `sf-end`: not launched.
+- `sf-ship`: not launched.
+
+Next step: `/sf-ready [title]`

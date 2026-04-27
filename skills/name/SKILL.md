@@ -9,6 +9,13 @@ allowed-tools: Bash(mkdir:*), Bash(ls:*), Bash(echo:*), Bash(cat:*), Bash(tee:*)
 
 Before resolving any ShipFlow-owned file, load `$SHIPFLOW_ROOT/skills/references/canonical-paths.md` (`$SHIPFLOW_ROOT` defaults to `/home/claude/shipflow`). ShipFlow tools, shared references, skill-local `references/*`, templates, workflow docs, and internal scripts must resolve from `$SHIPFLOW_ROOT`, not from the project repo where the skill is running. Project artifacts and source files still resolve from the current project root unless explicitly stated otherwise.
 
+## Chantier Tracking
+
+Category: `non-applicable`.
+
+This skill does not write to chantier specs. If invoked inside a spec-first flow, do not modify `Skill Run History`; include `Chantier: non applicable` or `Chantier: non trace` in the final report when useful, with the reason and the next lifecycle command if one is obvious.
+
+
 ## Your task
 
 Name the current session so it appears in the statusline and is saved for future reference.

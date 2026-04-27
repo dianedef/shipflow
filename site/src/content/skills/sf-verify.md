@@ -2,7 +2,7 @@
 title: "sf-verify"
 slug: "sf-verify"
 tagline: "Check whether the work really satisfies the user story, not just whether the code compiles."
-summary: "A verification skill for judging readiness against behavior, completeness, risk, and the promises made by the task."
+summary: "A verification skill for judging readiness against behavior, completeness, risk, and the promises made by the task, then recording the chantier verdict when applicable."
 category: "Core Workflow"
 audience:
   - "Founders who want a stronger ship gate than lint and build"
@@ -20,6 +20,7 @@ what_you_give:
 what_you_get:
   - "A behavior-aware readiness judgment"
   - "Findings around completeness, risk, and regressions"
+  - "A verification result in the spec's chantier flow when a unique spec is in scope"
   - "A stronger basis for end-of-task or shipping decisions"
 example_prompts:
   - "/sf-verify"

@@ -8,6 +8,12 @@ argument-hint: <task description or TASKS.md item>
 
 Before resolving any ShipFlow-owned file, load `$SHIPFLOW_ROOT/skills/references/canonical-paths.md` (`$SHIPFLOW_ROOT` defaults to `/home/claude/shipflow`). ShipFlow tools, shared references, skill-local `references/*`, templates, workflow docs, and internal scripts must resolve from `$SHIPFLOW_ROOT`, not from the project repo where the skill is running. Project artifacts and source files still resolve from the current project root unless explicitly stated otherwise.
 
+## Chantier Tracking
+
+Category: `obligatoire`.
+
+Before executing from a ready spec, load `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`, read the spec's `Skill Run History` and `Current Chantier Flow`, and preserve that flow in the execution contract. When a unique spec is used, append a current `sf-start` row with result `implemented`, `partial`, `blocked`, or `rerouted`, update `Current Chantier Flow`, and end the report with a `Chantier` block plus `Verdict sf-start: ...`. If the task is direct or no unique chantier spec is identified, do not write to a spec; report `Chantier: non applicable` or `Chantier: non trace` with the reason.
+
 ## Context
 
 - Current directory: !`pwd`
@@ -291,6 +297,28 @@ Security / abuse checks:
 
 Next step:
 - /sf-verify [task]
+
+## Chantier
+
+Skill courante: sf-start
+Chantier: [spec path | non applicable | non trace]
+Trace spec: [ecrite | non ecrite | non applicable]
+Flux:
+- sf-spec: [status]
+- sf-ready: [status]
+- sf-start: [implemented | partial | blocked | rerouted]
+- sf-verify: [status]
+- sf-end: [status]
+- sf-ship: [status]
+
+Reste a faire:
+- [item or None]
+
+Prochaine etape:
+- /sf-verify [task]
+
+Verdict sf-start:
+- [implemented | partial | blocked | rerouted]
 ```
 
 ### Rules

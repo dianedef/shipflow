@@ -2,7 +2,7 @@
 title: "sf-ship"
 slug: "sf-ship"
 tagline: "Commit and push quickly when the work is actually ready, instead of stretching closure into another vague step."
-summary: "A shipping skill for moving finished work through the final commit-and-push path with the right amount of ceremony."
+summary: "A shipping skill for moving finished work through the final commit-and-push path and recording the shipping result when a chantier spec is in scope."
 category: "Core Workflow"
 audience:
   - "Founders who prefer fast closure once work is ready"
@@ -19,6 +19,7 @@ what_you_give:
   - "The current branch and git state"
 what_you_get:
   - "A cleaner final shipping move"
+  - "A shipped, blocked, or skipped-checks signal in the spec's chantier flow when applicable"
   - "Less hesitation between done locally and done in git"
   - "A tighter release habit for small workstreams"
 example_prompts:

@@ -8,6 +8,12 @@ argument-hint: [optional summary or notes]
 
 Before resolving any ShipFlow-owned file, load `$SHIPFLOW_ROOT/skills/references/canonical-paths.md` (`$SHIPFLOW_ROOT` defaults to `/home/claude/shipflow`). ShipFlow tools, shared references, skill-local `references/*`, templates, workflow docs, and internal scripts must resolve from `$SHIPFLOW_ROOT`, not from the project repo where the skill is running. Project artifacts and source files still resolve from the current project root unless explicitly stated otherwise.
 
+## Chantier Tracking
+
+Category: `obligatoire`.
+
+Before closing a spec-first chantier, load `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`, then read the spec's `Skill Run History` and `Current Chantier Flow` when a unique spec exists. Append a current `sf-end` row with result `closed`, `deferred`, `blocked`, or `not applicable`, update `Current Chantier Flow`, and end the report with a `Chantier` block plus `Verdict sf-end: ...`. If no unique spec is available, do not write to a spec; report `Chantier: non applicable` or `Chantier: non trace` with the reason.
+
 ## Context
 
 - Current directory: !`pwd`
@@ -121,6 +127,28 @@ Output ONE concise report:
 3. [emoji] [third priority]
 
 [📝 Not committed — run /sf-ship when ready to push]
+
+## Chantier
+
+Skill courante: sf-end
+Chantier: [spec path | non applicable | non trace]
+Trace spec: [ecrite | non ecrite | non applicable]
+Flux:
+- sf-spec: [status]
+- sf-ready: [status]
+- sf-start: [status]
+- sf-verify: [status]
+- sf-end: [closed | deferred | blocked | not applicable]
+- sf-ship: [status]
+
+Reste a faire:
+- [item or None]
+
+Prochaine etape:
+- [/sf-ship | explicit action | None]
+
+Verdict sf-end:
+- [closed | deferred | blocked | not applicable]
 ```
 
 ### Rules

@@ -5,6 +5,8 @@
 ### Added
 - Dependency-free ShipFlow metadata linter for specs and project decision-contract documents
 - Skill-aligned artifact templates for specs, business context, brand context, audits, verification, readiness, review, research, and decision records
+- Spec-first chantier registry doctrine: specs now carry `source_model`, `Skill Run History`, and `Current Chantier Flow` so skill runs can be reviewed from the spec without reading chat history
+- Shared chantier tracking rules and an all-skills matrix covering mandatory, conditional, and non-applicable spec tracing behavior
 - `sf-resume` — fast current-thread recap skill with task status bullets, close/keep-open verdict, and one critical reminder
 - `sf-auth-debug` — browser-auth diagnostic skill for Clerk, OAuth, Google login, YouTube OAuth, Convex auth propagation, sessions, callbacks, protected routes, and Playwright-based reproduction
 - Cross-project auth reference docs for the ContentFlow Flutter web ClerkJS bridge and the TubeFlow Next.js + Convex YouTube OAuth flow
@@ -13,6 +15,7 @@
 
 ### Changed
 - Existing Codex TUI spec migrated to the ShipFlow metadata frontmatter schema
+- `sf-spec`, `sf-ready`, `sf-start`, `sf-verify`, `sf-end`, and `sf-ship` now report chantier status and trace lifecycle results when a unique spec-first chantier is identified
 - Workflow documentation now links metadata doctrine to executable templates and linting
 - `sf-fix`, `sf-start`, `sf-verify`, and `sf-prod` now route auth/browser-flow uncertainty through `sf-auth-debug` when browser evidence is needed
 - Internal and public skill documentation now explain when to use `sf-auth-debug` and which auth references it carries

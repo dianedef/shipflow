@@ -8,6 +8,12 @@ argument-hint: [optional: tâche ou scope à vérifier]
 
 Before resolving any ShipFlow-owned file, load `$SHIPFLOW_ROOT/skills/references/canonical-paths.md` (`$SHIPFLOW_ROOT` defaults to `/home/claude/shipflow`). ShipFlow tools, shared references, skill-local `references/*`, templates, workflow docs, and internal scripts must resolve from `$SHIPFLOW_ROOT`, not from the project repo where the skill is running. Project artifacts and source files still resolve from the current project root unless explicitly stated otherwise.
 
+## Chantier Tracking
+
+Category: `obligatoire`.
+
+Before verifying a spec-first chantier, load `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`, then read the spec's `Skill Run History` and `Current Chantier Flow` when a unique spec exists. Append a current `sf-verify` row with result `verified`, `not verified`, `partial`, or `blocked`, update `Current Chantier Flow`, and end the report with a `Chantier` block plus `Verdict sf-verify: ...`. If no unique spec is available, do not write to a spec; report `Chantier: non applicable` or `Chantier: non trace` with the reason.
+
 ## Context
 
 - Current directory: !`pwd`
@@ -361,6 +367,32 @@ Ajouter ensuite un bloc workflow explicite :
 Primary cause: [specified but not implemented / spec incomplete or ambiguous / technical failure / mixed]
 Next step (recommended): [commande exacte]
 Reason: [phrase courte]
+```
+
+Ajouter enfin le bloc chantier :
+
+```text
+## Chantier
+
+Skill courante: sf-verify
+Chantier: [spec path | non applicable | non trace]
+Trace spec: [ecrite | non ecrite | non applicable]
+Flux:
+- sf-spec: [status]
+- sf-ready: [status]
+- sf-start: [status]
+- sf-verify: [verified | not verified | partial | blocked]
+- sf-end: [status]
+- sf-ship: [status]
+
+Reste a faire:
+- [item or None]
+
+Prochaine etape:
+- [/sf-end | /sf-start | /sf-spec | explicit action]
+
+Verdict sf-verify:
+- [verified | not verified | partial | blocked]
 ```
 
 ### Step 11 — Prompt guidé de suite

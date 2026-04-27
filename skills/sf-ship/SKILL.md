@@ -8,6 +8,12 @@ argument-hint: [optional: commit message | "end la tache" for full close | skip-
 
 Before resolving any ShipFlow-owned file, load `$SHIPFLOW_ROOT/skills/references/canonical-paths.md` (`$SHIPFLOW_ROOT` defaults to `/home/claude/shipflow`). ShipFlow tools, shared references, skill-local `references/*`, templates, workflow docs, and internal scripts must resolve from `$SHIPFLOW_ROOT`, not from the project repo where the skill is running. Project artifacts and source files still resolve from the current project root unless explicitly stated otherwise.
 
+## Chantier Tracking
+
+Category: `obligatoire`.
+
+Before shipping a spec-first chantier, load `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`, then read the spec's `Skill Run History` and `Current Chantier Flow` when a unique spec exists. Append a current `sf-ship` row with result `shipped`, `not shipped`, `blocked`, or `skipped checks`, update `Current Chantier Flow`, and end the report with a `Chantier` block plus `Verdict sf-ship: ...`. If quick ship is not attached to one unique chantier spec, do not write to a spec; report `Chantier: non applicable` or `Chantier: non trace` with the reason.
+
 ## Context
 
 - Current directory: !`pwd`
@@ -183,6 +189,28 @@ User story / product status: [not assessed / partially validated / validated eno
 Documentation coherence: [updated / not impacted / gap remains / not assessed]
 Security / risk note: [none / partial validation / specific remaining risk]
 [✓ Pushed] or [push failure]
+
+## Chantier
+
+Skill courante: sf-ship
+Chantier: [spec path | non applicable | non trace]
+Trace spec: [ecrite | non ecrite | non applicable]
+Flux:
+- sf-spec: [status]
+- sf-ready: [status]
+- sf-start: [status]
+- sf-verify: [status]
+- sf-end: [status]
+- sf-ship: [shipped | not shipped | blocked | skipped checks]
+
+Reste a faire:
+- [item or None]
+
+Prochaine etape:
+- [explicit action | None]
+
+Verdict sf-ship:
+- [shipped | not shipped | blocked | skipped checks]
 ```
 
 Full mode report:
@@ -198,6 +226,28 @@ User story closure: [what outcome is actually complete, partially complete, or s
 Documentation coherence: [updated / not impacted / gap remains]
 Evidence limits / remaining risks: [brief, explicit]
 [✓ Pushed] or [push failure]
+
+## Chantier
+
+Skill courante: sf-ship
+Chantier: [spec path | non applicable | non trace]
+Trace spec: [ecrite | non ecrite | non applicable]
+Flux:
+- sf-spec: [status]
+- sf-ready: [status]
+- sf-start: [status]
+- sf-verify: [status]
+- sf-end: [status]
+- sf-ship: [shipped | not shipped | blocked | skipped checks]
+
+Reste a faire:
+- [item or None]
+
+Prochaine etape:
+- [explicit action | None]
+
+Verdict sf-ship:
+- [shipped | not shipped | blocked | skipped checks]
 ```
 
 ## Rules

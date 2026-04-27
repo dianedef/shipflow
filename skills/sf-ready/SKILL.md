@@ -8,6 +8,12 @@ argument-hint: <spec path or task name>
 
 Before resolving any ShipFlow-owned file, load `$SHIPFLOW_ROOT/skills/references/canonical-paths.md` (`$SHIPFLOW_ROOT` defaults to `/home/claude/shipflow`). ShipFlow tools, shared references, skill-local `references/*`, templates, workflow docs, and internal scripts must resolve from `$SHIPFLOW_ROOT`, not from the project repo where the skill is running. Project artifacts and source files still resolve from the current project root unless explicitly stated otherwise.
 
+## Chantier Tracking
+
+Category: `obligatoire`.
+
+Before evaluating a spec-first chantier, load `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`, then read the spec's `Skill Run History` and `Current Chantier Flow` when present. When a unique spec is evaluated, append a current `sf-ready` row with result `ready`, `not ready`, or `blocked`, add `Skill Run History` if missing without removing contract sections, update `Current Chantier Flow`, and end the report with a `Chantier` block plus `Verdict sf-ready: ...`. If no unique spec can be identified, do not write a trace; report `Chantier: non trace` and route to `/sf-spec` or explicit spec selection.
+
 ## Context
 
 - Current directory: !`pwd`
@@ -252,6 +258,28 @@ Next step:
 - /sf-spec [title] if not ready
 Fresh context:
 - [subagent launched / ask user to open a new thread / not necessary]
+
+## Chantier
+
+Skill courante: sf-ready
+Chantier: [spec path | non trace]
+Trace spec: [ecrite | non ecrite]
+Flux:
+- sf-spec: [status]
+- sf-ready: [ready | not ready | blocked]
+- sf-start: [status]
+- sf-verify: [status]
+- sf-end: [status]
+- sf-ship: [status]
+
+Reste a faire:
+- [item or None]
+
+Prochaine etape:
+- [/sf-start title | /sf-spec title | explicit action]
+
+Verdict sf-ready:
+- [ready | not ready | blocked]
 ```
 
 ### Rules

@@ -2,13 +2,13 @@
 title: "sf-spec"
 slug: "sf-spec"
 tagline: "Turn a fuzzy request into an implementation-ready contract before code starts mutating the repo."
-summary: "The spec-writing skill for shaping non-trivial work into a clear user story, behavior contract, and executable task list."
+summary: "The spec-writing skill for shaping non-trivial work into a clear user story, behavior contract, executable task list, and chantier history."
 category: "Core Workflow"
 audience:
   - "Founders doing non-trivial build work with agents"
   - "Teams that want a stronger bridge from intent to implementation"
 problem: "Ambiguous tasks create drift fast: the agent guesses scope, the code moves ahead of the product intent, and validation becomes harder afterward."
-outcome: "You get a sharper implementation contract that a fresh agent can execute without relying on chat memory."
+outcome: "You get a sharper implementation contract and chantier registry that a fresh agent can execute without relying on chat memory."
 founder_angle: "This skill is central when the task matters enough that guessing would be expensive. It converts product intent into something operational."
 when_to_use:
   - "When the work touches multiple files or domains"
@@ -20,6 +20,7 @@ what_you_give:
 what_you_get:
   - "A structured implementation spec"
   - "A clearer view of scope, behavior, and validation"
+  - "Initial Skill Run History and Current Chantier Flow"
   - "A safer handoff into readiness and build work"
 example_prompts:
   - "/sf-spec public skills hub and per-skill pages"

@@ -155,6 +155,13 @@ For non-trivial coding work, the default workflow is:
 sf-explore -> sf-spec -> sf-ready -> sf-start -> sf-verify -> sf-end
 ```
 
+For spec-first work, the spec is also the chantier registry. It keeps a
+`Skill Run History` and a `Current Chantier Flow`, so you can open the spec and
+see which lifecycle skills have run, which model was used, what result they
+recorded, and what the next ShipFlow command is. `TASKS.md`, `AUDIT_LOG.md`,
+and `PROJECTS.md` stay operational trackers; they do not become the per-chantier
+history.
+
 Fast path for a small, explicit fix:
 
 ```text
@@ -219,7 +226,7 @@ The core idea is that serious product work depends on more than code. A feature 
 
 ShipFlow artifacts are contracts that later skills can verify against:
 
-- A spec is an implementation contract: it defines scope, invariants, linked systems, risks, acceptance criteria, and documentation impact.
+- A spec is an implementation contract and chantier registry: it defines scope, invariants, linked systems, risks, acceptance criteria, documentation impact, and the skill-run history for that workstream.
 - A business document is a product-decision contract: it defines the audience, value proposition, market, promise, pricing assumptions, and proof level.
 - A brand document is a communication contract: it defines tone, trust posture, vocabulary, visual consistency, and claims that must not drift.
 - An audit report is an evidence contract: it records what was checked, what remains uncertain, and what should happen next.
@@ -239,9 +246,12 @@ metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
 project: "[project name]"
 created: "2026-04-25"
+created_at: "2026-04-25 10:30:00 UTC"
 updated: "2026-04-25"
+updated_at: "2026-04-25 10:30:00 UTC"
 status: draft
 source_skill: sf-spec
+source_model: "GPT-5 Codex"
 scope: feature
 owner: "[user/team]"
 user_story: "En tant que..., je veux..., afin de..."
@@ -257,6 +267,13 @@ depends_on:
 evidence: []
 next_step: "/sf-ready [title]"
 ```
+
+Specs also include a markdown `Skill Run History` table and a `Current Chantier Flow`.
+Lifecycle skills (`sf-spec`, `sf-ready`, `sf-start`, `sf-verify`, `sf-end`,
+`sf-ship`) write to that history when a unique spec-first chantier is in scope.
+Cross-cutting skills write only when the run is attached to one clear chantier;
+helper skills such as `sf-help`, `sf-model`, `sf-status`, and `sf-resume` do not
+write spec history.
 
 ShipFlow provides skill-aligned artifact templates in `templates/artifacts/` and a dependency-free linter:
 
