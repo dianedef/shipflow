@@ -108,6 +108,22 @@ Skill application categories:
 - `conditionnel`: audits, docs, checks, fixes, deps, perf, migrations, scaffold, content, research, test, prod, backlog, priorities, tasks, changelog, review, and veille skills trace only when the run is explicitly attached to one unique chantier spec.
 - `non-applicable`: help, context, model selection, exploration, status, resume, and session naming do not write to specs; if invoked inside a chantier flow, they report `Chantier: non applicable` or `Chantier: non trace` when useful.
 
+That trace category is separate from the internal process role:
+
+- `lifecycle`: creates, readies, starts, verifies, ends, or ships an existing chantier.
+- `source-de-chantier`: audits, diagnostics, checks, tests, prod verification, migrations, fixes, research, market study, or veille can reveal work that deserves a new spec.
+- `support-de-chantier`: docs, content, scaffolding, changelog, design playground, skill refresh, or init work supports a chantier but should not normally originate one.
+- `pilotage`: backlog, tasks, priorities, review, and continuation manage the flow and route to spec when the user or evidence requires it.
+- `helper`: context, model choice, help, status, resume, exploration, and naming stay read-only for chantier writes.
+
+The upstream intake flow is:
+
+```text
+source skill -> Chantier potentiel -> sf-spec -> sf-ready -> sf-start -> sf-verify -> sf-end/sf-ship
+```
+
+When a source skill finds non-trivial future work without one unique chantier, it must not write into a guessed spec. It should add a `Chantier potentiel` block with `oui`, `non`, or `incertain`, proposed title, reason, severity, scope, evidence, and a recommended `/sf-spec ...` command. `sf-spec` then consumes that block and turns it into the durable chantier contract.
+
 No skill should create a separate chantier registry in `TASKS.md`, `AUDIT_LOG.md`, `PROJECTS.md`, or `shipflow_data`. If a spec cannot be identified or multiple specs match, the skill must stop or report non-trace instead of guessing.
 
 ## Artifact Doctrine

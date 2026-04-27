@@ -11,7 +11,8 @@ Before resolving any ShipFlow-owned file, load `$SHIPFLOW_ROOT/skills/references
 
 ## Chantier Tracking
 
-Category: `non-applicable`.
+Trace category: `non-applicable`.
+Process role: `helper`.
 
 This skill does not write to chantier specs. If invoked inside a spec-first flow, do not modify `Skill Run History`; include `Chantier: non applicable` or `Chantier: non trace` in the final report when useful, with the reason and the next lifecycle command if one is obvious.
 

@@ -10,7 +10,8 @@ Before resolving any ShipFlow-owned file, load `$SHIPFLOW_ROOT/skills/references
 
 ## Chantier Tracking
 
-Category: `obligatoire`.
+Trace category: `obligatoire`.
+Process role: `lifecycle`.
 
 Before shipping a spec-first chantier, load `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`, then read the spec's `Skill Run History` and `Current Chantier Flow` when a unique spec exists. Append a current `sf-ship` row with result `shipped`, `not shipped`, `blocked`, or `skipped checks`, update `Current Chantier Flow`, and end the report with a `Chantier` block plus `Verdict sf-ship: ...`. If quick ship is not attached to one unique chantier spec, do not write to a spec; report `Chantier: non applicable` or `Chantier: non trace` with the reason.
 

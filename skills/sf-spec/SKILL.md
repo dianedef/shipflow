@@ -10,9 +10,12 @@ Before resolving any ShipFlow-owned file, load `$SHIPFLOW_ROOT/skills/references
 
 ## Chantier Tracking
 
-Category: `obligatoire`.
+Trace category: `obligatoire`.
+Process role: `lifecycle`.
 
 Before creating or updating a spec-first chantier, load `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`. `sf-spec` must initialize the chantier registry entry inside the spec itself: frontmatter includes `created_at`, `updated_at`, and `source_model`, the body includes `Skill Run History` and `Current Chantier Flow`, and the first history row records the current `sf-spec` run. End the report with a `Chantier` block and `Verdict sf-spec: ...`. If no chantier spec is created or updated, report `Chantier: non applicable` or `Chantier: non trace` with the reason.
+
+If the user input or source report contains a `Chantier potentiel` block, treat it as primary intake context. Preserve its `Titre propose`, `Raison`, `Severite`, `Scope`, `Evidence`, `Spec recommandee`, and `Prochaine etape` in the new or updated spec instead of flattening it into a vague task description. `sf-spec` remains the only step that creates the durable chantier spec; source skills only recommend this transition.
 
 ## Context
 
@@ -66,6 +69,14 @@ Les snapshots de `TASKS.md` lus ici sont informatifs seulement.
 
 **Si `$ARGUMENTS` est fourni**, l'utiliser comme point de départ.
 **Sinon**, demander : "Qu'est-ce qu'on construit ?"
+
+**Si l'entree vient d'une skill `source-de-chantier`** et contient un bloc `Chantier potentiel`, reconstruire la spec depuis ce bloc:
+- utiliser `Titre propose` comme base du titre quand il est present;
+- reprendre `Raison` dans `Problem`;
+- reprendre `Scope` dans `Scope In` / `Scope Out` et les fichiers ou domaines cibles;
+- reprendre `Severite` dans `risk_level` ou dans `Risks` quand la correspondance metadata n'est pas directe;
+- reprendre chaque entree `Evidence` dans le frontmatter `evidence`;
+- conserver la commande `Spec recommandee` ou `Prochaine etape` comme provenance, sans la confondre avec le `next_step` final de la nouvelle spec.
 
 **Scan rapide d'orientation (< 30 secondes) :**
 - Chercher des docs existantes (CLAUDE.md, README, docs/)

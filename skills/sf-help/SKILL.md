@@ -11,7 +11,8 @@ Before resolving any ShipFlow-owned file, load `$SHIPFLOW_ROOT/skills/references
 
 ## Chantier Tracking
 
-Category: `non-applicable`.
+Trace category: `non-applicable`.
+Process role: `helper`.
 
 This skill does not write to chantier specs. If invoked inside a spec-first flow, do not modify `Skill Run History`; include `Chantier: non applicable` or `Chantier: non trace` in the final report when useful, with the reason and the next lifecycle command if one is obvious.
 
@@ -87,60 +88,61 @@ File roles:
 
 `specs/` is the global registry for spec-first chantiers. Each chantier spec owns its `Skill Run History` and `Current Chantier Flow`; do not create a parallel chantier registry in `TASKS.md`, `AUDIT_LOG.md`, `PROJECTS.md`, or `shipflow_data`.
 
-Application matrix:
+Internal role matrix:
 
-| Skill file | Category | Spec write rule |
-|------------|----------|-----------------|
-| `skills/name/SKILL.md` | non-applicable | Never writes to specs; report non-applicable when useful. |
-| `skills/sf-audit-a11y/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-audit-code/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-audit-components/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-audit-copy/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-audit-copywriting/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-audit-design-tokens/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-audit-design/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-audit-gtm/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-audit-seo/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-audit-translate/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-audit/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-auth-debug/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-backlog/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-changelog/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-check/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-context/SKILL.md` | non-applicable | Never writes to specs; report non-applicable when useful. |
-| `skills/sf-deps/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-design-playground/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-docs/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-end/SKILL.md` | obligatoire | Always traces when closing a unique spec-first chantier. |
-| `skills/sf-enrich/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-explore/SKILL.md` | non-applicable | Exploration usually precedes a spec; do not write chantier history. |
-| `skills/sf-fix/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-help/SKILL.md` | non-applicable | Help is doctrine/read-only; never writes to specs. |
-| `skills/sf-init/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-market-study/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-migrate/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-model/SKILL.md` | non-applicable | Model advice does not mutate specs; report non-trace when useful. |
-| `skills/sf-perf/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-priorities/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-prod/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-ready/SKILL.md` | obligatoire | Always traces readiness result for a unique spec-first chantier. |
-| `skills/sf-redact/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-repurpose/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-research/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-resume/SKILL.md` | non-applicable | Thread recap does not mutate specs; report non-trace when useful. |
-| `skills/sf-review/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-scaffold/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-ship/SKILL.md` | obligatoire | Always traces shipping result for a unique spec-first chantier. |
-| `skills/sf-skills-refresh/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-spec/SKILL.md` | obligatoire | Creates or updates the chantier spec and initial history row. |
-| `skills/sf-start/SKILL.md` | obligatoire | Always traces execution result for a unique spec-first chantier. |
-| `skills/sf-status/SKILL.md` | non-applicable | Status dashboards stay read-only for chantier specs. |
-| `skills/sf-tasks/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-test/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-veille/SKILL.md` | conditionnel | Trace only when exactly one chantier spec is identified. |
-| `skills/sf-verify/SKILL.md` | obligatoire | Always traces verification result for a unique spec-first chantier. |
+| Skill file | Trace category | Process role | Source threshold |
+|------------|----------------|--------------|------------------|
+| `skills/name/SKILL.md` | non-applicable | helper | Never writes to specs; report non-applicable when useful. |
+| `skills/continue/SKILL.md` | conditionnel | pilotage | Route to `/sf-spec` only when continuation clearly needs a durable chantier. |
+| `skills/sf-audit-a11y/SKILL.md` | conditionnel | source-de-chantier | Accessibility findings become a chantier when severity, scope, remediation sequencing, or validation need exceeds a direct fix. |
+| `skills/sf-audit-code/SKILL.md` | conditionnel | source-de-chantier | Code findings become a chantier for P0/P1, architectural/security risk, or multi-file remediation. |
+| `skills/sf-audit-components/SKILL.md` | conditionnel | source-de-chantier | Component findings become a chantier for systemic duplication, variant drift, or cross-component remediation. |
+| `skills/sf-audit-copy/SKILL.md` | conditionnel | source-de-chantier | Copy findings become a chantier for multi-page conversion, legal, trust, or positioning work. |
+| `skills/sf-audit-copywriting/SKILL.md` | conditionnel | source-de-chantier | Strategic copy findings become a chantier when persuasion, offer, or funnel decisions are required. |
+| `skills/sf-audit-design-tokens/SKILL.md` | conditionnel | source-de-chantier | Token findings become a chantier for design-system drift or migration across multiple surfaces. |
+| `skills/sf-audit-design/SKILL.md` | conditionnel | source-de-chantier | Design findings become a chantier for multi-screen UX, a11y, or responsive remediation. |
+| `skills/sf-audit-gtm/SKILL.md` | conditionnel | source-de-chantier | GTM findings become a chantier when offer, funnel, analytics, pricing, or trust changes require decisions. |
+| `skills/sf-audit-seo/SKILL.md` | conditionnel | source-de-chantier | SEO findings become a chantier for indexation, schema, content architecture, or multi-page remediation. |
+| `skills/sf-audit-translate/SKILL.md` | conditionnel | source-de-chantier | Translation findings become a chantier for locale strategy, broad sync, or quality gates. |
+| `skills/sf-audit/SKILL.md` | conditionnel | source-de-chantier | Master audit findings become a chantier for transversal P1/P2 clusters or multi-domain remediation. |
+| `skills/sf-auth-debug/SKILL.md` | conditionnel | source-de-chantier | Auth findings become a chantier for session, callback, provider, tenant, or permission risk beyond a direct fix. |
+| `skills/sf-backlog/SKILL.md` | conditionnel | pilotage | Backlog ideas become a spec only on explicit user intent or clear high-risk follow-up. |
+| `skills/sf-changelog/SKILL.md` | conditionnel | support-de-chantier | Supports release documentation; not a source by default. |
+| `skills/sf-check/SKILL.md` | conditionnel | source-de-chantier | Failed checks become a chantier when failures span domains, block release, or need staged remediation. |
+| `skills/sf-context/SKILL.md` | non-applicable | helper | Context discovery is read-only; not a chantier source. |
+| `skills/sf-deps/SKILL.md` | conditionnel | source-de-chantier | Dependency findings become a chantier for critical/high risk, supply-chain trust, migration, or automation gaps. |
+| `skills/sf-design-playground/SKILL.md` | conditionnel | support-de-chantier | Supports design-token work; route only on explicit formalization request. |
+| `skills/sf-docs/SKILL.md` | conditionnel | support-de-chantier | Supports docs coherence; not a source unless the user asks to frame a spec. |
+| `skills/sf-end/SKILL.md` | obligatoire | lifecycle | Closes an existing chantier; not a source. |
+| `skills/sf-enrich/SKILL.md` | conditionnel | support-de-chantier | Supports content upgrades; route only when follow-up needs a spec. |
+| `skills/sf-explore/SKILL.md` | non-applicable | helper | Exploration can recommend `/sf-spec`, but does not write chantier history. |
+| `skills/sf-fix/SKILL.md` | conditionnel | source-de-chantier | Bug triage becomes a chantier when the fix is non-local, risky, or spec-first. |
+| `skills/sf-help/SKILL.md` | non-applicable | helper | Help is doctrine/read-only; never writes to specs. |
+| `skills/sf-init/SKILL.md` | conditionnel | support-de-chantier | Supports project bootstrap; route to spec only when setup policy must be formalized. |
+| `skills/sf-market-study/SKILL.md` | conditionnel | source-de-chantier | Market findings become a chantier when they require product, GTM, content, or implementation decisions. |
+| `skills/sf-migrate/SKILL.md` | conditionnel | source-de-chantier | Migration findings become a chantier for breaking changes, staged upgrades, or rollback/validation planning. |
+| `skills/sf-model/SKILL.md` | non-applicable | helper | Model advice does not mutate specs; report non-trace when useful. |
+| `skills/sf-perf/SKILL.md` | conditionnel | source-de-chantier | Perf findings become a chantier for Core Web Vitals risk, systemic rendering/fetching issues, or multi-file remediation. |
+| `skills/sf-priorities/SKILL.md` | conditionnel | pilotage | Priority work routes to `/sf-spec` only when an item needs a durable contract. |
+| `skills/sf-prod/SKILL.md` | conditionnel | source-de-chantier | Production incidents become a chantier for outage, deploy, runtime, rollback, or monitoring follow-up. |
+| `skills/sf-ready/SKILL.md` | obligatoire | lifecycle | Gates an existing spec; not a source. |
+| `skills/sf-redact/SKILL.md` | conditionnel | support-de-chantier | Supports content production; not a source by default. |
+| `skills/sf-repurpose/SKILL.md` | conditionnel | support-de-chantier | Supports repurposing; route only when work must become a spec. |
+| `skills/sf-research/SKILL.md` | conditionnel | source-de-chantier | Research becomes a chantier when it produces implementation, architecture, product, or GTM decisions. |
+| `skills/sf-resume/SKILL.md` | non-applicable | helper | Thread recap does not mutate specs; report non-trace when useful. |
+| `skills/sf-review/SKILL.md` | conditionnel | pilotage | Review routes to `/sf-spec` only for explicit follow-up work. |
+| `skills/sf-scaffold/SKILL.md` | conditionnel | support-de-chantier | Supports implementation; not a source by default. |
+| `skills/sf-ship/SKILL.md` | obligatoire | lifecycle | Ships an existing chantier; not a source. |
+| `skills/sf-skills-refresh/SKILL.md` | conditionnel | support-de-chantier | Supports skill maintenance; route to spec for broad policy changes only. |
+| `skills/sf-spec/SKILL.md` | obligatoire | lifecycle | Creates or updates the chantier spec and initial history row. |
+| `skills/sf-start/SKILL.md` | obligatoire | lifecycle | Executes an existing chantier; not a source. |
+| `skills/sf-status/SKILL.md` | non-applicable | helper | Status dashboards stay read-only for chantier specs. |
+| `skills/sf-tasks/SKILL.md` | conditionnel | pilotage | Task management routes to `/sf-spec` only for durable non-trivial work. |
+| `skills/sf-test/SKILL.md` | conditionnel | source-de-chantier | Test failures become a chantier for critical bugs, repeated regressions, or non-local fixes. |
+| `skills/sf-veille/SKILL.md` | conditionnel | source-de-chantier | Watch items become a chantier when they require product, content, architecture, or implementation decisions. |
+| `skills/sf-verify/SKILL.md` | obligatoire | lifecycle | Verifies an existing chantier and reports drift; not a source. |
 
-Report rule: every applicable report ends with a `Chantier` block. Conditional skills that cannot identify one unique spec must not write anywhere; they report `Chantier: non applicable` or `Chantier: non trace` and name the reason.
+Report rule: every applicable report ends with a `Chantier` block. Conditional skills that cannot identify one unique spec must not write anywhere; they report `Chantier: non applicable` or `Chantier: non trace` and name the reason. Source skills also evaluate the standard `Chantier potentiel` threshold from `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`.
 
 ### Scaffolding & Init
 

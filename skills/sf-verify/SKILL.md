@@ -10,9 +10,12 @@ Before resolving any ShipFlow-owned file, load `$SHIPFLOW_ROOT/skills/references
 
 ## Chantier Tracking
 
-Category: `obligatoire`.
+Trace category: `obligatoire`.
+Process role: `lifecycle`.
 
 Before verifying a spec-first chantier, load `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`, then read the spec's `Skill Run History` and `Current Chantier Flow` when a unique spec exists. Append a current `sf-verify` row with result `verified`, `not verified`, `partial`, or `blocked`, update `Current Chantier Flow`, and end the report with a `Chantier` block plus `Verdict sf-verify: ...`. If no unique spec is available, do not write to a spec; report `Chantier: non applicable` or `Chantier: non trace` with the reason.
+
+When the verified work changes ShipFlow skill instructions, include a coherence check against `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`: every modified `skills/*/SKILL.md` must expose a `Trace category` and `Process role`; every modified `source-de-chantier` skill must contain `Chantier potentiel` instructions; helper skills must not present themselves as chantier sources.
 
 ## Context
 

@@ -10,6 +10,7 @@
 - Skill-aligned artifact templates for specs, business context, brand context, audits, verification, readiness, review, research, and decision records
 - Spec-first chantier registry doctrine: specs now carry `source_model`, `Skill Run History`, and `Current Chantier Flow` so skill runs can be reviewed from the spec without reading chat history
 - Shared chantier tracking rules and an all-skills matrix covering mandatory, conditional, and non-applicable spec tracing behavior
+- Internal skill taxonomy for chantier intake, including `source-de-chantier` process roles and standard `Chantier potentiel` routing to `/sf-spec`
 - `sf-resume` — fast current-thread recap skill with task status bullets, close/keep-open verdict, and one critical reminder
 - `sf-auth-debug` — browser-auth diagnostic skill for Clerk, OAuth, Google login, YouTube OAuth, Convex auth propagation, sessions, callbacks, protected routes, and Playwright-based reproduction
 - Cross-project auth reference docs for the ContentFlow Flutter web ClerkJS bridge and the TubeFlow Next.js + Convex YouTube OAuth flow

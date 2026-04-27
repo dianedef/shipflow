@@ -10,7 +10,8 @@ Before resolving any ShipFlow-owned file, load `$SHIPFLOW_ROOT/skills/references
 
 ## Chantier Tracking
 
-Category: `obligatoire`.
+Trace category: `obligatoire`.
+Process role: `lifecycle`.
 
 Before closing a spec-first chantier, load `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`, then read the spec's `Skill Run History` and `Current Chantier Flow` when a unique spec exists. Append a current `sf-end` row with result `closed`, `deferred`, `blocked`, or `not applicable`, update `Current Chantier Flow`, and end the report with a `Chantier` block plus `Verdict sf-end: ...`. If no unique spec is available, do not write to a spec; report `Chantier: non applicable` or `Chantier: non trace` with the reason.
 
