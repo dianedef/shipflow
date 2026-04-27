@@ -51,6 +51,7 @@ La documentation est une surface produit active :
 - ne pas documenter des capacités non prouvées par le code ou les specs
 - distinguer `implemented`, `verified`, `assumed`, `deprecated` et `removed`
 - signaler les docs stale comme risque produit quand elles touchent sécurité, paiement, permissions, API publique, migration, données sensibles ou actions destructives
+- quand le scope touche les bugs, vérifier le modèle professionnel: `TEST_LOG.md` compact, `BUGS.md` compact, bug dossier dans `bugs/BUG-ID.md`, preuves redigées dans `test-evidence/BUG-ID/`
 
 En mode `update` ou `audit`, prioriser les docs qui peuvent faire échouer un utilisateur réel : installation, configuration, auth, billing, migration, API, onboarding, troubleshooting.
 
@@ -113,8 +114,16 @@ Operational tracking files are explicitly excluded from mandatory metadata front
 - `TASKS.md`
 - `AUDIT_LOG.md`
 - `PROJECTS.md`
+- `TEST_LOG.md`
+- `BUGS.md`
 
 They are trackers/registries, not decision contracts. Do not add frontmatter to them during docs audit/update. If a tracker contains a durable decision, spec, business rule, or research conclusion, extract that content into a dedicated ShipFlow artifact with metadata and leave the tracker entry as a pointer or task.
+
+Bug workflow distinction:
+- `TEST_LOG.md` and `BUGS.md` are tracker files (no required frontmatter).
+- `bugs/BUG-ID.md` is a bug dossier artifact (`artifact: bug_record`) and must stay detailed.
+- `test-evidence/BUG-ID/` holds optional redacted heavy evidence and should be referenced by path, not pasted inline in trackers.
+- Docs must not present `BUGS.md` as the full bug dossier location.
 
 Location rule:
 - `shipflow_data` hosts tracking and registry files, not the canonical copy of per-project decision documents.
@@ -268,6 +277,7 @@ Vérifier que la doc existante est cohérente avec le code, à jour, et respecte
 1. **Inventorier toute la doc existante :**
    - README.md, CLAUDE.md, AGENT.md, CONTEXT.md, CONTEXT-FUNCTION-TREE.md, CONTENT_MAP.md, CHANGELOG.md
    - BUSINESS.md, BRANDING.md, PRODUCT.md, ARCHITECTURE.md, GTM.md, GUIDELINES.md
+   - `TEST_LOG.md`, `BUGS.md`, `bugs/` et `test-evidence/` quand présents
    - FOUNDER.md / AUTHOR.md, INSPIRATION.md, SOURCE.md
    - Dossier `docs/` (tous les fichiers .md)
    - JSDoc/TSDoc/docstrings dans le code
@@ -283,6 +293,8 @@ Vérifier que la doc existante est cohérente avec le code, à jour, et respecte
    - **Variables d'env** : `.env.example` liste-t-il toutes les variables utilisées dans le code ? Y a-t-il des variables documentées mais inutilisées ?
    - **Feature behavior** : les docs décrivent-elles encore le comportement actuel des features, permissions, limites, erreurs, pricing et intégrations ?
    - **Public promises** : les pages/docs promettent-elles sécurité, conformité, IA, automatisation, disponibilité ou gains sans preuve dans le produit ?
+   - **Professional bug loop** : la doc décrit-elle correctement les rôles `TEST_LOG.md` (tracker compact), `BUGS.md` (index compact), bug dossier `bugs/BUG-ID.md`, et `test-evidence/BUG-ID/` (preuves redigées) ?
+   - **Bug tracker vs artifact** : une doc confond-elle `BUGS.md` avec le bug dossier ?
    - **ShipFlow metadata** : les artefacts internes ShipFlow ont-ils le frontmatter obligatoire (`artifact`, `project`, `created`, `updated`, `status`, `scope`, `source_skill`) ?
    - **Version sync** : les specs, audits et reviews référencent-ils des versions business/techniques encore actuelles dans `depends_on` ?
 
@@ -332,6 +344,11 @@ Vérifier que la doc existante est cohérente avec le code, à jour, et respecte
 - [ ] `REVIEW-2026-04-25.md` — `confidence` / `risk_level` non renseignés
 - [ ] `specs/onboarding.md` — dépend de `BUSINESS.md@1.0.0` alors que `BUSINESS.md` est passé en `1.1.0`
 
+### PROFESSIONAL BUG MODEL
+- [ ] [README.md] décrit `BUGS.md` comme dossier complet au lieu d'un index compact vers bug dossier
+- [ ] [workflow doc] ne mentionne pas `sf-test --retest BUG-ID` ni `Retest History` du bug dossier
+- [ ] [guide QA] colle des logs bruts au lieu de pointer vers `test-evidence/BUG-ID/` redigé
+
 ### CONTEXTE BUSINESS/MARQUE
 - [ ] BUSINESS.md absent — audience, proposition de valeur, business model non documentés
 - [ ] PRODUCT.md absent — problèmes, workflows et non-goals non documentés
@@ -355,6 +372,13 @@ Harmoniser et mettre à jour la doc existante pour la rendre cohérente.
 ### Flow
 
 1. **Lancer d'abord un audit silencieux** (même logique que AUDIT MODE mais sans rapport).
+
+1a. **Vérifier la cohérence du modèle bug dans la doc** :
+   - Les docs QA/ops expliquent `TEST_LOG.md` comme tracker compact.
+   - Les docs QA/ops expliquent `BUGS.md` comme index compact vers bug dossier.
+   - Les docs mentionnent `bugs/BUG-ID.md` pour le détail (repro, expected/observed, Fix Attempts, Retest History, statut).
+   - Les docs mentionnent `test-evidence/BUG-ID/` pour les preuves volumineuses, avec redaction obligatoire.
+   - Les docs ne demandent pas d'ajouter de frontmatter à `TEST_LOG.md`/`BUGS.md` (tracker rule).
 
 1b. **Migrer les anciens artefacts ShipFlow si nécessaire :**
    - Ajouter le frontmatter ShipFlow obligatoire aux specs, reviews, audits, research reports et docs projet qui n'en ont pas.

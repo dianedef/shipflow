@@ -172,6 +172,26 @@ Si le changement est entièrement local, noter `fresh-docs not needed` avec une 
 
 **Résultat** : liste des tâches complètes vs incomplètes avec preuves
 
+### Step 4.5 — Bug Gate (`BUGS.md` + `bugs/`)
+
+Avant de conclure la complétude, inspecter les bugs liés au scope vérifié:
+- lire `BUGS.md` si présent (index compact)
+- ouvrir les dossiers `bugs/BUG-ID.md` pertinents pour confirmer le statut réel
+- si un dossier attendu manque, le signaler comme gap et dégrader la confiance
+
+Vérifier explicitement:
+- `open bug` dans le scope
+- bugs `high` ou `critical` encore ouverts (`open`, `needs-info`, `needs-repro`, `in-diagnosis`, `fix-attempted`)
+- bugs en `fixed-pending-verify` sans preuve de clôture finale
+- contradictions entre l'état des bugs et la user story annoncée comme "tenue"
+
+Règle de verdict:
+- si bug `high` ou `critical` ouvert et lié au scope: verdict de vérification non prêt et mention explicite `blocks ship`
+- si seulement `fixed-pending-verify` ou lien partiel: autoriser un verdict partiel avec risque explicite
+- si aucune source bug exploitable (`BUGS.md` absent, dossiers absents, scope ambigu): marquer `not assessed` au lieu d'assumer la fermeture
+
+**Résultat** : `bug gate clear` / `partial-risk` / `blocks ship` / `not assessed`
+
 ### Step 5 — Vérifier la correctitude
 
 **Le code fait-il ce qui est décrit ?**
@@ -307,6 +327,7 @@ Générer UN rapport structuré :
 | Cohérence    | Conforme / N écarts         |
 | Metadata     | Versions OK / gaps          |
 | Docs         | Alignées / gaps             |
+| Bug gate     | clear / partial-risk / blocks ship / not assessed |
 | Dépendances  | N ajoutées, vulnérabilités  |
 | Risques      | N SEC / N PERF / N DATA     |
 | Technique    | ✓ OK / ✗ N erreurs          |
@@ -360,6 +381,15 @@ Ajouter ensuite un bloc workflow explicite :
 - Verdict: [fresh-docs checked / fresh-docs not needed / fresh-docs gap / fresh-docs conflict]
 - Evidence: [dependency/version/source or local-only justification]
 - Impact: [none / warning / blocks ship]
+```
+
+```text
+### Bug Gate
+- Sources checked: [BUGS.md / bugs/BUG-ID.md / none]
+- Open bug count in scope: [N]
+- Open high/critical bugs: [BUG-ID list | none]
+- fixed-pending-verify bugs: [BUG-ID list | none]
+- Impact on closure: [clear / partial-risk / blocks ship / not assessed]
 ```
 
 ```text
@@ -442,3 +472,4 @@ Si le verdict est `✓`, ne pas poser cette question et proposer `/sf-end`.
 - Ne corriger directement que si le contrat est suffisamment stable pour éviter un nouveau cycle de clarification
 - Prioriser un guidage actionnable pour les utilisateurs non techniques
 - Ne pas être pointilleux sur le style — se concentrer sur les vrais écarts
+- Ne pas valider "prêt à ship" si un bug `high`/`critical` lié au scope reste ouvert.

@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 
-DEFAULT_TARGETS = (
+BASE_DEFAULT_TARGETS = (
     "specs",
     "docs",
     "AGENT.md",
@@ -30,6 +30,21 @@ DEFAULT_TARGETS = (
 VALID_STATUSES = {"draft", "reviewed", "ready", "active", "stale", "superseded"}
 VALID_CONFIDENCE = {"low", "medium", "high", "unknown"}
 VALID_RISK = {"low", "medium", "high", "critical", "unknown"}
+VALID_BUG_STATUSES = {
+    "open",
+    "needs-info",
+    "needs-repro",
+    "in-diagnosis",
+    "fix-attempted",
+    "fixed-pending-verify",
+    "closed",
+    "closed-without-retest",
+    "duplicate",
+    "wontfix",
+}
+VALID_BUG_SEVERITY = {"low", "medium", "high", "critical", "unknown"}
+VALID_BUG_REDACTION = {"not-reviewed", "redacted", "not-required", "rejected"}
+VALID_BUG_REPRODUCIBILITY = {"always", "intermittent", "unknown"}
 
 COMMON_REQUIRED = {
     "artifact",
@@ -67,7 +82,30 @@ ARTIFACT_REQUIRED = {
     "research_report": {"source_count", "primary_sources", "recommendation"},
     "decision_record": {"decision", "rationale", "consequences"},
     "content_map": {"content_surfaces", "next_review"},
+    "bug_record": {
+        "bug_id",
+        "title",
+        "bug_status",
+        "severity",
+        "reported_by",
+        "first_observed",
+        "last_observed",
+        "environment",
+        "reproducibility",
+        "redaction_status",
+        "related_bugs",
+        "related_artifacts",
+    },
 }
+
+SKIP_ARTIFACT_TRACKERS = {"BUGS.md", "TEST_LOG.md"}
+
+
+def default_targets() -> list[str]:
+    targets = list(BASE_DEFAULT_TARGETS)
+    if Path("bugs").is_dir():
+        targets.append("bugs")
+    return targets
 
 
 def parse_args() -> argparse.Namespace:
@@ -75,7 +113,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "paths",
         nargs="*",
-        help="Files or directories to lint. Defaults to specs/, docs/, AGENT.md, CONTEXT.md, CONTEXT-FUNCTION-TREE.md, CONTENT_MAP.md, BUSINESS.md, BRANDING.md, PRODUCT.md, ARCHITECTURE.md, GTM.md, GUIDELINES.md.",
+        help="Files or directories to lint. Defaults to standard ShipFlow artifact paths and includes bugs/ when that directory exists.",
     )
     parser.add_argument(
         "--all-markdown",
@@ -87,7 +125,7 @@ def parse_args() -> argparse.Namespace:
 
 def iter_markdown(paths: list[str]) -> list[Path]:
     files: list[Path] = []
-    for raw in paths or list(DEFAULT_TARGETS):
+    for raw in paths or default_targets():
         path = Path(raw)
         if not path.exists():
             continue
@@ -125,6 +163,8 @@ def read_frontmatter(path: Path) -> tuple[dict[str, str], list[str]]:
 
 
 def should_lint(path: Path, fields: dict[str, str], all_markdown: bool) -> bool:
+    if path.name in SKIP_ARTIFACT_TRACKERS:
+        return False
     if all_markdown:
         return True
     if fields.get("metadata_schema_version") or fields.get("artifact_version"):
@@ -145,6 +185,31 @@ def should_lint(path: Path, fields: dict[str, str], all_markdown: bool) -> bool:
     if "specs" in path.parts:
         return True
     return False
+
+
+def validate_bug_record(fields: dict[str, str]) -> list[str]:
+    errors: list[str] = []
+    bug_status = fields.get("bug_status")
+    if bug_status and bug_status not in VALID_BUG_STATUSES:
+        errors.append("bug_status must be one of: " + ", ".join(sorted(VALID_BUG_STATUSES)))
+
+    severity = fields.get("severity")
+    if severity and severity not in VALID_BUG_SEVERITY:
+        errors.append("severity must be one of: " + ", ".join(sorted(VALID_BUG_SEVERITY)))
+
+    redaction_status = fields.get("redaction_status")
+    if redaction_status and redaction_status not in VALID_BUG_REDACTION:
+        errors.append("redaction_status must be one of: " + ", ".join(sorted(VALID_BUG_REDACTION)))
+
+    reproducibility = fields.get("reproducibility")
+    if reproducibility and reproducibility not in VALID_BUG_REPRODUCIBILITY:
+        errors.append("reproducibility must be one of: " + ", ".join(sorted(VALID_BUG_REPRODUCIBILITY)))
+
+    bug_id = fields.get("bug_id", "")
+    if bug_id and "YYYY" not in bug_id and not re.match(r"^BUG-\d{4}-\d{2}-\d{2}-\d{3}$", bug_id):
+        errors.append("bug_id must match BUG-YYYY-MM-DD-NNN, for example BUG-2026-04-27-001")
+
+    return errors
 
 
 def validate(path: Path, fields: dict[str, str], initial_errors: list[str]) -> list[str]:
@@ -186,6 +251,9 @@ def validate(path: Path, fields: dict[str, str], initial_errors: list[str]) -> l
 
     if fields.get("status") == "superseded" and not fields.get("superseded_by"):
         errors.append("superseded artifacts must set superseded_by")
+
+    if artifact == "bug_record":
+        errors.extend(validate_bug_record(fields))
 
     return errors
 

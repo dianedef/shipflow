@@ -1,13 +1,13 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.2.0"
+artifact_version: "1.0.0"
 project: ShipFlow
 created: "2026-04-27"
 created_at: "2026-04-27 12:44:52 UTC"
 updated: "2026-04-27"
-updated_at: "2026-04-27 12:44:52 UTC"
-status: draft
+updated_at: "2026-04-27 17:37:26 UTC"
+status: ready
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: feature
@@ -58,7 +58,7 @@ evidence:
   - "Repo investigation: sf-test currently writes TEST_LOG.md and BUGS.md, but has no per-bug dossier or evidence directory."
   - "Repo doctrine: trackers stay lightweight; durable decisions and evidence belong in dedicated artifacts."
   - "sf-ready 2026-04-27 found blocking gaps around lifecycle status, bug ID collisions, sf-ship ownership, sf-docs ownership, acceptance criteria, and evidence security."
-next_step: "/sf-ready Professional Bug Management"
+next_step: "None"
 ---
 
 # Spec: Professional Bug Management
@@ -69,7 +69,7 @@ Professional Bug Management
 
 ## Status
 
-draft
+ready
 
 ## User Story
 
@@ -437,14 +437,20 @@ None. The chosen defaults are: compact project indexes plus per-bug dossiers plu
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
 | 2026-04-27 12:44:52 UTC | sf-spec | GPT-5 Codex | Updated professional bug management spec after readiness gaps | draft saved | /sf-ready Professional Bug Management |
+| 2026-04-27 14:37:31 UTC | sf-ready | GPT-5 Codex | Evaluated readiness gate for professional bug management | ready | /sf-start Professional Bug Management |
+| 2026-04-27 14:59:24 UTC | sf-start | gpt-5.3-codex | Implemented bug dossier template, metadata linting, skill doctrine and docs; deferred changelog per sf-start rule | partial | /sf-verify Professional Bug Management |
+| 2026-04-27 16:21:39 UTC | sf-verify | GPT-5 Codex | Verified tasks 1-17 and required validation commands; confirmed task 18 (`CHANGELOG.md`) remains intentionally deferred per sf-start rule | partial | /sf-end Professional Bug Management |
+| 2026-04-27 16:48:22 UTC | sf-end | GPT-5 Codex | Closed professional bug management by adding changelog entry and marking trackers complete | closed | /sf-ship Professional Bug Management |
+| 2026-04-27 17:04:30 UTC | sf-verify | GPT-5 Codex | Re-verified after sf-end; changelog complete, strict lifecycle smoke passed, metadata lint, Python compile, diff check and site build passed | verified | /sf-ship Professional Bug Management |
+| 2026-04-27 17:37:26 UTC | sf-ship | GPT-5 Codex | Quick ship Professional Bug Management changes after verified chantier state | shipped | None |
 
 ## Current Chantier Flow
 
 - `sf-spec`: done, draft spec updated with lifecycle, security, documentation and chantier tracking.
-- `sf-ready`: not launched after this update.
-- `sf-start`: not launched.
-- `sf-verify`: not launched.
-- `sf-end`: not launched.
-- `sf-ship`: not launched.
+- `sf-ready`: ready on 2026-04-27 after structure, metadata, user story alignment, adversarial review, security review and documentation coherence checks.
+- `sf-start`: implemented on 2026-04-27 for execution scope; task 18 (`CHANGELOG.md`) was intentionally handled by sf-end because sf-start must not update CHANGELOG.md.
+- `sf-verify`: verified on 2026-04-27 after changelog completion, strict lifecycle smoke, metadata lint, Python compile, diff check and site build.
+- `sf-end`: closed on 2026-04-27 after changelog and tracker closure.
+- `sf-ship`: shipped on 2026-04-27.
 
-Next step: `/sf-ready Professional Bug Management`
+Next step: None

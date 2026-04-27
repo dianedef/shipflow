@@ -456,6 +456,57 @@ Migration rules:
 
 This lets existing work become traceable without pretending it was originally produced under the new standard.
 
+## Professional Bug Management
+
+ShipFlow uses a three-layer bug record so tests, triage, and evidence stay readable across sessions:
+
+- `TEST_LOG.md` is the compact campaign log.
+- `BUGS.md` is the compact bug index.
+- `bugs/BUG-ID.md` is the detailed dossier for one bug.
+- `test-evidence/BUG-ID/` stores redacted supporting evidence when material is too large or too sensitive for inline markdown.
+
+The standard bug loop is:
+
+```text
+sf-test -> bug dossier -> sf-fix -> sf-test --retest -> sf-verify -> sf-ship
+```
+
+Each stage has a narrow job:
+
+- `sf-test` captures the failure, opens or updates the dossier, and links to the compact index.
+- `sf-fix` reads the dossier and appends diagnosis and fix attempts.
+- `sf-test --retest BUG-ID` appends the retest history and updates the bug state.
+- `sf-verify` checks whether the remaining bug state still blocks release.
+- `sf-ship` consumes the final bug state when deciding whether the ship is clean, partial-risk, or blocked.
+
+Canonical bug states stay explicit:
+
+- `open`
+- `needs-info`
+- `needs-repro`
+- `in-diagnosis`
+- `fix-attempted`
+- `fixed-pending-verify`
+- `closed`
+- `closed-without-retest`
+- `duplicate`
+- `wontfix`
+
+Closure rules are conservative:
+
+- `closed` requires a passing retest.
+- `closed-without-retest` requires a visible reason and residual risk note.
+- `needs-info` and `needs-repro` mean the bug is still unresolved, not done.
+- `duplicate` and `wontfix` must point to a concrete canonical bug or decision.
+
+Evidence rules are strict:
+
+- keep `TEST_LOG.md` and `BUGS.md` compact
+- keep large logs, HAR, screenshots, dumps, and traces out of the index files
+- redact secrets, cookies, tokens, private emails, request headers, and production PII before persisting evidence
+- store larger redacted material under `test-evidence/BUG-ID/`
+- never paste raw sensitive evidence inline when a path reference is enough
+
 ## Workflow by Stage
 
 ### 0. `sf-fix` (bug intake)
@@ -469,6 +520,8 @@ It performs a short triage and routes the bug:
 Typical routed outcomes:
 - direct: `sf-fix -> sf-verify -> sf-end`
 - spec-first: `sf-spec -> sf-ready -> sf-start -> sf-verify -> sf-end`
+
+When `sf-test` finds a failure first, the bug should already exist as a compact index entry plus dossier. `sf-fix` should read that dossier instead of rebuilding context from chat history.
 
 When the bug is auth or browser-flow related, run `sf-auth-debug` before coding from theory. It consumes the bug report or spec, reproduces with Playwright where possible, and isolates failures across Clerk, OAuth, Google login, YouTube OAuth, Convex auth propagation, cookies, callbacks, protected routes, and Flutter web auth bridges. Its output should route back into `sf-fix`, `sf-start`, or `sf-verify` with evidence rather than guesses.
 

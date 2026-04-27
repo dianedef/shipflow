@@ -28,6 +28,7 @@ It helps operators run apps on servers, but its deeper job is to reduce ambiguit
 - fast current-thread recap when a session becomes hard to follow
 - spec-driven implementation flow
 - verification and remediation loops
+- professional bug management with compact `TEST_LOG.md`, compact `BUGS.md`, detailed `bugs/BUG-ID.md` dossiers, and redacted `test-evidence/BUG-ID/` evidence
 - audits across code, design, copy, SEO, GTM, deps, perf, and translation
 - documentation and research workflows
 
@@ -148,6 +149,13 @@ sf-model -> choose model / reasoning / fallbacks before execution
 
 If the bug is local and clear, `sf-fix` fixes it directly, then verifies.
 If the bug is ambiguous or non-trivial, `sf-fix` routes to `sf-spec -> sf-ready -> sf-start`.
+
+ShipFlow keeps bug records split on purpose:
+
+- `TEST_LOG.md` stays compact and records what was tested and how it went.
+- `BUGS.md` stays compact and lists the actionable bug index.
+- `bugs/BUG-ID.md` holds the detailed dossier for one bug.
+- `test-evidence/BUG-ID/` holds redacted evidence when screenshots, logs, or traces are too large or sensitive to inline.
 
 For non-trivial coding work, the default workflow is:
 

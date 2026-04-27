@@ -8,8 +8,8 @@ audience:
   - "Solo founders facing product or QA bugs"
   - "Operators who want a safer fork between hotfixes and deeper spec work"
 problem: "Bug work often oscillates between overreacting with a rushed patch and overcomplicating a local issue that could have been fixed directly."
-outcome: "You get a clearer decision about whether the issue should be fixed now, investigated further, or routed into a stronger contract path."
-founder_angle: "This skill helps you move quickly without pretending every bug is trivial. It keeps speed and judgment in the same loop."
+outcome: "You get a clearer decision about whether the issue should be fixed now, investigated further, or routed into a stronger contract path, using the bug dossier as the working record."
+founder_angle: "This skill helps you move quickly without pretending every bug is trivial. It keeps speed and judgment in the same loop, and it keeps the diagnosis attached to the bug itself."
 when_to_use:
   - "When the starting point is a concrete bug report or failing behavior"
   - "When it is unclear whether the issue is truly local"
@@ -20,6 +20,7 @@ what_you_give:
 what_you_get:
   - "A triage decision and rationale"
   - "Either a direct-fix path or a spec-first reroute"
+  - "A bug-dossier-driven fix loop when BUG-ID is provided"
   - "A sharper understanding of the real bug boundary"
 example_prompts:
   - "/sf-fix users can still access archived projects"
@@ -28,6 +29,7 @@ example_prompts:
 limits:
   - "It is for bounded bug work, not broad redesign"
   - "Some bug reports still need deeper clarification before safe implementation"
+  - "When a bug id is supplied, the skill consumes bugs/BUG-ID.md and appends diagnosis and fix attempts there instead of relying on chat history"
 related_skills:
   - "sf-spec"
   - "sf-start"
@@ -35,3 +37,9 @@ related_skills:
 featured: true
 order: 20
 ---
+
+## Bug-First Flow
+
+When you pass `BUG-ID`, `sf-fix` treats `bugs/BUG-ID.md` as the primary source of truth. It should read the dossier, append diagnosis notes, record fix attempts, and keep the retest history attached to the same record.
+
+If the dossier is incomplete, the skill should say what is missing and keep the bug open rather than inventing context from chat memory.

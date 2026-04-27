@@ -203,123 +203,153 @@ Tu étais sur quelle URL ou quel écran au moment du blocage, et qu'est-ce qui �
 
 Do not ask more than needed to make the bug actionable.
 
-## Step 5 — Write TEST_LOG.md
+## Step 5 — Write Compact TEST_LOG.md
 
 Right before editing `TEST_LOG.md`, re-read it from disk if it exists.
 
 If it does not exist, create it.
 
-Append a new entry. Do not rewrite old entries.
+Append a compact entry only. Do not rewrite old entries.
 
-Use this format:
+Use this compact format:
 
 ```markdown
 ## YYYY-MM-DD - [Feature or Flow]
 
-- Scope: [feature, bug id, or spec]
+- Scope: [feature|spec|BUG-ID]
 - Environment: [local|preview|prod|unknown]
 - Tester: user
 - Source: sf-test
 - Status: [pass|fail|blocked|not run]
 - Confidence: [high|medium|low]
-
-### Scenario: [name]
-
-Steps:
-1. [step actually requested]
-2. [step actually requested]
-
-Expected:
-- [expected behavior]
-
-Observed:
-- [user-reported result or tool-observed result]
-
-Evidence:
-- [URL, message, screenshot path, logs, "none supplied"]
-
-Follow-up:
-- [none / BUG-ID / next command]
+- Result summary: [one short line]
+- Bug pointer: [none | BUG-ID -> bugs/BUG-ID.md]
+- Evidence pointer: [none | test-evidence/BUG-ID/... | external reference]
+- Follow-up: [none | /sf-fix BUG-ID | /sf-test --retest BUG-ID | next command]
 ```
 
 Rules:
-- `TEST_LOG.md` is an operational evidence tracker. Do not add ShipFlow metadata frontmatter.
+- `TEST_LOG.md` stays compact. It is a tracker, not a full bug dossier.
 - Do not mark `pass` unless the user or tooling confirmed the success condition.
 - Use `blocked` when the user could not run the scenario.
 - Use `not run` only when recording a planned campaign that was not executed.
+- Do not paste long logs in `TEST_LOG.md`; keep only pointers.
 
-## Step 6 — Write or Update BUGS.md
+## Step 6 — Professional Bug Model (Compact Index + Bug Dossier)
 
-If the normalized result is `fail`, create or update `BUGS.md`.
+When a scenario fails (or `--retest BUG-ID` is used), follow the three-layer model:
+- `TEST_LOG.md`: compact scenario history and pointers
+- `BUGS.md`: compact bug index
+- `bugs/BUG-ID.md`: detailed bug dossier (`artifact: bug_record`)
 
-Right before editing `BUGS.md`, re-read it from disk if it exists.
+Optional heavy evidence location:
+- `test-evidence/BUG-ID/` only for redacted evidence that is too large for markdown
 
-Bug id format:
+Canonical statuses:
+- `open`
+- `needs-info`
+- `needs-repro`
+- `in-diagnosis`
+- `fix-attempted`
+- `fixed-pending-verify`
+- `closed`
+- `closed-without-retest`
+- `duplicate`
+- `wontfix`
 
-```text
-BUG-YYYY-MM-DD-001
-```
+`sf-test` status rules:
+- may set or keep: `open`, `needs-info`, `needs-repro`, `fixed-pending-verify`
+- must never mark `closed` directly
+- may use `closed-without-retest` only with explicit operator-visible reason and residual risk
 
-Use the next available number for the day.
+Allowed transition policy for `sf-test`:
+- `open` -> `needs-info` or `needs-repro` when reproduction/evidence is incomplete
+- `open` or `fix-attempted` -> `fixed-pending-verify` only after a passing retest
+- `fixed-pending-verify` -> `open` when a retest fails again
+- no other transition is allowed transition unless explicitly justified in the dossier
 
-Append a new bug unless:
-- `--retest BUG-ID` was used
-- or the same open bug already exists and clearly matches the observed behavior
+Evidence and redaction policy:
+- Never store raw secrets or private data in trackers or bug dossier.
+- Always redact before persistence: tokens, cookies, raw headers, private payloads, private emails, personal data, HAR dumps, or sensitive screenshots.
+- Use `test-evidence/BUG-ID/` for redacted large artifacts; keep only compact pointers in markdown.
+- Reject relative paths escaping repo root (`..`) for stored evidence pointers.
 
-Use this format for new bugs:
+## Step 7 — Write or Update BUGS.md + bugs/BUG-ID.md
+
+If the normalized result is `fail`, or when running `--retest BUG-ID`, update `BUGS.md` and `bugs/BUG-ID.md`.
+
+### 7.1 Compact BUGS.md index rules
+
+Right before editing `BUGS.md`, re-read it from disk.
+
+`BUGS.md` must stay compact. Each entry is a pointer, not a full narrative.
+
+Recommended index line format:
 
 ```markdown
-## BUG-YYYY-MM-DD-001 - [short title]
-
-- Status: open
-- Severity: [critical|high|medium|low]
-- Source: sf-test
-- Feature: [feature]
-- Environment: [local|preview|prod|unknown]
-- Category: [error|loading|redirect|data|permission|ui|unknown]
-- First seen: YYYY-MM-DD
-- Last tested: YYYY-MM-DD
-
-### Reproduction
-
-1. [step]
-2. [step]
-
-### Expected
-
-- [expected behavior]
-
-### Observed
-
-- [observed behavior]
-
-### Evidence
-
-- [URL, error, screenshot path, logs, or "none supplied"]
-
-### Retest History
-
-- YYYY-MM-DD: failed via sf-test
-
-### Next Step
-
-- /sf-fix [short bug title]
+- BUG-YYYY-MM-DD-001 | open | high | [short title] | last-tested: YYYY-MM-DD | dossier: bugs/BUG-YYYY-MM-DD-001.md
 ```
 
-For retests:
-- update `Last tested`
-- append to `Retest History`
-- if pass, set `Status: fixed-pending-verify` unless the project uses a different explicit status
-- if still failing, keep `Status: open`
-- do not delete old bug details
+Preserve legacy `BUGS.md` content. New entries follow the compact pointer model.
 
-Severity defaults:
+### 7.2 BUG-ID generation and collision handling
+
+New ID format:
+
+```text
+BUG-YYYY-MM-DD-NNN
+```
+
+Before assigning an ID:
+1. Re-read `BUGS.md` and collect same-day suffixes from lines containing `BUG-YYYY-MM-DD-*`.
+2. List files `bugs/BUG-YYYY-MM-DD-*.md` and collect suffixes.
+3. Pick `NNN` greater than every suffix found in either place.
+
+Immediately before writing dossier file:
+1. Check whether `bugs/BUG-ID.md` already exists.
+2. If it exists, re-read both `BUGS.md` and `bugs/` once, increment suffix, and retry.
+3. If collision repeats after retry, stop and report collision; do not overwrite.
+
+### 7.3 Duplicate detection
+
+Before creating a new bug dossier, search for an open bug with clearly matching reproduction + observed behavior.
+- If clearly same bug: update existing `BUG-ID` and cross-link.
+- If similar but not provably identical: create a new `BUG-ID` and add `Related bugs` links.
+
+### 7.4 bug dossier update rules (`bugs/BUG-ID.md`)
+
+For a new bug, create `bugs/BUG-ID.md` from `templates/artifacts/bug_record.md`.
+
+For existing bug, append only; never erase history.
+
+Required sections to keep current:
+- Summary (title, status, severity, next step)
+- Reproduction / Expected / Observed
+- Evidence (redacted pointers)
+- Diagnosis Notes
+- Fix Attempts
+- Retest History
+- Redaction Status
+
+### 7.5 `--retest BUG-ID` behavior
+
+`--retest BUG-ID` is dossier-first:
+1. Read `BUGS.md` and `bugs/BUG-ID.md`.
+2. Re-run reproduction steps from the bug dossier.
+3. Append one line to dossier `Retest History`.
+4. Update dossier status with allowed transitions:
+   - pass -> `fixed-pending-verify`
+   - fail -> `open` (or `needs-repro` when reproduction became unreliable)
+5. Write only compact pointers in `TEST_LOG.md` and `BUGS.md`; do not duplicate full context.
+
+### 7.6 Severity defaults
+
 - `critical`: data loss, payment, security, destructive action, privacy leak, total production outage
 - `high`: login blocked, core workflow blocked, protected route broken, paid/core feature unusable
 - `medium`: important workflow degraded with workaround
 - `low`: cosmetic, copy, minor UI issue, non-blocking edge case
 
-## Step 7 — Route Next Step
+## Step 8 — Route Next Step
 
 After logging:
 
@@ -364,8 +394,10 @@ Scenario: [name]
 Evidence: [short summary]
 
 Files updated:
-- TEST_LOG.md
-- BUGS.md [if applicable]
+- TEST_LOG.md (compact)
+- BUGS.md (compact index) [if applicable]
+- bugs/BUG-ID.md (bug dossier) [if applicable]
+- test-evidence/BUG-ID/... [optional, redacted only]
 
 Next step:
 - [exact command]
@@ -378,8 +410,9 @@ Next step:
 - Do not invent URLs, accounts, screenshots, logs, or errors.
 - Keep test steps concrete and executable.
 - Prefer one focused scenario at a time over a huge QA checklist.
-- Record operational evidence in `TEST_LOG.md` and defects in `BUGS.md`.
+- Record operational evidence in `TEST_LOG.md`, keep `BUGS.md` as a compact index, and keep full bug context in each bug dossier.
 - Do not put YAML frontmatter in `TEST_LOG.md` or `BUGS.md`.
-- Keep bug records actionable enough for `sf-fix`.
+- Keep bug dossier entries actionable enough for `sf-fix`.
+- Redact sensitive evidence before writing; do not store raw secrets.
 - Preserve existing log and bug history.
 - Do not commit or push.

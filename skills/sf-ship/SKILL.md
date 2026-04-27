@@ -106,6 +106,23 @@ Check for secrets:
 - if untracked `.env`, credential, or token files are not ignored, stop and warn
 - when using `all-dirty`, inspect the complete dirty file list before staging and explicitly exclude nothing unless it is a secret/safety issue; if a secret/safety issue is present, stop instead of partially staging
 
+## Step 3.5 — Pre-ship bug risk gate (`BUGS.md` + `bugs/`)
+
+Run a lightweight bug gate in both `quick` and `full` mode before checks/staging:
+- read `BUGS.md` if present
+- when a linked high-impact bug is found, open corresponding `bugs/BUG-ID.md` for confirmation
+- keep this check fast; do not run a heavy audit in quick mode
+
+Classify bug risk outcome for the ship report:
+- `blocked`: at least one linked `high` or `critical` bug is still open (`open`, `needs-info`, `needs-repro`, `in-diagnosis`, `fix-attempted`)
+- `partial-risk`: linked bug exists in uncertain intermediate state (for example `fixed-pending-verify`) or scope linkage is partial
+- `not assessed`: no `BUGS.md`, missing `bugs/` dossiers, or scope too ambiguous for a safe claim
+
+Rules:
+- do not claim closure when bug risk is `blocked` or `partial-risk`
+- for `blocked`, stop before commit unless user explicitly asks to proceed with a risk note
+- quick mode must still report honest bug status, even when checks are skipped
+
 ## Step 4 — Pre-checks
 
 If mode is `quick`:
@@ -185,6 +202,7 @@ Quick mode report:
 Checks: [passed / skipped / failed]
 Mode: quick (commit + push only)
 Scope: [current task/session changes / all dirty repo files]
+Bug risk gate: [blocked / partial-risk / not assessed / clear]
 User story / product status: [not assessed / partially validated / validated enough for this iteration]
 Documentation coherence: [updated / not impacted / gap remains / not assessed]
 Security / risk note: [none / partial validation / specific remaining risk]
@@ -221,6 +239,7 @@ Full mode report:
 Checks: [passed / skipped / failed]
 Scope: [current task/session changes / all dirty repo files]
 Tasks/Changelog: updated
+Bug risk gate: [blocked / partial-risk / not assessed / clear]
 Session closed: [completed/in-progress summary]
 User story closure: [what outcome is actually complete, partially complete, or still assumed]
 Documentation coherence: [updated / not impacted / gap remains]
@@ -263,3 +282,4 @@ Verdict sf-ship:
 - Prefer honest "shipped for iteration" wording over overstated "done" wording when validation is partial
 - Prefer honest "docs not checked" wording over implying feature docs are aligned
 - If the change may affect public behavior or safety posture and the status is unclear, ask before shipping
+- If linked bug status is `blocked`, `partial-risk`, or `not assessed`, say it explicitly in the report.

@@ -3,6 +3,9 @@
 ## [Unreleased]
 
 ### Added
+- Professional bug management doctrine with compact `TEST_LOG.md`, compact `BUGS.md`, per-bug `bugs/BUG-ID.md` dossiers, and redacted `test-evidence/BUG-ID/` evidence directories
+- `templates/artifacts/bug_record.md` for structured bug dossiers with lifecycle status, reproduction, evidence, diagnosis notes, fix attempts, retest history, related artifacts, redaction status, and closure criteria
+- `artifact: bug_record` support in `tools/shipflow_metadata_lint.py`, including bug status, severity, redaction status, reproducibility, and `BUG-YYYY-MM-DD-NNN` ID validation
 - Dependency-free ShipFlow metadata linter for specs and project decision-contract documents
 - Skill-aligned artifact templates for specs, business context, brand context, audits, verification, readiness, review, research, and decision records
 - Spec-first chantier registry doctrine: specs now carry `source_model`, `Skill Run History`, and `Current Chantier Flow` so skill runs can be reviewed from the spec without reading chat history
@@ -14,6 +17,8 @@
 - Dedicated public FAQ page for common ShipFlow questions around skills, docs scope, and workflow behavior
 
 ### Changed
+- `sf-test`, `sf-fix`, `sf-verify`, `sf-ship`, `sf-docs`, and `sf-help` now share the same bug lifecycle, retest, evidence-redaction, and bug-gate rules
+- README, workflow docs, `sf-test` README, and public skill pages now describe the compact index plus detailed bug dossier model instead of treating `BUGS.md` as the full bug record
 - Existing Codex TUI spec migrated to the ShipFlow metadata frontmatter schema
 - `sf-spec`, `sf-ready`, `sf-start`, `sf-verify`, `sf-end`, and `sf-ship` now report chantier status and trace lifecycle results when a unique spec-first chantier is identified
 - Workflow documentation now links metadata doctrine to executable templates and linting

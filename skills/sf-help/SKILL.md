@@ -63,9 +63,25 @@ Quick reference for the skill system, modes, and workflows.
 
 Note: `/sf-verify` now includes guided next-step prompting when verdict is not ready (`corriger maintenant`, `repasser par spec`, `stop/reprendre`).
 Note: `/sf-auth-debug` is the required diagnostic path for auth bugs that need browser evidence before implementation.
-Note: `/sf-test` sits after verification and before shipping when a human needs to confirm the real user flow; it writes `TEST_LOG.md` and `BUGS.md` instead of leaving QA evidence in chat.
+Note: `/sf-test` sits after verification and before shipping when a human needs to confirm the real user flow; it writes compact `TEST_LOG.md`, compact `BUGS.md`, and a bug dossier when needed.
 Note: `/sf-start` now reuses the `sf-model` routing matrix and can choose `single-agent` vs `multi-agent` execution with explicit file ownership and per-group model overrides.
 Note: `/sf-spec` → `/sf-ready` → `/sf-start` → `/sf-verify` now share a `User Story` contract and should ask targeted user questions whenever behavior, scope, or security is still ambiguous.
+
+### Professional Bug Loop (concise)
+
+Flow:
+1. `/sf-test [scope]` detects a fail and logs a compact test pointer.
+2. `BUGS.md` keeps a compact index row (`BUG-ID`, status, severity, last-tested, bug dossier path).
+3. `bugs/BUG-ID.md` is the full bug dossier (repro, expected/observed, diagnosis, Fix Attempts, Retest History, redaction state, next step).
+4. `/sf-fix BUG-ID` appends diagnosis + fix attempts; it does not close without retest evidence.
+5. `/sf-test --retest BUG-ID` appends Retest History in the bug dossier and updates status (`open` or `fixed-pending-verify`).
+6. `/sf-verify` and `/sf-ship` gate optimistic closure when open high/critical bugs remain.
+
+File roles:
+- `TEST_LOG.md`: tracker of manual test runs (compact pointers only).
+- `BUGS.md`: compact tracker index of bug state.
+- `bugs/BUG-ID.md`: durable bug dossier artifact.
+- `test-evidence/BUG-ID/`: optional redacted heavy evidence only.
 
 ### Chantier Registry
 

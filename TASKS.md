@@ -36,6 +36,7 @@
 | 🟠 | Faire des specs le registre global des chantiers spec-first avec historique de skills | ✅ done |
 | ✅ | Patch global des skills pour résoudre les références et outils internes depuis le root canonique ShipFlow | ✅ done |
 | ✅ | Créer `sf-test` pour guider les tests manuels, loguer `TEST_LOG.md` et ouvrir `BUGS.md` | ✅ done |
+| 🟠 | Implémenter Professional Bug Management avec index compact, dossiers bug et preuves séparées | ✅ done |
 
 ---
 

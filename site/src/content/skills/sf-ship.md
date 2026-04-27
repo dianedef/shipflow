@@ -8,8 +8,8 @@ audience:
   - "Founders who prefer fast closure once work is ready"
   - "Operators who want a cleaner final step after validation"
 problem: "Work can get stuck in a half-finished state where the changes are ready locally but never move cleanly through the final shipping step."
-outcome: "You get a more decisive transition from verified local work to committed and pushed changes."
-founder_angle: "This skill matters because shipping should be a crisp move, not an endless wobble after the real work is already done."
+outcome: "You get a more decisive transition from verified local work to committed and pushed changes, with visible handling of linked bug risk."
+founder_angle: "This skill matters because shipping should be a crisp move, not an endless wobble after the real work is already done, and it should not blur residual bug risk into a false sense of closure."
 when_to_use:
   - "When the implementation is ready to commit and push"
   - "When you want the fast shipping path instead of a long close-out ritual"
@@ -20,6 +20,7 @@ what_you_give:
 what_you_get:
   - "A cleaner final shipping move"
   - "A shipped, blocked, or skipped-checks signal in the spec's chantier flow when applicable"
+  - "A shipping report that keeps linked high or critical bug risk visible"
   - "Less hesitation between done locally and done in git"
   - "A tighter release habit for small workstreams"
 example_prompts:
@@ -43,6 +44,7 @@ argument_modes:
 limits:
   - "It assumes the work is already ready; it is not a substitute for review or verification"
   - "If the branch is messy or the scope is unclear, earlier workflow steps still matter"
+  - "Quick ship mode does not become full verification, and it must not hide linked high or critical bug risk"
 related_skills:
   - "sf-check"
   - "sf-verify"
@@ -50,3 +52,9 @@ related_skills:
 featured: false
 order: 90
 ---
+
+## Ship Risk
+
+When the scope includes linked bug records, the shipping report should name them and keep the risk visible. A quick ship can move code, but it does not convert unresolved bug risk into proof of verification.
+
+If a high or critical bug is still open and related to the ship scope, the report should say so plainly rather than burying it behind commit-and-push success.

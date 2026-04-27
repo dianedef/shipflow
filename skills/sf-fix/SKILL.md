@@ -80,6 +80,33 @@ Prefer decision-forcing questions such as:
 - "Le bug concerne tous les utilisateurs connectés, seulement les admins, ou seulement le owner ?"
 - "En cas d'échec partiel, on retry, on rollback, ou on laisse l'état en erreur visible ?"
 
+### Step 1.5 — BUG-ID and bug dossier intake (required)
+
+When `$ARGUMENTS` includes a `BUG-ID` (`BUG-YYYY-MM-DD-NNN`) or a bug title that matches `BUGS.md`:
+- re-read `BUGS.md` right before bug intake
+- locate the index row for `BUG-ID` (or the best matching open title)
+- open `bugs/BUG-ID.md` (bug dossier) and treat it as source of truth
+
+If multiple bugs match a title, prefer the open one with the most recent `last-tested` date and ask the user to confirm when ambiguous.
+
+Reconstruct the bug story from the bug dossier, not from chat memory:
+- Reproduction / Expected / Observed
+- Evidence and redaction status
+- Diagnosis Notes
+- Fix Attempts
+- Retest History
+- current status and next step
+
+If `bugs/BUG-ID.md` is missing but `BUGS.md` has an entry:
+- keep the index row
+- report `needs-info`
+- do not invent details; ask for recovery context or reroute to `/sf-test --retest BUG-ID`
+
+Status handling for active fix work:
+- when investigation starts, move status to `in-diagnosis` and append a Diagnosis Notes row
+- every concrete code attempt appends a Fix Attempts row in the bug dossier
+- if no passing retest exists, status cannot be `closed`
+
 ### Step 2 — Quick technical triage (silent)
 
 Read only the 3-5 most relevant files and classify the bug as `direct` or `spec-first`.
@@ -135,11 +162,22 @@ If `direct`:
 - if the expected row or section moved, re-read once and recompute; if it is still ambiguous, stop and ask the user
 - run relevant checks for the changed area
 - run at least one user-story sanity check
+- append a new `Fix Attempts` row in the bug dossier with:
+  - timestamp UTC
+  - files changed
+  - hypothesis
+  - validation command (or why not run)
+  - result (`failed|partial|passed`)
+  - next retest command (`/sf-test --retest BUG-ID`)
+- after patching, keep status `fix-attempted` until retest evidence exists
 - include the Documentation Freshness Gate verdict when it was triggered, especially the dependency/version and Context7 or official docs source that influenced the fix
 - if the bug involves auth, redirects, protected pages, or session behavior in the browser, run or emulate `sf-auth-debug` logic to reproduce and re-check the broken flow
 - run a documentation coherence check when the bug changes visible behavior, API behavior, permissions, pricing, integration behavior, or support expectations
 - run at least one quick coherence/security sanity check when the bug touches auth, data, workflow, external effects, or non-trivial state
-- run `sf-verify` logic after the fix to confirm closure
+- allow `fixed-pending-verify` only after a passing retest is appended in `Retest History`
+- refuse `closed` without retest evidence
+- allow `closed-without-retest` only as explicit exception with visible reason and residual risk in the bug dossier
+- run `sf-verify` logic after the retest to confirm closure
 
 If `spec-first`:
 - do not code yet
@@ -163,11 +201,15 @@ Output:
 Classification: [direct / spec-first]
 Reason: [short rationale]
 User story: [actor + expected outcome]
+Bug reference: [BUG-ID | none]
+Bug dossier: [bugs/BUG-ID.md | none]
 Clarifications asked: [none / short list]
 Product coherence: [ok / risk]
 Documentation coherence: [ok / risk / not impacted]
 Fresh external docs: [checked / not needed / gap / conflict]
 Security posture: [ok / risk]
+Bug status transition: [in-diagnosis -> fix-attempted -> fixed-pending-verify | other]
+Retest evidence: [required / present / missing]
 Action taken: [fixed directly / routed]
 
 Next step:
@@ -188,3 +230,4 @@ Scope estimate: [small / medium / large]
 - A direct fix must keep or improve security posture; never weaken controls for speed
 - If direct-fix verification fails or reveals broader ambiguity, reroute to spec-first
 - If the user chooses `diagnostic only`, do not implement
+- Do not close a bug without retest evidence in `bugs/BUG-ID.md` (`Retest History`).

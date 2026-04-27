@@ -9,8 +9,8 @@ audience:
   - "Developers validating flows that need real browser or user observation"
   - "Teams that want bug reports and retests captured as durable project memory"
 problem: "Technical checks and verification can pass while nobody has actually walked through the user-facing flow in the app."
-outcome: "You get a concrete manual test protocol, structured user feedback, and bug records that survive beyond the current agent session."
-founder_angle: "This skill matters because finished code is not the same thing as a tested user journey. It gives the founder a clear script to follow and turns every failure into an actionable record."
+outcome: "You get a concrete manual test protocol, compact test and bug indexes, and durable bug dossiers with separated evidence."
+founder_angle: "This skill matters because finished code is not the same thing as a tested user journey. It gives the founder a clear script to follow and turns every failure into an actionable record without bloating the trackers."
 when_to_use:
   - "After implementation and verification, before shipping"
   - "When the work changes a visible user flow"
@@ -23,8 +23,10 @@ what_you_give:
 what_you_get:
   - "Step-by-step manual test instructions"
   - "Structured result choices for common failure modes"
-  - "A TEST_LOG.md record for the test campaign"
-  - "A BUGS.md record when the test fails"
+  - "A compact TEST_LOG.md record for the campaign"
+  - "A compact BUGS.md index entry when the test fails"
+  - "A per-bug dossier under bugs/BUG-ID.md"
+  - "Redacted evidence references under test-evidence/BUG-ID/ when needed"
   - "A clean route into sf-fix or sf-auth-debug when the failure needs diagnosis"
 example_prompts:
   - "/sf-test"
@@ -127,9 +129,10 @@ sf-spec
 
 ## Artifacts
 
-The skill should preserve two different kinds of memory:
+The skill should preserve three different kinds of memory:
 
-- `TEST_LOG.md` for campaigns, scenarios, environments, and results
-- `BUGS.md` for actionable defects, repro steps, severity, and retest history
+- `TEST_LOG.md` for compact campaigns, scenarios, environments, and results
+- `BUGS.md` for a compact bug index with status, severity, owner, and links
+- `bugs/BUG-ID.md` for the full dossier, including reproduction, expected and observed behavior, diagnosis, fixes, retests, and next action
 
-That split matters. A test is evidence. A bug is work to resolve. Keeping them separate makes future agent sessions more precise.
+Evidence that is too large or sensitive should be redacted and stored by path in `test-evidence/BUG-ID/`, not pasted into the trackers. That split matters. A test is evidence. A bug is work to resolve. Keeping them separate makes future agent sessions more precise.

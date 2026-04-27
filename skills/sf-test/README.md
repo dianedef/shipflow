@@ -47,8 +47,10 @@ The skill is not meant to replace automated tests. It covers the human-facing an
 - a focused manual test campaign
 - step-by-step instructions for the user
 - structured result choices such as pass, error page, infinite loading, wrong redirect, missing data, or custom observation
-- a `TEST_LOG.md` entry after the user reports what happened
-- a `BUGS.md` entry when the reported result fails
+- a compact `TEST_LOG.md` entry that records the campaign outcome
+- a compact `BUGS.md` entry when the reported result fails
+- a detailed `bugs/BUG-ID.md` dossier for the failing case
+- a redacted `test-evidence/BUG-ID/` location when evidence is too large or sensitive for inline storage
 - a clean route into `sf-fix` when the bug is actionable
 
 ## Example: Google Auth
@@ -99,36 +101,66 @@ Observation -> scenario -> result -> bug id -> fix -> retest history
 
 That gives future agents the reproduction steps, expected behavior, environment, and history they need to act without making the user re-explain everything.
 
-## Proposed Artifacts
+## Bug File Roles
+
+ShipFlow uses a three-layer bug model:
+
+- `TEST_LOG.md` is the compact campaign log. It answers what was tested, when, and whether the run passed or failed.
+- `BUGS.md` is the compact bug index. It lists the actionable bug, its current status, severity, owner, and a pointer to the dossier.
+- `bugs/BUG-ID.md` is the detailed dossier. It holds reproduction steps, expected and observed behavior, diagnosis notes, fix attempts, retest history, and closure criteria.
+- `test-evidence/BUG-ID/` stores redacted screenshots, logs, HAR, dumps, or other supporting material when the evidence is too large to keep inline.
+
+The split is deliberate: the index stays scannable, and the dossier holds the durable detail.
 
 `TEST_LOG.md` should record campaigns and scenario outcomes:
 
 ```markdown
 ## 2026-04-26 - Google Auth
 
-Scope: Google login through Clerk
-Environment: preview
-Scenario: first login and session persistence
-Status: fail
-Observed: Infinite loading after Google callback
-Expected: Redirect to dashboard with a persisted session
-Follow-up bug: BUG-2026-04-26-001
+- Scope: Google login through Clerk
+- Environment: preview
+- Status: fail
+- Result summary: Infinite loading after Google callback
+- Bug pointer: BUG-2026-04-26-001 -> bugs/BUG-2026-04-26-001.md
+- Follow-up: /sf-fix BUG-2026-04-26-001
 ```
 
-`BUGS.md` should record actionable defects:
+`BUGS.md` should record actionable defects as a compact index:
 
 ```markdown
-## BUG-2026-04-26-001 - Infinite loading after Google callback
-
-Status: open
-Severity: high
-Source: sf-test
-Feature: Google Auth
-Environment: preview
-Expected: session created, then dashboard redirect
-Observed: callback page never resolves
-Next step: /sf-fix Infinite loading after Google callback
+- BUG-2026-04-26-001 | open | high | Infinite loading after Google callback | last-tested: 2026-04-26 | dossier: bugs/BUG-2026-04-26-001.md
 ```
+
+The matching dossier lives in `bugs/BUG-2026-04-26-001.md`, and any redacted evidence lives under `test-evidence/BUG-2026-04-26-001/`.
+
+## Status Lifecycle
+
+The canonical bug states are:
+
+- `open`
+- `needs-info`
+- `needs-repro`
+- `in-diagnosis`
+- `fix-attempted`
+- `fixed-pending-verify`
+- `closed`
+- `closed-without-retest`
+- `duplicate`
+- `wontfix`
+
+Practical flow:
+
+- `sf-test` opens or updates the dossier when a scenario fails.
+- `sf-fix` reads the dossier and appends diagnosis and fix attempts.
+- `sf-test --retest BUG-ID` appends retest history and moves the bug toward verification or closure.
+- `sf-verify` checks whether the bug state still blocks the wider release decision.
+- `sf-ship` uses the bug state to decide whether shipping is clean or partial-risk.
+
+Evidence rules:
+
+- keep screenshots, HAR, stack traces, logs, and dumps redacted before persistence
+- store larger evidence under `test-evidence/BUG-ID/`
+- never inline raw secrets, cookies, tokens, private data, or production PII in `TEST_LOG.md`, `BUGS.md`, or the dossier
 
 ## Typical Examples
 
