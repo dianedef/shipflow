@@ -1,3 +1,30 @@
+---
+artifact: documentation
+metadata_schema_version: "1.0"
+artifact_version: "0.1.0"
+project: "shipflow"
+created: "2026-04-25"
+updated: "2026-04-28"
+status: draft
+source_skill: sf-docs
+scope: readme
+owner: "unknown"
+confidence: medium
+security_impact: unknown
+risk_level: low
+docs_impact: yes
+linked_systems:
+  - shipflow.sh
+  - lib.sh
+  - config.sh
+  - install.sh
+  - skills
+depends_on: []
+supersedes: []
+evidence: []
+next_step: "/sf-docs audit README.md"
+---
+
 # ShipFlow
 
 ShipFlow is a unified framework for server delivery and AI-assisted execution discipline.
@@ -64,16 +91,51 @@ cd ~/shipflow
 sudo ./install.sh
 ```
 
+### Install Privilege Model
+
+ShipFlow's installer is intentionally a root-level installer. It must be run with `sudo ./install.sh` because it manages machine-wide dependencies and service configuration:
+
+- system packages and tools such as Node.js, PM2, Flox, Caddy, GitHub CLI, `jq`, `fuser`, and `ss`
+- global CLI binaries under `/usr/local`
+- PM2 startup through systemd
+- `/etc/dokploy/compose`
+- ShipFlow user configuration for root and detected regular users
+
+If `./install.sh` is launched without root, it stops before making partial system changes. The log explains that the root-only scope was skipped and tells the operator to rerun with `sudo`.
+
+The recommended server shape is:
+
+- use `root` or `sudo` for first-time system setup
+- use a regular non-root account such as `ubuntu`, `opc`, `debian`, `ec2-user`, or a manually created user for daily work
+- keep user-level config, credentials, project files, Claude/Codex settings, and ShipFlow data scoped to the operational user
+
+`dotfiles` may prepare generic user tooling in `~/.local/bin`, `~/.npm-global`, and `~/.config`. ShipFlow owns the AI/code workflow layer: skills, Claude/Codex settings, MCP registrations, ShipFlow aliases, and `~/shipflow_data`.
+
+Before the first install on a machine, restore your existing tracking data if you
+already have it in GitHub or another backup:
+
+```bash
+git clone git@github.com:<owner>/shipflow_data.git ~/shipflow_data
+```
+
+ShipFlow creates starter files in `~/shipflow_data` when the folder is missing.
+If you start working before restoring your real data, skills may write new
+tracking entries into the empty folder and make the later merge harder.
+
 ## Codex TUI Defaults
 
-`install.sh` configures Codex for each user (`root` + `/home/*`) by writing `~/.codex/config.toml` with:
+`install.sh configures Codex for selected eligible users (plus root baseline setup) by writing `~/.codex/config.toml` with:
 
 ```toml
 tui.status_line = ["model-with-reasoning", "current-dir", "context-used"]
 tui.terminal_title = ["spinner", "thread", "project"]
 ```
 
-The install is idempotent and keeps user config outside the ShipFlow-managed block.
+It also sets `[beta] rmcp = true` in `~/.codex/config.toml`.
+
+The install is idempotent, preserves existing user custom settings, and keeps
+ShipFlow-managed config wrapped in its own markers so user edits outside those
+blocks remain unchanged.
 
 It also provisions the default MCP set used by ShipFlow:
 - `context7` in `~/.claude/settings.json` and `~/.codex/config.toml`
@@ -81,12 +143,32 @@ It also provisions the default MCP set used by ShipFlow:
 - `convex` in `~/.claude/settings.json` and `~/.codex/config.toml`
 - `clerk` in `~/.claude/settings.json` and `~/.codex/config.toml`
 - `supabase` in `~/.claude/settings.json` and `~/.codex/config.toml`
+- `playwright` in `~/.claude/settings.json` and `~/.codex/config.toml`
+- `dataforseo` in `~/.claude/settings.json` and `~/.codex/config.toml`
+
+Notes:
+- `dataforseo` is configured but disabled by default in Codex unless
+  `SHIPFLOW_ENABLE_DATAFORSEO_MCP=1` and credentials are available.
+- `playwright` MCP uses local Chromium on ARM when available, otherwise uses
+  default Playwright runtime.
 
 ShipFlow also installs the terminal tooling commonly needed to operate those integrations:
+- `node` / Node.js (from NodeSource if needed)
+- `pm2`
 - `vercel`
 - `convex`
 - `clerk`
 - `supabase` via the standalone CLI binary, because Supabase does not support `npm install -g supabase`
+- `gh` (GitHub CLI)
+- `flox`
+- `caddy`
+- `python3` and `PyYAML`
+- core tools: `git`, `curl`, `jq`, `fuser`, `ss` (`iproute2`), `python3-pip` (if needed)
+
+Per-user configuration includes:
+- `~/.claude/skills/*` and `~/.codex/skills/*` symlinks for every ShipFlow skill
+- aliases in `~/.bashrc` for `shipflow`, `sf`, autonomous `c`/`co`, and safe escape hatches `cask`/`coask`
+- `~/shipflow_data/TASKS.md`, `AUDIT_LOG.md`, and `PROJECTS.md`
 
 If your Codex version does not expose one of these items (for example `thread`), adjust interactively in Codex:
 
@@ -294,13 +376,13 @@ ShipFlow provides skill-aligned artifact templates in `templates/artifacts/` and
 - `technical_guidelines.md`
 
 ```bash
-SHIPFLOW_ROOT="${SHIPFLOW_ROOT:-/home/claude/shipflow}"
+SHIPFLOW_ROOT="${SHIPFLOW_ROOT:-$HOME/shipflow}"
 "$SHIPFLOW_ROOT/tools/shipflow_metadata_lint.py"
 ```
 
 This layer is wired into the documentation workflow, agent routing, project context, migration guidance, and lint validation. It is not passive reference material; it is part of how ShipFlow frames, executes, verifies, and documents work.
 
-ShipFlow-owned files are resolved from `${SHIPFLOW_ROOT:-/home/claude/shipflow}` even when a skill is running inside another repository. Project artifacts and source files are the only paths resolved from the current project root.
+ShipFlow-owned files are resolved from `${SHIPFLOW_ROOT:-$HOME/shipflow}` even when a skill is running inside another repository. Project artifacts and source files are the only paths resolved from the current project root.
 
 For legacy projects, use the migration playbook in [`shipflow-metadata-migration-guide.md`](./shipflow-metadata-migration-guide.md) before normalizing old docs.
 
@@ -403,7 +485,7 @@ Promotion rule:
 ## Repository Layout
 
 ```text
-ShipFlow/
+shipflow/
 ├── shipflow.sh
 ├── lib.sh
 ├── config.sh

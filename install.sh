@@ -11,30 +11,135 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
+SHIPFLOW_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SHIPFLOW_LOG_DIR="${SHIPFLOW_LOG_DIR:-$HOME/install-logs}"
+SHIPFLOW_LOG_FILE="${SHIPFLOW_LOG_FILE:-$SHIPFLOW_LOG_DIR/shipflow-$(date -u +%Y%m%dT%H%M%SZ).log}"
+SHIPFLOW_REPORT_DIR="${SHIPFLOW_REPORT_DIR:-$HOME/install-reports}"
+SHIPFLOW_REPORT_FILE="${SHIPFLOW_REPORT_FILE:-$SHIPFLOW_REPORT_DIR/shipflow-$(date -u +%Y%m%dT%H%M%SZ).md}"
+mkdir -p "$SHIPFLOW_LOG_DIR"
+mkdir -p "$SHIPFLOW_REPORT_DIR"
+touch "$SHIPFLOW_LOG_FILE"
+
+shipflow_log() {
+    local level="$1"
+    local message="$2"
+    local clean_message
+    clean_message=$(printf '%s' "$message" | sed -E 's/\x1B\[[0-9;]*[a-zA-Z]//g')
+    printf '%s [%s] %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$level" "$clean_message" >> "$SHIPFLOW_LOG_FILE"
+}
+
 echo -e "${CYAN}╔══════════════════════════════════════════════════╗${NC}"
 echo -e "${CYAN}║${NC}          ${YELLOW}ShipFlow Installation${NC}             ${CYAN}║${NC}"
 echo -e "${CYAN}╚══════════════════════════════════════════════════╝${NC}"
 echo ""
+shipflow_log "INFO" "ShipFlow install started"
 
 # Fonction helper
 success() {
     echo -e "${GREEN}✅${NC} $1"
+    shipflow_log "INFO" "OK: $1"
 }
 
 error() {
     echo -e "${RED}❌${NC} $1"
+    shipflow_log "ERROR" "FAIL: $1"
 }
 
 info() {
     echo -e "${BLUE}ℹ️${NC} $1"
+    shipflow_log "INFO" "INFO: $1"
 }
 
 warning() {
     echo -e "${YELLOW}⚠️${NC} $1"
+    shipflow_log "WARN" "WARN: $1"
+}
+
+warn_data_restore_before_work() {
+    local user_home=""
+    local user_data_dir=""
+
+    if [ -n "${INVOKING_USER:-}" ] && [ "$INVOKING_USER" != "root" ]; then
+        user_home="$(getent passwd "$INVOKING_USER" 2>/dev/null | cut -d: -f6)"
+    fi
+
+    if [ -n "$user_home" ]; then
+        user_data_dir="$user_home/shipflow_data"
+    else
+        user_data_dir="$HOME/shipflow_data"
+    fi
+
+    echo ""
+    echo -e "${YELLOW}╔══════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${YELLOW}║  IMPORTANT : restaure tes données ShipFlow avant usage   ║${NC}"
+    echo -e "${YELLOW}╚══════════════════════════════════════════════════════════╝${NC}"
+    echo -e "${YELLOW}ShipFlow écrit son suivi dans :${NC} ${CYAN}$user_data_dir${NC}"
+    echo -e "${YELLOW}Si tu as déjà un dépôt GitHub ou une sauvegarde de shipflow_data,${NC}"
+    echo -e "${YELLOW}clone/restaure ce dossier AVANT de commencer à travailler.${NC}"
+    echo -e "${YELLOW}Sinon l'install créera des fichiers de départ vides et les skills${NC}"
+    echo -e "${YELLOW}peuvent écrire dedans, ce qui rend le merge avec ton historique pénible.${NC}"
+    echo ""
+    echo -e "Exemple : ${CYAN}git clone git@github.com:<owner>/shipflow_data.git \"$user_data_dir\"${NC}"
+    echo ""
+    shipflow_log "WARN" "User warned to restore existing shipflow_data from GitHub/backup before starting work. Expected data dir: $user_data_dir"
+
+    if [ -t 0 ] && [ "${CI:-}" != "true" ] && [ "${SHIPFLOW_SKIP_DATA_RESTORE_WARNING:-0}" != "1" ]; then
+        echo -e "${YELLOW}Appuie sur Entrée pour continuer, ou Ctrl+C pour restaurer tes données maintenant.${NC}"
+        read -r _
+        echo ""
+    fi
+}
+
+SHIPFLOW_PRE_STATUS_DIR_NODE=""
+SHIPFLOW_PRE_STATUS_PM2=""
+SHIPFLOW_PRE_STATUS_VERCEL=""
+SHIPFLOW_PRE_STATUS_CONVEX=""
+SHIPFLOW_PRE_STATUS_CLERK=""
+SHIPFLOW_PRE_STATUS_SUPABASE=""
+SHIPFLOW_PRE_STATUS_FLOX=""
+SHIPFLOW_PRE_STATUS_GH=""
+SHIPFLOW_PRE_STATUS_PYTHON3=""
+SHIPFLOW_PRE_STATUS_PYYAML=""
+SHIPFLOW_PRE_STATUS_CADDY=""
+SHIPFLOW_PRE_STATUS_GIT=""
+SHIPFLOW_PRE_STATUS_JQ=""
+SHIPFLOW_PRE_STATUS_FUSER=""
+
+shipflow_capture_status() {
+    command -v node >/dev/null 2>&1 && SHIPFLOW_PRE_STATUS_DIR_NODE="present" || true
+    command -v pm2 >/dev/null 2>&1 && SHIPFLOW_PRE_STATUS_PM2="present" || true
+    command -v vercel >/dev/null 2>&1 && SHIPFLOW_PRE_STATUS_VERCEL="present" || true
+    command -v convex >/dev/null 2>&1 && SHIPFLOW_PRE_STATUS_CONVEX="present" || true
+    command -v clerk >/dev/null 2>&1 && SHIPFLOW_PRE_STATUS_CLERK="present" || true
+    command -v supabase >/dev/null 2>&1 && SHIPFLOW_PRE_STATUS_SUPABASE="present" || true
+    command -v flox >/dev/null 2>&1 && SHIPFLOW_PRE_STATUS_FLOX="present" || true
+    command -v gh >/dev/null 2>&1 && SHIPFLOW_PRE_STATUS_GH="present" || true
+    command -v python3 >/dev/null 2>&1 && SHIPFLOW_PRE_STATUS_PYTHON3="present" || true
+    python3 -c 'import yaml' 2>/dev/null && SHIPFLOW_PRE_STATUS_PYYAML="present" || true
+    command -v caddy >/dev/null 2>&1 && SHIPFLOW_PRE_STATUS_CADDY="present" || true
+    command -v git >/dev/null 2>&1 && SHIPFLOW_PRE_STATUS_GIT="present" || true
+    command -v jq >/dev/null 2>&1 && SHIPFLOW_PRE_STATUS_JQ="present" || true
+    command -v fuser >/dev/null 2>&1 && SHIPFLOW_PRE_STATUS_FUSER="present" || true
+}
+
+shipflow_status() {
+    local pre="$1"
+    local post="$2"
+    if [ "$pre" = "present" ] && [ "$post" = "present" ]; then
+        echo "DÉJÀ_PRÉSENT"
+    elif [ "$pre" != "present" ] && [ "$post" = "present" ]; then
+        echo "INSTALLÉ"
+    elif [ "$pre" = "present" ] && [ "$post" != "present" ]; then
+        echo "ÉCHEC"
+    else
+        echo "ÉCHEC"
+    fi
 }
 
 # Root check — système packages need root, no silent elevation
 if [ "$EUID" -ne 0 ]; then
+    shipflow_log "ERROR" "ShipFlow install stopped: non-root execution by $(id -un)."
+    shipflow_log "ERROR" "Root-required scope not applied: Node.js system install, global PM2/Vercel/Convex/Clerk npm prefix /usr/local, Supabase /usr/local/bin, PM2 systemd startup, Flox .deb, apt packages, GitHub CLI apt/deb, PyYAML system install, Caddy apt repo/install, /etc/dokploy/compose, and all-user ShipFlow configuration."
     echo ""
     echo -e "${RED}╔══════════════════════════════════════════════════════════╗${NC}"
     echo -e "${RED}║                                                          ║${NC}"
@@ -42,6 +147,9 @@ if [ "$EUID" -ne 0 ]; then
     echo -e "${RED}║                                                          ║${NC}"
     echo -e "${RED}║   L'installation des paquets système (Node.js, PM2,      ║${NC}"
     echo -e "${RED}║   Flox, Caddy, etc.) nécessite les droits root.          ║${NC}"
+    echo -e "${RED}║                                                          ║${NC}"
+    echo -e "${RED}║   Non appliqué sans root : /usr/local, /etc/dokploy,     ║${NC}"
+    echo -e "${RED}║   PM2 systemd, Caddy, Flox .deb et config tous users.    ║${NC}"
     echo -e "${RED}║                                                          ║${NC}"
     echo -e "${RED}║   Relancez avec :                                        ║${NC}"
     echo -e "${RED}║     ${YELLOW}sudo ./install.sh${RED}                                    ║${NC}"
@@ -51,8 +159,16 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
+info "Mode root confirmé : installation système + configuration ShipFlow multi-utilisateur"
+echo -e "${BLUE}ℹ️${NC} Scope root appliqué : /usr/local, /etc/dokploy, PM2 systemd, Caddy, Flox, outils globaux"
+shipflow_log "INFO" "Privilege scope: root run. Applying system/global setup plus ShipFlow user configuration."
+
+shipflow_capture_status
+
 # Remember who invoked sudo so we configure their account too
 INVOKING_USER="${SUDO_USER:-}"
+
+warn_data_restore_before_work
 
 echo -e "${BLUE}🔍 Vérification des dépendances...${NC}"
 echo ""
@@ -465,13 +581,16 @@ configure_dataforseo_mcp() {
     local doppler_project="${SHIPFLOW_DATAFORSEO_DOPPLER_PROJECT:-contentflow_app}"
     local doppler_config="${SHIPFLOW_DATAFORSEO_DOPPLER_CONFIG:-prd}"
     local enabled="${SHIPFLOW_ENABLE_DATAFORSEO_MCP:-0}"
+    local enabled_for_jq="false"
     mkdir -p "$target_home/.claude"
     if [ ! -f "$settings_file" ]; then
         echo '{}' > "$settings_file"
     fi
     if command -v jq >/dev/null 2>&1; then
         if command -v doppler >/dev/null 2>&1; then
-            jq --arg project "$doppler_project" --arg config "$doppler_config" '
+            [ "$enabled" = "1" ] && enabled_for_jq="true"
+
+            jq --arg project "$doppler_project" --arg config "$doppler_config" --argjson enabled "$enabled_for_jq" '
                 .mcpServers.dataforseo = {
                     "command": "doppler",
                     "args": [
@@ -484,7 +603,7 @@ configure_dataforseo_mcp() {
                         "export DATAFORSEO_USERNAME=\"${DATAFORSEO_USERNAME:-${DATAFORSEO_LOGIN:-}}\"; exec npx -y dataforseo-mcp-server"
                     ]
                 }
-                | .disabledMcpServers = if $enabled == "1" then
+                | .disabledMcpServers = if $enabled then
                     ((.disabledMcpServers // []) - ["dataforseo"])
                   else
                     ((.disabledMcpServers // []) + ["dataforseo"] | unique)
@@ -1058,13 +1177,13 @@ configure_codex_playwright_mcp() {
         printf 'enabled = true\n'
         printf '\n'
         printf '[mcp_servers.playwright.tools]\n'
-        printf 'browser_snapshot = true\n'
-        printf 'browser_click = true\n'
-        printf 'browser_type = true\n'
-        printf 'browser_take_screenshot = true\n'
-        printf 'browser_console_messages = true\n'
-        printf 'browser_network_requests = true\n'
-        printf 'browser_run_code = true\n'
+        printf 'browser_snapshot = {}\n'
+        printf 'browser_click = {}\n'
+        printf 'browser_type = {}\n'
+        printf 'browser_take_screenshot = {}\n'
+        printf 'browser_console_messages = {}\n'
+        printf 'browser_network_requests = {}\n'
+        printf 'browser_run_code = {}\n'
         printf '\n'
         printf '[mcp_servers.playwright.tools.browser_navigate]\n'
         printf 'approval_mode = "approve"\n'
@@ -1083,15 +1202,17 @@ ensure_skill_link() {
     local target_path="$2"
     local resolved_target
     local backup_dir
+    local normalized_source
 
     if [ -L "$target_path" ]; then
         resolved_target=$(readlink -f "$target_path" 2>/dev/null || true)
-        if [ "$resolved_target" = "${source_dir%/}" ]; then
+        normalized_source=$(readlink -f "${source_dir%/}" 2>/dev/null || true)
+        if [ -n "$resolved_target" ] && [ "$resolved_target" = "$normalized_source" ]; then
             return 0
         fi
         rm -f "$target_path"
-        ln -s "$source_dir" "$target_path"
-        return 0
+        ln -s "${source_dir%/}" "$target_path"
+        return $?
     fi
 
     if [ -e "$target_path" ]; then
@@ -1100,49 +1221,125 @@ ensure_skill_link() {
         mv "$target_path" "$backup_dir/"
     fi
 
-    ln -s "$source_dir" "$target_path"
+    ln -s "${source_dir%/}" "$target_path"
+}
+
+verify_skill_link() {
+    local target_path="$1"
+    [ -L "$target_path" ] && [ -f "$target_path/SKILL.md" ]
+}
+
+cleanup_legacy_skill_entries() {
+    local skills_home="$1"
+    local legacy_entry="$skills_home/references"
+
+    if [ -L "$legacy_entry" ]; then
+        rm -f "$legacy_entry"
+    fi
 }
 
 configure_skills() {
     local target_home="$1"
-    if [ -d "$SHIPFLOW_DIR/skills" ]; then
-        mkdir -p "$target_home/.claude/skills"
-        mkdir -p "$target_home/.codex/skills"
-        for skill_dir in "$SHIPFLOW_DIR/skills"/*/; do
-            local skill_name
-            skill_name=$(basename "$skill_dir")
-            ensure_skill_link "$skill_dir" "$target_home/.claude/skills/$skill_name"
-            ensure_skill_link "$skill_dir" "$target_home/.codex/skills/$skill_name"
-        done
+    local expected=0
+    local claude_count=0
+    local codex_count=0
+    local failed=0
+
+    if [ ! -d "$SHIPFLOW_DIR/skills" ]; then
+        warning "Dossier skills introuvable: $SHIPFLOW_DIR/skills"
+        return 1
     fi
+
+    mkdir -p "$target_home/.claude/skills"
+    mkdir -p "$target_home/.codex/skills"
+    cleanup_legacy_skill_entries "$target_home/.claude/skills"
+    cleanup_legacy_skill_entries "$target_home/.codex/skills"
+
+    for skill_dir in "$SHIPFLOW_DIR/skills"/*/; do
+        local skill_name
+        [ -d "$skill_dir" ] || continue
+        [ -f "$skill_dir/SKILL.md" ] || continue
+
+        expected=$((expected + 1))
+        skill_name=$(basename "$skill_dir")
+
+        if ensure_skill_link "$skill_dir" "$target_home/.claude/skills/$skill_name" \
+            && verify_skill_link "$target_home/.claude/skills/$skill_name"; then
+            claude_count=$((claude_count + 1))
+        else
+            warning "Skill Claude non lié: $skill_name -> $target_home/.claude/skills/$skill_name"
+            failed=$((failed + 1))
+        fi
+
+        if ensure_skill_link "$skill_dir" "$target_home/.codex/skills/$skill_name" \
+            && verify_skill_link "$target_home/.codex/skills/$skill_name"; then
+            codex_count=$((codex_count + 1))
+        else
+            warning "Skill Codex non lié: $skill_name -> $target_home/.codex/skills/$skill_name"
+            failed=$((failed + 1))
+        fi
+    done
+
+    if [ "$expected" -eq 0 ]; then
+        warning "Aucun skill ShipFlow valide trouvé dans $SHIPFLOW_DIR/skills"
+        return 1
+    fi
+
+    if [ "$failed" -gt 0 ] || [ "$claude_count" -ne "$expected" ] || [ "$codex_count" -ne "$expected" ]; then
+        warning "Skills incomplets pour $target_home: Claude $claude_count/$expected, Codex $codex_count/$expected"
+        return 1
+    fi
+
+    echo -e "  ${GREEN}✅ Skills liés :${NC} $expected Claude + $expected Codex"
+    return 0
 }
 
 # Configure aliases in bashrc
 configure_aliases() {
     local bashrc="$1/.bashrc"
-    [ -f "$bashrc" ] || return 0
-    if grep -q "alias shipflow=" "$bashrc" 2>/dev/null; then
-        sed -i "s|^alias shipflow=.*|alias shipflow='$SHIPFLOW_DIR/shipflow.sh'|" "$bashrc"
-    else
-        cat >> "$bashrc" << ALIASES
+    [ -f "$bashrc" ] || touch "$bashrc"
+    sed -i '/^# >>> ShipFlow AI aliases >>>$/,/^# <<< ShipFlow AI aliases <<<$/{d}' "$bashrc"
+    cat >> "$bashrc" << ALIASES
 
-# ShipFlow
+# >>> ShipFlow AI aliases >>>
 alias shipflow='$SHIPFLOW_DIR/shipflow.sh'
-ALIASES
-    fi
-
-    if grep -q "alias sf=" "$bashrc" 2>/dev/null; then
-        sed -i "s|^alias sf=.*|alias sf='$SHIPFLOW_DIR/shipflow.sh'|" "$bashrc"
-    else
-        cat >> "$bashrc" << ALIASES
 alias sf='$SHIPFLOW_DIR/shipflow.sh'
-ALIASES
-    fi
-
-    if ! grep -q "alias co=" "$bashrc" 2>/dev/null; then
-        cat >> "$bashrc" << 'ALIASES'
+alias c='claude --dangerously-skip-permissions --permission-mode bypassPermissions'
 alias co='codex'
+alias cask='claude --permission-mode default'
+alias coask='codex --ask-for-approval on-request --sandbox danger-full-access'
+# <<< ShipFlow AI aliases <<<
 ALIASES
+}
+
+configure_shipflow_environment() {
+    local target_home="$1"
+    local bashrc="$target_home/.bashrc"
+    [ -f "$bashrc" ] || return 0
+
+    sed -i '/^# >>> ShipFlow environment >>>$/,/^# <<< ShipFlow environment <<<$/{d}' "$bashrc"
+    cat >> "$bashrc" << ENV
+
+# >>> ShipFlow environment >>>
+export SHIPFLOW_ROOT='$SHIPFLOW_DIR'
+export SHIPFLOW_DATA_DIR='$target_home/shipflow_data'
+# <<< ShipFlow environment <<<
+ENV
+}
+
+configure_command_wrappers() {
+    local shipflow_target="$SHIPFLOW_DIR/shipflow.sh"
+    local bin_dir="/usr/local/bin"
+
+    mkdir -p "$bin_dir"
+    ln -sf "$shipflow_target" "$bin_dir/shipflow"
+    ln -sf "$shipflow_target" "$bin_dir/sf"
+    chmod +x "$bin_dir/shipflow" "$bin_dir/sf" 2>/dev/null || true
+
+    if [ -x "$bin_dir/shipflow" ] && [ -x "$bin_dir/sf" ]; then
+        echo -e "  ${GREEN}✅ Commandes système disponibles :${NC} /usr/local/bin/shipflow et /usr/local/bin/sf"
+    else
+        echo -e "  ${YELLOW}⚠️ Commandes /usr/local/bin/shipflow ou /usr/local/bin/sf non trouvées${NC}"
     fi
 }
 
@@ -1157,10 +1354,114 @@ configure_data() {
     fi
 }
 
+ensure_user_local_npm_bootstrap() {
+    local user_home="$1"
+    local username="$2"
+    local bashrc="$user_home/.bashrc"
+    local npm_dir="$user_home/.npm-global"
+    [ -f "$bashrc" ] || touch "$bashrc"
+    mkdir -p "$npm_dir/bin"
+    chown -R "$username:$username" "$npm_dir" 2>/dev/null || true
+
+    sed -i '/^# >>> ShipFlow npm bootstrap >>>$/,/^# <<< ShipFlow npm bootstrap <<<$/{d}' "$bashrc"
+    cat >> "$bashrc" << 'BOOTSTRAP'
+
+# >>> ShipFlow npm bootstrap >>>
+export NPM_CONFIG_PREFIX="$HOME/.npm-global"
+export PATH="$HOME/.npm-global/bin:$PATH"
+# <<< ShipFlow npm bootstrap <<<
+BOOTSTRAP
+}
+
+install_ai_agent_clis_for_user() {
+    local user_home="$1"
+    local username="$2"
+    if [ "$username" = "root" ]; then
+        return 0
+    fi
+    ensure_user_local_npm_bootstrap "$user_home" "$username"
+    sudo -u "$username" -H bash -lc 'export NPM_CONFIG_PREFIX="$HOME/.npm-global"; export PATH="$HOME/.npm-global/bin:$PATH"; command -v claude >/dev/null 2>&1 || npm install -g @anthropic-ai/claude-code' || return 1
+    sudo -u "$username" -H bash -lc 'export NPM_CONFIG_PREFIX="$HOME/.npm-global"; export PATH="$HOME/.npm-global/bin:$PATH"; command -v codex >/dev/null 2>&1 || npm install -g @openai/codex' || return 1
+    return 0
+}
+
+configure_claude_autonomous_permissions() {
+    local target_home="$1"
+    local settings_file="$target_home/.claude/settings.json"
+    mkdir -p "$target_home/.claude"
+    [ -f "$settings_file" ] || echo '{}' > "$settings_file"
+    jq '
+      .permissions = (.permissions // {})
+      | .permissions.defaultMode = "bypassPermissions"
+      | .permissions.skipDangerousModePermissionPrompt = true
+    ' "$settings_file" > "${settings_file}.tmp" && mv "${settings_file}.tmp" "$settings_file"
+}
+
+configure_codex_autonomous_permissions() {
+    local target_home="$1"
+    local codex_dir="$target_home/.codex"
+    local config_file="$codex_dir/config.toml"
+    local tmp_file="$config_file.tmp.$$"
+    mkdir -p "$codex_dir"
+    [ -f "$config_file" ] || touch "$config_file"
+    awk '
+      !/^[[:space:]]*approval_policy[[:space:]]*=/ && !/^[[:space:]]*sandbox_mode[[:space:]]*=/
+    ' "$config_file" > "$tmp_file"
+    {
+      printf '\n# >>> shipflow codex autonomous >>>\n'
+      printf 'approval_policy = "never"\n'
+      printf 'sandbox_mode = "danger-full-access"\n'
+      printf '# <<< shipflow codex autonomous <<<\n'
+    } >> "$tmp_file"
+    mv "$tmp_file" "$config_file"
+}
+
+is_user_eligible() {
+    local username="$1"
+    local home shell
+    [ "$username" = "root" ] && return 1
+    home="$(getent passwd "$username" | cut -d: -f6)"
+    shell="$(getent passwd "$username" | cut -d: -f7)"
+    [ -z "$home" ] && return 1
+    [ ! -d "$home" ] && return 1
+    [ ! -w "$home" ] && return 1
+    case "$shell" in
+        *nologin|*false) return 1 ;;
+    esac
+    return 0
+}
+
+collect_target_users() {
+    local mode="${SHIPFLOW_INSTALL_USERS_MODE:-}"
+    local list="${SHIPFLOW_INSTALL_USERS:-}"
+    local user
+    TARGET_USERS=()
+    REJECTED_USERS=()
+    mapfile -t ELIGIBLE_USERS < <(getent passwd | awk -F: '$3 >= 1000 {print $1}' | sort -u)
+
+    if [ "$mode" = "user-list" ]; then
+        for user in $list; do
+            if id "$user" >/dev/null 2>&1 && is_user_eligible "$user"; then
+                TARGET_USERS+=("$user")
+            else
+                REJECTED_USERS+=("$user")
+            fi
+        done
+    else
+        for user in "${ELIGIBLE_USERS[@]}"; do
+            if is_user_eligible "$user"; then
+                TARGET_USERS+=("$user")
+            fi
+        done
+    fi
+}
+
 # Full per-user setup
 setup_user() {
     local user_home="$1"
     local username="$2"
+    local allow_root_autonomous="${SHIPFLOW_AI_ALLOW_ROOT_AUTONOMOUS:-0}"
+    local setup_failed=0
 
     configure_statusline "$user_home"
     configure_context7_mcp "$user_home"
@@ -1179,32 +1480,42 @@ setup_user() {
     configure_codex_supabase_mcp "$user_home"
     configure_codex_dataforseo_mcp "$user_home"
     configure_codex_playwright_mcp "$user_home"
-    configure_skills "$user_home"
+    if [ "$username" != "root" ]; then
+        install_ai_agent_clis_for_user "$user_home" "$username" || setup_failed=1
+        configure_claude_autonomous_permissions "$user_home" || setup_failed=1
+        configure_codex_autonomous_permissions "$user_home" || setup_failed=1
+    elif [ "$allow_root_autonomous" = "1" ]; then
+        configure_claude_autonomous_permissions "$user_home" || setup_failed=1
+        configure_codex_autonomous_permissions "$user_home" || setup_failed=1
+    fi
+    configure_skills "$user_home" || setup_failed=1
+    configure_shipflow_environment "$user_home"
     configure_aliases "$user_home"
     configure_data "$user_home"
 
     # Fix ownership — everything we created must belong to the user
     if [ "$username" != "root" ]; then
-        chown -R "$username:$username" "$user_home/.claude" 2>/dev/null || true
-        chown -R "$username:$username" "$user_home/.codex" 2>/dev/null || true
+        chown -hR "$username:$username" "$user_home/.claude" 2>/dev/null || true
+        chown -hR "$username:$username" "$user_home/.codex" 2>/dev/null || true
         chown -R "$username:$username" "$user_home/shipflow_data" 2>/dev/null || true
     fi
 
-    echo -e "  ${GREEN}✅ Utilisateur configuré :${NC} $username"
+    if [ "$setup_failed" -eq 0 ]; then
+        echo -e "  ${GREEN}✅ Utilisateur configuré :${NC} $username"
+    else
+        echo -e "  ${YELLOW}⚠️ Utilisateur configuré avec warnings :${NC} $username"
+    fi
 }
 
 echo ""
 echo -e "${BLUE}👥 Configuration par utilisateur...${NC}"
+configure_command_wrappers
 
-# Configure root
+collect_target_users
 setup_user "$HOME" "root"
-
-# Configure ALL regular users in /home/
-for user_home in /home/*/; do
-    [ -d "$user_home" ] || continue
-    username=$(basename "$user_home")
-    # Skip if not a real user (no passwd entry)
-    id "$username" &>/dev/null || continue
+for username in "${TARGET_USERS[@]}"; do
+    user_home="$(getent passwd "$username" | cut -d: -f6)"
+    [ -n "$user_home" ] || continue
     setup_user "$user_home" "$username"
 done
 
@@ -1240,5 +1551,89 @@ echo -e "  • Git: $(command -v git >/dev/null 2>&1 && echo '✅' || echo '❌'
 echo -e "  • jq: $(command -v jq >/dev/null 2>&1 && echo '✅ (2-5x faster JSON)' || echo '❌')"
 echo -e "  • fuser: $(command -v fuser >/dev/null 2>&1 && echo '✅ (port cleanup)' || echo '❌')"
 echo ""
+echo -e "${BLUE}🗂️  Logs :${NC}"
+echo -e "  • Fichier: ${SHIPFLOW_LOG_FILE}"
+shipflow_log "INFO" "ShipFlow install completed"
+
+generate_install_report() {
+    local status_node status_pm2 status_vercel status_convex status_clerk status_supabase status_flox status_gh status_python3 status_pyyaml status_caddy status_git status_jq status_fuser
+    if command -v node >/dev/null 2>&1; then status_node="present"; else status_node=""; fi
+    if command -v pm2 >/dev/null 2>&1; then status_pm2="present"; else status_pm2=""; fi
+    if command -v vercel >/dev/null 2>&1; then status_vercel="present"; else status_vercel=""; fi
+    if command -v convex >/dev/null 2>&1; then status_convex="present"; else status_convex=""; fi
+    if command -v clerk >/dev/null 2>&1; then status_clerk="present"; else status_clerk=""; fi
+    if command -v supabase >/dev/null 2>&1; then status_supabase="present"; else status_supabase=""; fi
+    if command -v flox >/dev/null 2>&1; then status_flox="present"; else status_flox=""; fi
+    if command -v gh >/dev/null 2>&1; then status_gh="present"; else status_gh=""; fi
+    if command -v python3 >/dev/null 2>&1; then status_python3="present"; else status_python3=""; fi
+    if python3 -c 'import yaml' 2>/dev/null; then status_pyyaml="present"; else status_pyyaml=""; fi
+    if command -v caddy >/dev/null 2>&1; then status_caddy="present"; else status_caddy=""; fi
+    if command -v git >/dev/null 2>&1; then status_git="present"; else status_git=""; fi
+    if command -v jq >/dev/null 2>&1; then status_jq="present"; else status_jq=""; fi
+    if command -v fuser >/dev/null 2>&1; then status_fuser="present"; else status_fuser=""; fi
+
+    cat > "$SHIPFLOW_REPORT_FILE" << REPORT
+# Rapport d'installation ShipFlow
+
+## Run summary
+
+- Date UTC: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+- Repo: ShipFlow
+- Utilisateur: $(id -un)
+- Commande: sudo ./install.sh
+- Mode: root (system + user config)
+- Version script: local
+- Machine: $(hostname)
+- Log brut: $SHIPFLOW_LOG_FILE
+- Statut global: $(if command -v node >/dev/null 2>&1 && command -v pm2 >/dev/null 2>&1 && command -v vercel >/dev/null 2>&1; then echo "SUCCÈS"; else echo "PARTIEL"; fi)
+
+## Packages / outils
+
+| Élément | Résultat | Détails |
+|---|---|---|
+| Node.js | $(shipflow_status "$SHIPFLOW_PRE_STATUS_DIR_NODE" "$status_node") | Détection binaire |
+| PM2 | $(shipflow_status "$SHIPFLOW_PRE_STATUS_PM2" "$status_pm2") | Détection binaire |
+| Vercel CLI | $(shipflow_status "$SHIPFLOW_PRE_STATUS_VERCEL" "$status_vercel") | Détection binaire |
+| Convex CLI | $(shipflow_status "$SHIPFLOW_PRE_STATUS_CONVEX" "$status_convex") | Détection binaire |
+| Clerk CLI | $(shipflow_status "$SHIPFLOW_PRE_STATUS_CLERK" "$status_clerk") | Détection binaire |
+| Supabase CLI | $(shipflow_status "$SHIPFLOW_PRE_STATUS_SUPABASE" "$status_supabase") | Détection binaire |
+| Flox | $(shipflow_status "$SHIPFLOW_PRE_STATUS_FLOX" "$status_flox") | Détection binaire |
+| GitHub CLI | $(shipflow_status "$SHIPFLOW_PRE_STATUS_GH" "$status_gh") | Détection binaire |
+| Caddy | $(shipflow_status "$SHIPFLOW_PRE_STATUS_CADDY" "$status_caddy") | Détection binaire |
+| Python3 | $(shipflow_status "$SHIPFLOW_PRE_STATUS_PYTHON3" "$status_python3") | Détection binaire |
+| PyYAML | $(shipflow_status "$SHIPFLOW_PRE_STATUS_PYYAML" "$status_pyyaml") | python3 -c 'import yaml' |
+| Git | $(shipflow_status "$SHIPFLOW_PRE_STATUS_GIT" "$status_git") | Détection binaire |
+| jq | $(shipflow_status "$SHIPFLOW_PRE_STATUS_JQ" "$status_jq") | Détection binaire |
+| fuser | $(shipflow_status "$SHIPFLOW_PRE_STATUS_FUSER" "$status_fuser") | Détection binaire |
+
+## Outils utilisateur
+
+| Élément | Résultat | Détails |
+|---|---|---|
+| claude | $(if command -v claude >/dev/null 2>&1; then echo "INSTALLÉ"; else echo "PARTIEL"; fi) | géré par ShipFlow (scope utilisateur) |
+| codex | $(if command -v codex >/dev/null 2>&1; then echo "INSTALLÉ"; else echo "PARTIEL"; fi) | géré par ShipFlow (scope utilisateur) |
+| tmux | NON_APPLICABLE | géré par dotfiles |
+| mosh | NON_APPLICABLE | géré par dotfiles |
+
+## Configuration
+
+- Utilisateurs ciblés: root + ${TARGET_USERS[*]:-none}
+- Cibles de config: root + comptes éligibles sélectionnés
+- Compte d'invocation: ${INVOKING_USER:-root}
+- Résumé santé/diagnostic:
+- Actions correctives suggérées:
+
+## Observations
+
+- Avertissements:
+- Erreurs bloquantes:
+- Recommandations:
+REPORT
+}
+
+generate_install_report
+
+echo -e "${BLUE}🗒️  Rapport :${NC}"
+echo -e "  • Fichier: ${SHIPFLOW_REPORT_FILE}"
 
 success "Installation complète pour tous les utilisateurs !"

@@ -1,3 +1,29 @@
+---
+artifact: documentation
+metadata_schema_version: "1.0"
+artifact_version: "0.1.0"
+project: "shipflow"
+created: "2026-04-25"
+updated: "2026-04-28"
+status: draft
+source_skill: sf-docs
+scope: documentation
+owner: "unknown"
+confidence: medium
+security_impact: yes
+risk_level: low
+docs_impact: yes
+linked_systems:
+  - shipflow.sh
+  - lib.sh
+  - config.sh
+  - install.sh
+  - CHANGELOG.md
+depends_on: []
+supersedes: []
+evidence: []
+next_step: "/sf-docs audit CHANGELOG.md"
+---
 # ShipFlow Changelog
 
 ## [Unreleased]
@@ -26,6 +52,16 @@
 - `sf-fix`, `sf-start`, `sf-verify`, and `sf-prod` now route auth/browser-flow uncertainty through `sf-auth-debug` when browser evidence is needed
 - Internal and public skill documentation now explain when to use `sf-auth-debug` and which auth references it carries
 - Internal linking across the public site now routes homepage, docs, about, and "Why not just prompts?" traffic toward the new skill-modes tutorial and FAQ surfaces
+- ShipFlow installer now targets selected eligible user accounts for AI configuration instead of mutating every `/home/*` account by default
+- ShipFlow installer now owns Claude/Codex autonomous defaults, AI aliases (`c`, `co`, `cask`, `coask`), and per-user npm bootstrap for selected users
+- Dotfiles installer now delegates Claude/Codex install and client MCP mutation to ShipFlow, and keeps only shared MCP registry linking
+
+### Security
+- Added root autonomous-mode guard in ShipFlow installer: autonomous Claude/Codex permissions on root now require explicit opt-in (`SHIPFLOW_AI_ALLOW_ROOT_AUTONOMOUS=1`)
+- Added eligibility filtering before user AI mutation (non-root, real login shell, writable resolved home) to reduce accidental config writes on service/system accounts
+
+### Removed
+- Removed dotfiles-side Claude/Codex ownership actions (CLI install path, Codex config symlink ownership, and direct Claude/Codex client MCP mutation)
 
 ## [2026-04-25] - Contract metadata versioning across skills
 
@@ -95,7 +131,7 @@
 
 ### Changed
 - `sf-audit-code`: new checks for duplication/context-miss and convention drift (System Fit & Reuse in file audits; Consistency & Reuse in project audits)
-- `sf-audit`: domain checklist paths updated to `/home/claude/.codex/skills/...` (fixes stale `/home/claude/dotfiles/...` references)
+- `sf-audit`: domain checklist paths updated to `$HOME/.codex/skills/...` (fixes stale `$HOME/dotfiles/...` references)
 
 ## [2026-04-19] - Skills refresh for 2026 state of the art + new refresh meta-skill
 
@@ -151,14 +187,14 @@
 ### Changed
 - Skills déplacées de `.claude/skills/` vers `skills/` (visible, non caché)
 - `install.sh` adapté pour le nouveau chemin des skills
-- BMAD consolidé dans `/home/claude/bmad/` comme archive de référence
+- BMAD consolidé dans `$HOME/bmad/` comme archive de référence
 
 ### Removed
 - 10 skills OpenSpec (`openspec-*`) et commandes OPSX — workflow trop lourd pour solopreneur
 - `sf-deploy` — absorbé dans `sf-ship` (pre-checks) et `sf-prod` (vérification post-deploy)
 - `.kilocode/` — plus utilisé
 - `openspec/` (config, changes, specs)
-- BMAD de my-robots et winflowz (conservé dans `/home/claude/bmad/`)
+- BMAD de my-robots et winflowz (conservé dans `$HOME/bmad/`)
 
 ## [2026-03-23] - RAM Monitoring, Dual-Mode Menus, Architecture Refactor
 
