@@ -87,7 +87,7 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# ui_choose - Interactive selection (gum choose || numbered list)
+# ui_choose - Interactive selection (instant keys for short lists, filter for long lists)
 #
 # Arguments:
 #   $1 - Prompt text
@@ -99,6 +99,152 @@ fi
 # Returns:
 #   1 if cancelled or no selection
 # -----------------------------------------------------------------------------
+_ui_letter_key() {
+    local index="$1"
+    local alphabet="abcdefghijklmnopqrstuvwyz"
+    local base=${#alphabet}
+    local key=""
+    local n="$index"
+
+    while true; do
+        local rem=$((n % base))
+        key="${alphabet:rem:1}${key}"
+        n=$((n / base - 1))
+        [ "$n" -lt 0 ] && break
+    done
+
+    printf '%s' "$key"
+}
+
+_ui_normalize_choice() {
+    local choice="${1:-}"
+
+    choice="${choice//$'\r'/}"
+    choice="${choice#"${choice%%[![:space:]]*}"}"
+    choice="${choice%"${choice##*[![:space:]]}"}"
+    choice=$(printf '%s' "$choice" | tr '[:upper:]' '[:lower:]')
+
+    if [[ "$choice" =~ ^([a-z]+)\).*$ ]]; then
+        choice="${BASH_REMATCH[1]}"
+    elif [[ "$choice" =~ ^([a-z]+)[[:space:]].*$ ]]; then
+        choice="${BASH_REMATCH[1]}"
+    fi
+
+    printf '%s' "$choice"
+}
+
+ui_read_key() {
+    local __target_var="$1"
+    local __value=""
+
+    if [ -r /dev/tty ] && { : < /dev/tty; } 2>/dev/null; then
+        read -rsn1 __value < /dev/tty
+        while read -rsn1 -t 0.05 _ < /dev/tty 2>/dev/null; do :; done
+    else
+        read -r __value
+    fi
+
+    printf -v "$__target_var" '%s' "$__value"
+}
+
+ui_read_line() {
+    local __target_var="$1"
+    local __value=""
+
+    if [ -r /dev/tty ] && { : < /dev/tty; } 2>/dev/null; then
+        read -r __value < /dev/tty
+    else
+        read -r __value
+    fi
+
+    printf -v "$__target_var" '%s' "$__value"
+}
+
+ui_filter_choose() {
+    local prompt="$1"
+    shift
+
+    local items=()
+    if [ $# -gt 0 ]; then
+        items=("$@")
+    else
+        while IFS= read -r line; do
+            items+=("$line")
+        done
+    fi
+
+    if [ ${#items[@]} -eq 0 ]; then
+        return 1
+    fi
+
+    if [ "$HAS_GUM" = true ] && command -v gum >/dev/null 2>&1; then
+        printf '%s\n' "${items[@]}" | gum filter --header "$prompt" --placeholder "Type to search..."
+        return $?
+    fi
+
+    if command -v fzf >/dev/null 2>&1; then
+        printf '%s\n' "${items[@]}" | fzf \
+            --prompt "$prompt > " \
+            --height "${SHIPFLOW_FZF_HEIGHT:-70%}" \
+            --layout reverse \
+            --border \
+            --cycle
+        return $?
+    fi
+
+    local query=""
+    local matches=()
+    while true; do
+        echo -e "${BLUE}$prompt${NC}" >&2
+        echo -e "${YELLOW}Search:${NC} \c" >&2
+        ui_read_line query
+
+        matches=()
+        local item
+        for item in "${items[@]}"; do
+            if [ -z "$query" ] || printf '%s\n' "$item" | grep -qiF -- "$query"; then
+                matches+=("$item")
+            fi
+        done
+
+        if [ ${#matches[@]} -eq 0 ]; then
+            echo -e "${RED}No match${NC}" >&2
+            continue
+        fi
+
+        if [ ${#matches[@]} -eq 1 ]; then
+            echo "${matches[0]}"
+            return 0
+        fi
+
+        if [ ${#matches[@]} -gt 9 ]; then
+            echo -e "${YELLOW}${#matches[@]} matches. Type more letters to narrow the list.${NC}" >&2
+            continue
+        fi
+
+        local i=1
+        for item in "${matches[@]}"; do
+            echo -e "  ${CYAN}$i)${NC} $item" >&2
+            ((i++))
+        done
+        echo -e "  ${CYAN}x)${NC} Cancel" >&2
+        echo "" >&2
+        echo -e "${YELLOW}Choose:${NC} \c" >&2
+
+        local choice
+        ui_read_key choice
+        choice=$(_ui_normalize_choice "$choice")
+        if [ "$choice" = "x" ] || [ -z "$choice" ]; then
+            return 1
+        fi
+        if [[ "$choice" =~ ^[1-9]$ ]] && [ "$choice" -le "${#matches[@]}" ]; then
+            echo "${matches[$((choice - 1))]}"
+            return 0
+        fi
+        echo -e "${RED}Invalid choice${NC}" >&2
+    done
+}
+
 ui_choose() {
     local prompt="$1"
     shift
@@ -115,14 +261,59 @@ ui_choose() {
         fi
 
         if [ ${#items[@]} -le 5 ]; then
-            # Short list → gum choose (arrow keys)
-            printf '%s\n' "${items[@]}" | gum choose --header "$prompt"
+            local filtered_items=()
+            local has_cancel_item=false
+            local item
+            for item in "${items[@]}"; do
+                if [ "$item" = "Cancel" ]; then
+                    has_cancel_item=true
+                    continue
+                fi
+                filtered_items+=("$item")
+            done
+
+            gum style --foreground 39 "$prompt" >&2
+            echo "" >&2
+            local keys=()
+            local i=0
+            for item in "${filtered_items[@]}"; do
+                local key
+                key=$(_ui_letter_key "$i")
+                keys+=("$key")
+                printf '  %s %s\n' "$(gum style --foreground 212 "${key})")" "$item" >&2
+                ((i++))
+            done
+            echo "" >&2
+            printf '  %s Cancel\n' "$(gum style --foreground 212 "x)")" >&2
+            echo "" >&2
+            printf '%s' "$(gum style --foreground 11 "Choose: ")" >&2
+
+            local choice
+            ui_read_key choice
+            choice=$(_ui_normalize_choice "$choice")
+
+            if [[ "$choice" == "x" ]] || [ -z "$choice" ]; then
+                if [ "$has_cancel_item" = true ]; then
+                    echo "Cancel"
+                    return 0
+                fi
+                return 1
+            fi
+
+            for ((i=0; i<${#keys[@]}; i++)); do
+                if [ "$choice" = "${keys[$i]}" ]; then
+                    echo "${filtered_items[$i]}"
+                    return 0
+                fi
+            done
+
+            echo -e "${RED}Invalid choice${NC}" >&2
+            return 1
         else
-            # Long list → gum filter (type to search)
-            printf '%s\n' "${items[@]}" | gum filter --header "$prompt" --placeholder "Type to search..."
+            ui_filter_choose "$prompt" "${items[@]}"
         fi
     else
-        # Numbered list fallback
+        # Lettered list fallback
         local options=()
         if [ $# -gt 0 ]; then
             options=("$@")
@@ -132,32 +323,62 @@ ui_choose() {
             done
         fi
 
+        local filtered_options=()
+        local has_cancel_option=false
+        local opt
+        for opt in "${options[@]}"; do
+            if [ "$opt" = "Cancel" ]; then
+                has_cancel_option=true
+                continue
+            fi
+            filtered_options+=("$opt")
+        done
+        options=("${filtered_options[@]}")
+
         if [ ${#options[@]} -eq 0 ]; then
             return 1
         fi
 
+        if [ ${#options[@]} -gt 5 ]; then
+            ui_filter_choose "$prompt" "${options[@]}"
+            return $?
+        fi
+
         echo -e "${BLUE}$prompt${NC}" >&2
         echo "" >&2
-        local i=1
+        local keys=()
+        local i=0
         for opt in "${options[@]}"; do
-            echo -e "  ${CYAN}$i)${NC} $opt" >&2
+            local key
+            key=$(_ui_letter_key "$i")
+            keys+=("$key")
+            echo -e "  ${CYAN}$key)${NC} $opt" >&2
             ((i++))
         done
         echo "" >&2
-        echo -e "  ${CYAN}0)${NC} Cancel" >&2
+        echo -e "  ${CYAN}x)${NC} Cancel" >&2
         echo "" >&2
-        echo -e "${YELLOW}Choose (0-$((i-1))):${NC} \c" >&2
-        read -r choice
+        echo -e "${YELLOW}Choose:${NC} \c" >&2
+        ui_read_key choice
+        choice=$(_ui_normalize_choice "$choice")
 
-        if [[ "$choice" == "0" ]] || [ -z "$choice" ]; then
-            return 1
-        elif [[ "$choice" =~ ^[0-9]+$ ]] && [ "$choice" -ge 1 ] && [ "$choice" -le $((i-1)) ]; then
-            echo "${options[$((choice-1))]}"
-            return 0
-        else
-            echo -e "${RED}Invalid choice${NC}" >&2
+        if [[ "$choice" == "x" ]] || [ -z "$choice" ]; then
+            if [ "$has_cancel_option" = true ]; then
+                echo "Cancel"
+                return 0
+            fi
             return 1
         fi
+
+        for ((i=0; i<${#keys[@]}; i++)); do
+            if [ "$choice" = "${keys[$i]}" ]; then
+                echo "${options[$i]}"
+                return 0
+            fi
+        done
+
+        echo -e "${RED}Invalid choice${NC}" >&2
+        return 1
     fi
 }
 
@@ -939,7 +1160,7 @@ updates_menu() {
     echo -e "  ${CYAN}0)${NC} Back"
     echo ""
     echo -e "${YELLOW}Your choice:${NC} \c"
-    read -r update_choice
+    ui_read_key update_choice
 
     case $update_choice in
         1)
@@ -1359,7 +1580,7 @@ install_sdk_menu() {
     echo -e "  ${CYAN}0)${NC} Back"
     echo ""
     echo -e "${YELLOW}Your choice:${NC} \c"
-    read -r sdk_choice
+    ui_read_key sdk_choice
 
     case $sdk_choice in
         1)
@@ -5078,7 +5299,9 @@ action_deploy() {
                 echo -e "${YELLOW}All your GitHub repos are already deployed (or no repos found).${NC}"
                 return
             fi
-            SELECTED_REPO=$(echo "$GITHUB_REPOS" | cut -d':' -f1 | ui_choose "Available repos:")
+            local selected_repo_line
+            selected_repo_line=$(echo "$GITHUB_REPOS" | ui_filter_choose "Search GitHub repo")
+            SELECTED_REPO="${selected_repo_line%%:*}"
             if [ -n "$SELECTED_REPO" ]; then
                 if ! validate_repo_name "$SELECTED_REPO"; then
                     echo -e "${RED}❌ Invalid repository name${NC}"
@@ -5508,7 +5731,7 @@ PROJECTS_EOF
         echo -e "  ${CYAN}x)${NC} ← Back"
         echo ""
         echo -e "${YELLOW}Your choice:${NC} \c"
-        read -r sf_choice
+        ui_read_key sf_choice
 
         case $sf_choice in
             1)
@@ -5722,7 +5945,7 @@ show_help() {
         echo -e "${CYAN}──────────────────────────────────────────────────${NC}"
         echo ""
         echo -e "${YELLOW}[$page/$total_pages]:${NC} \c"
-        read -r help_choice
+        ui_read_key help_choice
 
         case $help_choice in
             ""|n|N)

@@ -713,17 +713,20 @@ configure_codex_tui() {
 
     has_status_line=$(awk '
         BEGIN {
+            before_table = 1
             in_tui_table = 0
             found = 0
         }
-        /^[[:space:]]*tui[[:space:]]*\.[[:space:]]*status_line[[:space:]]*=/ {
+        before_table && /^[[:space:]]*tui[[:space:]]*\.[[:space:]]*status_line[[:space:]]*=/ {
             found = 1
         }
         /^\[[[:space:]]*tui[[:space:]]*\][[:space:]]*$/ {
+            before_table = 0
             in_tui_table = 1
             next
         }
         /^\[[^]]+\][[:space:]]*$/ {
+            before_table = 0
             in_tui_table = 0
             next
         }
@@ -737,17 +740,20 @@ configure_codex_tui() {
 
     has_terminal_title=$(awk '
         BEGIN {
+            before_table = 1
             in_tui_table = 0
             found = 0
         }
-        /^[[:space:]]*tui[[:space:]]*\.[[:space:]]*terminal_title[[:space:]]*=/ {
+        before_table && /^[[:space:]]*tui[[:space:]]*\.[[:space:]]*terminal_title[[:space:]]*=/ {
             found = 1
         }
         /^\[[[:space:]]*tui[[:space:]]*\][[:space:]]*$/ {
+            before_table = 0
             in_tui_table = 1
             next
         }
         /^\[[^]]+\][[:space:]]*$/ {
+            before_table = 0
             in_tui_table = 0
             next
         }
@@ -937,12 +943,12 @@ configure_codex_rmcp() {
         ' "$cleaned_file" > "$tmp_file"
     else
         {
+            cat "$cleaned_file"
+            printf '\n'
             printf '# >>> shipflow codex rmcp >>>\n'
             printf '[beta]\n'
             printf 'rmcp = true\n'
             printf '# <<< shipflow codex rmcp <<<\n'
-            printf '\n'
-            cat "$cleaned_file"
         } > "$tmp_file"
     fi
 
@@ -1402,18 +1408,48 @@ configure_codex_autonomous_permissions() {
     local codex_dir="$target_home/.codex"
     local config_file="$codex_dir/config.toml"
     local tmp_file="$config_file.tmp.$$"
+    local cleaned_file="$config_file.cleaned-autonomous.$$"
     mkdir -p "$codex_dir"
     [ -f "$config_file" ] || touch "$config_file"
     awk '
-      !/^[[:space:]]*approval_policy[[:space:]]*=/ && !/^[[:space:]]*sandbox_mode[[:space:]]*=/
-    ' "$config_file" > "$tmp_file"
+      BEGIN {
+        before_table = 1
+        in_shipflow_block = 0
+      }
+      /^# >>> shipflow codex autonomous >>>$/ {
+        in_shipflow_block = 1
+        next
+      }
+      /^# <<< shipflow codex autonomous <<<$/ {
+        in_shipflow_block = 0
+        next
+      }
+      in_shipflow_block {
+        next
+      }
+      /^\[[^]]+\][[:space:]]*$/ {
+        before_table = 0
+      }
+      before_table && /^[[:space:]]*approval_policy[[:space:]]*=/ {
+        next
+      }
+      before_table && /^[[:space:]]*sandbox_mode[[:space:]]*=/ {
+        next
+      }
+      {
+        print
+      }
+    ' "$config_file" > "$cleaned_file"
     {
-      printf '\n# >>> shipflow codex autonomous >>>\n'
+      printf '# >>> shipflow codex autonomous >>>\n'
       printf 'approval_policy = "never"\n'
       printf 'sandbox_mode = "danger-full-access"\n'
       printf '# <<< shipflow codex autonomous <<<\n'
-    } >> "$tmp_file"
+      printf '\n'
+      cat "$cleaned_file"
+    } > "$tmp_file"
     mv "$tmp_file" "$config_file"
+    rm -f "$cleaned_file"
 }
 
 is_user_eligible() {
