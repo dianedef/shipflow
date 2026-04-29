@@ -462,6 +462,7 @@ None.
 | 2026-04-29 00:41:27 UTC | sf-ready | GPT-5 Codex | Readiness gate passed after structure, behavioral contract, adversarial review, and security controls validation | ready | /sf-start AI agent install ownership and autonomous permissions |
 | 2026-04-29 02:00:00 UTC | sf-start | GPT-5 Codex | Implemented ShipFlow ownership changes for user targeting, autonomous Claude/Codex permissions, per-user bootstrap, dotfiles overlap removal, and ownership docs updates | implemented | /sf-verify AI agent install ownership and autonomous permissions |
 | 2026-04-29 02:10:00 UTC | sf-end | GPT-5 Codex | Closed implementation session with bookkeeping updates (TASKS/CHANGELOG/spec trace) while keeping verification pending | deferred | /sf-verify AI agent install ownership and autonomous permissions |
+| 2026-04-29 02:15:00 UTC | sf-ship | GPT-5 Codex | Shipped closure trace commit for the chantier spec while preserving narrow scope (spec-only ship) | shipped | /sf-verify AI agent install ownership and autonomous permissions |
 
 ## Current Chantier Flow
 
@@ -470,7 +471,7 @@ None.
 - sf-start: implemented
 - sf-verify: not launched
 - sf-end: deferred
-- sf-ship: not launched
+- sf-ship: shipped
 
 Next step:
 - /sf-verify AI agent install ownership and autonomous permissions
