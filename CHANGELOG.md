@@ -29,6 +29,7 @@ next_step: "/sf-docs audit CHANGELOG.md"
 ## [Unreleased]
 
 ### Added
+- Self-hosted public site font assets for Space Grotesk and IBM Plex Mono, removing the remaining Google Fonts runtime dependency
 - Professional bug management doctrine with compact `TEST_LOG.md`, compact `BUGS.md`, per-bug `bugs/BUG-ID.md` dossiers, and redacted `test-evidence/BUG-ID/` evidence directories
 - `templates/artifacts/bug_record.md` for structured bug dossiers with lifecycle status, reproduction, evidence, diagnosis notes, fix attempts, retest history, related artifacts, redaction status, and closure criteria
 - `artifact: bug_record` support in `tools/shipflow_metadata_lint.py`, including bug status, severity, redaction status, reproducibility, and `BUG-YYYY-MM-DD-NNN` ID validation
@@ -45,6 +46,7 @@ next_step: "/sf-docs audit CHANGELOG.md"
 - Local MCP OAuth helper with guided server IP and optional SSH key configuration for local tunnels and remote Codex MCP login
 
 ### Changed
+- Local tunnel tools now share SSH validation and remote PM2 port parsing through `local/remote-helpers.sh` to reduce drift between `local/local.sh`, `local/dev-tunnel.sh`, and `local/mcp-login.sh`
 - Codex TUI defaults now show remaining context with `context-remaining` and rate-limit status with `five-hour-limit` plus `weekly-limit`.
 - `sf-test`, `sf-fix`, `sf-verify`, `sf-ship`, `sf-docs`, and `sf-help` now share the same bug lifecycle, retest, evidence-redaction, and bug-gate rules
 - README, workflow docs, `sf-test` README, and public skill pages now describe the compact index plus detailed bug dossier model instead of treating `BUGS.md` as the full bug record

@@ -6,6 +6,8 @@ if [ -f "$SCRIPT_DIR/../config.sh" ]; then
     # shellcheck source=../config.sh
     source "$SCRIPT_DIR/../config.sh"
 fi
+# shellcheck source=remote-helpers.sh
+source "$SCRIPT_DIR/remote-helpers.sh"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -105,30 +107,6 @@ load_remote_host() {
         echo -e "${YELLOW}  Ouvrez 'urls', choisissez c) Configurer nouveau serveur, puis renseignez le bon chemin de clé.${NC}"
         exit 1
     fi
-}
-
-expand_identity_path() {
-    local identity_file="$1"
-    case "$identity_file" in
-        "~") echo "$HOME" ;;
-        "~/"*) echo "$HOME/${identity_file#~/}" ;;
-        *) echo "$identity_file" ;;
-    esac
-}
-
-ssh_args() {
-    printf '%s\n' "-o" "ConnectTimeout=7"
-    if [ -n "${SSH_IDENTITY_FILE:-}" ]; then
-        printf '%s\n' "-i" "$(expand_identity_path "$SSH_IDENTITY_FILE")" "-o" "IdentitiesOnly=yes"
-    fi
-}
-
-run_remote_ssh() {
-    local args=()
-    while IFS= read -r arg; do
-        args+=("$arg")
-    done < <(ssh_args)
-    ssh "${args[@]}" "$REMOTE_HOST" "$@"
 }
 
 cleanup() {

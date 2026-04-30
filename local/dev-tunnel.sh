@@ -8,6 +8,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [ -f "$SCRIPT_DIR/../config.sh" ]; then
     source "$SCRIPT_DIR/../config.sh"
 fi
+# shellcheck source=remote-helpers.sh
+source "$SCRIPT_DIR/remote-helpers.sh"
 
 # Configuration directory
 CONFIG_DIR="$HOME/.shipflow"
@@ -22,51 +24,6 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 MAGENTA='\033[0;35m'
 NC='\033[0m' # No Color
-
-expand_identity_path() {
-    local identity_file="$1"
-    case "$identity_file" in
-        "~") echo "$HOME" ;;
-        "~/"*) echo "$HOME/${identity_file#~/}" ;;
-        *) echo "$identity_file" ;;
-    esac
-}
-
-validate_connection_target() {
-    local target="$1"
-    [[ -n "$target" ]] || return 1
-    [[ "$target" != -* ]] || return 1
-    [[ "$target" =~ ^[a-zA-Z0-9._@-]+$ ]] || return 1
-}
-
-validate_identity_file() {
-    local identity_file="$1"
-    [ -z "$identity_file" ] && return 0
-    [[ "$identity_file" != -* ]] || return 1
-    [[ "$identity_file" != *$'\n'* ]] || return 1
-    [ -f "$(expand_identity_path "$identity_file")" ] || return 1
-}
-
-validate_tcp_port() {
-    local port="$1"
-    [[ "$port" =~ ^[0-9]+$ ]] || return 1
-    [ "$((10#$port))" -ge 1 ] && [ "$((10#$port))" -le 65535 ]
-}
-
-ssh_args() {
-    printf '%s\n' "-o" "ConnectTimeout=7"
-    if [ -n "${SSH_IDENTITY_FILE:-}" ]; then
-        printf '%s\n' "-i" "$(expand_identity_path "$SSH_IDENTITY_FILE")" "-o" "IdentitiesOnly=yes"
-    fi
-}
-
-run_remote_ssh() {
-    local args=()
-    while IFS= read -r arg; do
-        args+=("$arg")
-    done < <(ssh_args)
-    ssh "${args[@]}" "$REMOTE_HOST" "$@"
-}
 
 get_managed_tunnel_pids() {
     ps -eo pid=,args= | while read -r pid cmd; do
@@ -257,25 +214,7 @@ echo ""
 # Récupérer les ports actifs depuis PM2 sur le serveur distant
 echo -e "${BLUE}📡 Récupération des ports actifs depuis PM2...${NC}"
 
-PORTS=$(run_remote_ssh "pm2 jlist 2>/dev/null | node -e '
-const fs = require(\"fs\");
-try {
-  const apps = JSON.parse(fs.readFileSync(0, \"utf8\"));
-  const ports = [];
-  for (const app of apps) {
-    const pm2Env = app.pm2_env || {};
-    if (pm2Env.status !== \"online\") continue;
-    const env = pm2Env.env || {};
-    const portValue = String(env.PORT || env.port || \"\");
-    if (!/^[0-9]+$/.test(portValue)) continue;
-    const port = Number(portValue);
-    if (port < 1 || port > 65535) continue;
-    const name = String(app.name || \"unknown\").replace(/[,:\\n\\r]/g, \" \").trim();
-    ports.push(`${port}:${name}`);
-  }
-  process.stdout.write(ports.join(\",\"));
-} catch {}
-' " 2>/dev/null || true)
+PORTS=$(run_remote_ssh "$(shipflow_remote_pm2_ports_command comma)" 2>/dev/null || true)
 
 if [ -z "$PORTS" ]; then
     echo -e "${RED}✗ Aucun port trouvé ou PM2 n'est pas accessible${NC}"

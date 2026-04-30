@@ -4,6 +4,8 @@
 # Accès rapide aux projets distants via tunnels SSH
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=remote-helpers.sh
+source "$SCRIPT_DIR/remote-helpers.sh"
 
 # Couleurs
 RED='\033[0;31m'
@@ -73,44 +75,6 @@ get_saved_connections() {
     if [ -f "$CONNECTIONS_FILE" ]; then
         cat "$CONNECTIONS_FILE" | sort -u
     fi
-}
-
-validate_connection_target() {
-    local target="$1"
-    [[ -n "$target" ]] || return 1
-    [[ "$target" != -* ]] || return 1
-    [[ "$target" =~ ^[a-zA-Z0-9._@-]+$ ]] || return 1
-}
-
-expand_identity_path() {
-    local identity_file="$1"
-    case "$identity_file" in
-        "~") echo "$HOME" ;;
-        "~/"*) echo "$HOME/${identity_file#~/}" ;;
-        *) echo "$identity_file" ;;
-    esac
-}
-
-validate_identity_file() {
-    local identity_file="$1"
-    [ -z "$identity_file" ] && return 0
-    [[ "$identity_file" != -* ]] || return 1
-    [[ "$identity_file" != *$'\n'* ]] || return 1
-    [ -f "$(expand_identity_path "$identity_file")" ] || return 1
-}
-
-ssh_identity_args() {
-    if [ -n "${SSH_IDENTITY_FILE:-}" ]; then
-        printf '%s\n' "-i" "$(expand_identity_path "$SSH_IDENTITY_FILE")" "-o" "IdentitiesOnly=yes"
-    fi
-}
-
-run_remote_ssh() {
-    local args=("-o" "ConnectTimeout=7")
-    if [ -n "${SSH_IDENTITY_FILE:-}" ]; then
-        args+=("-i" "$(expand_identity_path "$SSH_IDENTITY_FILE")" "-o" "IdentitiesOnly=yes")
-    fi
-    ssh "${args[@]}" "$REMOTE_HOST" "$@"
 }
 
 normalize_menu_choice() {
@@ -490,20 +454,7 @@ run_mcp_login_menu() {
 
 # Fonction pour obtenir les ports actifs
 get_active_ports() {
-    run_remote_ssh "pm2 jlist 2>/dev/null | node -e '
-const fs = require(\"fs\");
-try {
-  const apps = JSON.parse(fs.readFileSync(0, \"utf8\"));
-  for (const app of apps) {
-    const pm2Env = app.pm2_env || {};
-    if (pm2Env.status !== \"online\") continue;
-    const env = pm2Env.env || {};
-    const port = env.PORT || env.port;
-    if (!port) continue;
-    process.stdout.write(`${port}:${app.name}\\n`);
-  }
-} catch {}
-' " 2>/dev/null
+    run_remote_ssh "$(shipflow_remote_pm2_ports_command lines)" 2>/dev/null
 }
 
 # Fonction pour récupérer uniquement les vrais processus de tunnel

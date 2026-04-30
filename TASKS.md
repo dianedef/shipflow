@@ -88,8 +88,8 @@
 | ✅ | Reduce compositor cost in [site/src/styles/global.css](/home/ubuntu/shipflow/site/src/styles/global.css:105) by gating blur effects behind `@supports` and lowering the blur radius on glass panels | ✅ done |
 | ✅ | Defer below-the-fold layout and paint work on long static pages via `content-visibility` in [site/src/styles/global.css](/home/ubuntu/shipflow/site/src/styles/global.css:283) | ✅ done |
 | ✅ | Prune heavyweight directories from [lib.sh](/home/ubuntu/shipflow/lib.sh:2233) project resolution scans and replace remote PM2 Python parsing with Node in [local/local.sh](/home/ubuntu/shipflow/local/local.sh:415) and [local/dev-tunnel.sh](/home/ubuntu/shipflow/local/dev-tunnel.sh:260) | ✅ done |
-| 🟠 | Self-host the marketing site fonts or move to a local-first stack to eliminate the remaining cross-origin font dependency after the non-blocking preload patch | 📋 todo |
-| 🟡 | Consolidate duplicated remote PM2/tunnel parsing logic between [local/local.sh](/home/ubuntu/shipflow/local/local.sh:415) and [local/dev-tunnel.sh](/home/ubuntu/shipflow/local/dev-tunnel.sh:260) so future perf and failure-handling fixes do not drift | 📋 todo |
+| 🟠 | Self-host the marketing site fonts or move to a local-first stack to eliminate the remaining cross-origin font dependency after the non-blocking preload patch | ✅ done |
+| 🟡 | Consolidate duplicated remote PM2/tunnel parsing logic between [local/local.sh](/home/ubuntu/shipflow/local/local.sh:415) and [local/dev-tunnel.sh](/home/ubuntu/shipflow/local/dev-tunnel.sh:260) so future perf and failure-handling fixes do not drift | ✅ done |
 
 ## Audit Findings
 <!-- Populated by /sf-audit — dated sections with Fixed: / Remaining: -->
