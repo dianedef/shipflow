@@ -1,18 +1,19 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: ShipFlow
 created: "2026-04-28"
 created_at: "2026-04-28 22:27:54 UTC"
-updated: "2026-04-29"
-updated_at: "2026-04-29 00:41:27 UTC"
+updated: "2026-05-01"
+updated_at: "2026-05-01 18:29:34 UTC"
 status: ready
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: migration
 owner: ShipFlow maintainer
 user_story: "En tant qu'operateur ShipFlow qui code au quotidien depuis un compte non-root, je veux que ShipFlow installe et configure Claude Code et OpenAI Codex en mode autonome pour le bon profil utilisateur, afin d'eviter les prompts inutiles, les doublons avec dotfiles et les configurations IA appliquees au mauvais compte."
+confidence: medium
 risk_level: high
 security_impact: yes
 docs_impact: yes

@@ -1,18 +1,19 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "shipflow"
 created: "2026-04-28"
 created_at: "2026-04-28 20:30:00 UTC"
-updated: "2026-04-28"
-updated_at: "2026-04-28 22:59:16 UTC"
+updated: "2026-05-01"
+updated_at: "2026-05-01 18:29:34 UTC"
 status: ready
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "audit-fix"
 owner: "unknown"
 user_story: "En tant qu'operateur ShipFlow, je veux durcir l'installation, reduire les hotspots de maintenance, planifier l'upgrade Astro de securite et rendre les tests fiables, afin de pouvoir shipper le framework sans dependre d'installations fragiles ni de signaux de validation ambigus."
+confidence: medium
 risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"

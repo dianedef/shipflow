@@ -82,6 +82,7 @@ ARTIFACT_REQUIRED = {
     "research_report": {"source_count", "primary_sources", "recommendation"},
     "decision_record": {"decision", "rationale", "consequences"},
     "content_map": {"content_surfaces", "next_review"},
+    "technical_module_context": {"linked_systems", "next_review"},
     "bug_record": {
         "bug_id",
         "title",

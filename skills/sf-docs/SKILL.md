@@ -2,7 +2,7 @@
 name: sf-docs
 description: "Documentation generation and audit for README, API docs, component docs, metadata, and drift."
 disable-model-invocation: true
-argument-hint: [file-path | "readme" | "api" | "components" | "audit" | "update" | "metadata" | "migrate-frontmatter"]
+argument-hint: [file-path | "readme" | "api" | "components" | "audit" | "update" | "metadata" | "migrate-frontmatter" | "technical" | "technical audit"]
 ---
 
 ## Canonical Paths
@@ -41,6 +41,7 @@ Before producing the final report, load `$SHIPFLOW_ROOT/skills/references/chanti
 - **`$ARGUMENTS` is "audit"** → AUDIT MODE: vérifier la cohérence de toute la doc existante.
 - **`$ARGUMENTS` is "update"** → UPDATE MODE: harmoniser et mettre à jour la doc existante.
 - **`$ARGUMENTS` is "metadata" or "migrate-frontmatter"** → METADATA MODE: migrer et vérifier le frontmatter ShipFlow des artefacts actifs.
+- **`$ARGUMENTS` is "technical", "technical audit", or "docs/technical"** → TECHNICAL DOCS MODE: scaffold or audit the code-proximate technical documentation layer.
 - **`$ARGUMENTS` is empty** → AUTO MODE: detect gaps and suggest what to document.
 
 ---
@@ -121,6 +122,8 @@ Operational tracking files are explicitly excluded from mandatory metadata front
 
 They are trackers/registries, not decision contracts. Do not add frontmatter to them during docs audit/update. If a tracker contains a durable decision, spec, business rule, or research conclusion, extract that content into a dedicated ShipFlow artifact with metadata and leave the tracker entry as a pointer or task.
 
+Technical module context files are ShipFlow artifacts too. `docs/technical/*.md` and `templates/artifacts/technical_module_context.md` use `artifact: technical_module_context`. They must include at least the common governance fields plus `linked_systems` and `next_review`, and they must pass `$SHIPFLOW_ROOT/tools/shipflow_metadata_lint.py`.
+
 Bug workflow distinction:
 - `TEST_LOG.md` and `BUGS.md` are tracker files (no required frontmatter).
 - `bugs/BUG-ID.md` is a bug dossier artifact (`artifact: bug_record`) and must stay detailed.
@@ -183,6 +186,70 @@ Document a specific file with inline documentation.
    - Non-obvious parameters and return values
    - Edge cases and gotchas
    - Usage examples for public APIs
+
+---
+
+## TECHNICAL DOCS MODE
+
+Create, scaffold, or audit ShipFlow's internal code-proximate technical documentation layer.
+
+### Flow
+
+1. Load `$SHIPFLOW_ROOT/skills/references/technical-docs-corpus.md` and project-local `docs/technical/code-docs-map.md`.
+2. Classify the request:
+   - `technical` or `docs/technical` with missing docs -> scaffold from `templates/artifacts/technical_module_context.md`.
+   - `technical audit` -> audit existing docs without rewriting unrelated content.
+   - a changed-path list or diff context -> produce a `Documentation Update Plan`.
+3. For scaffolding, create or update only the requested subsystem docs plus the shared map when needed:
+   - `docs/technical/README.md`
+   - `docs/technical/code-docs-map.md`
+   - subsystem docs named in the map
+   - `templates/artifacts/technical_module_context.md` when the template itself is missing or stale
+4. For audit, verify:
+   - every major mapped code area has a primary technical doc or explicit non-coverage reason
+   - every technical doc has `Purpose`, `Owned Files`, `Entrypoints`, `Invariants`, `Validation`, `Reader Checklist`, and `Maintenance Rule`
+   - `code-docs-map.md` includes path patterns, primary docs, validations, and docs update triggers
+   - stale path references and commands are reported
+   - `technical_module_context` artifacts pass metadata lint
+   - `AGENTS.md` is absent or a symlink to `AGENT.md`
+   - `docs/technical/` is not routed as public site content
+5. For changed code, output a `Documentation Update Plan` in this format:
+
+```markdown
+## Documentation Update Plan
+
+- Code changed: `path/or/pattern`
+- Subsystem: `name`
+- Primary technical doc: `docs/technical/example.md`
+- Secondary docs: `...`
+- Required action: `none | review | update | create`
+- Priority: `low | medium | high`
+- Reason: `why this doc is impacted`
+- Owner role: `executor | integrator`
+- Parallel-safe: `yes | no`
+- Notes: `constraints or blockers`
+```
+
+### Role Rules
+
+- The Reader diagnoses documentation impact; an executor or integrator applies updates.
+- Shared files are sequential by default: `docs/technical/code-docs-map.md`, `AGENT.md`, `CONTEXT.md`, `GUIDELINES.md`, `shipflow-spec-driven-workflow.md`, and `tools/shipflow_metadata_lint.py`.
+- Parallel technical-doc work is allowed only when a ready spec defines disjoint file ownership.
+- Code changes cannot ship while mapped technical docs are stale or missing.
+- Do not add per-file `last_verified_against` fields in v1.
+- Do not publish `docs/technical/` to the public site in v1.
+
+### Validation
+
+Run focused checks for the affected docs:
+
+```bash
+rg -n "Maintenance Rule|Validation|Owned Files|Entrypoints" docs/technical templates/artifacts/technical_module_context.md
+python3 tools/shipflow_metadata_lint.py docs/technical templates/artifacts/technical_module_context.md skills/references/technical-docs-corpus.md
+test ! -e AGENTS.md || { test -L AGENTS.md && test "$(readlink AGENTS.md)" = "AGENT.md"; }
+```
+
+Report any stale docs, missing map entries, missing validation rules, public/private boundary leaks, or metadata failures as documentation coherence gaps.
 
 ---
 

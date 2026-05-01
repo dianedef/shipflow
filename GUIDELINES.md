@@ -1,10 +1,10 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "1.2.0"
+artifact_version: "1.3.0"
 project: "shipflow"
 created: "2026-04-26"
-updated: "2026-04-29"
+updated: "2026-05-01"
 status: reviewed
 source_skill: manual
 scope: guidelines
@@ -19,6 +19,7 @@ linked_systems:
   - "skills/"
   - "shipflow-spec-driven-workflow.md"
   - "templates/artifacts/"
+  - "docs/technical/"
 security_impact: yes
 docs_impact: yes
 evidence:
@@ -51,11 +52,13 @@ This file defines stable engineering and documentation rules for working inside 
 - Prefer idempotent operations over check-then-act races.
 - Do not treat generated runtime config as primary source of truth.
 - Keep documentation contracts versioned when they guide implementation or audits.
+- Keep code-proximate technical docs aligned through `docs/technical/code-docs-map.md`.
 - Follow the ShipFlow language doctrine: English for internal contracts, the user's active language for user-facing interaction.
 
 ## Preferred Patterns
 
 - Use focused context docs instead of overloading one mega-doc.
+- Use `docs/technical/` for durable subsystem details instead of expanding `AGENT.md`, `CONTEXT.md`, or `CLAUDE.md`.
 - Use specs and verification for non-trivial work.
 - Keep doc roles exclusive: route, context, business, product, GTM, architecture, brand, guidelines.
 - Prefer explicit stop conditions over silent assumption repair.
@@ -66,12 +69,15 @@ This file defines stable engineering and documentation rules for working inside 
 - Business or product claims without evidence.
 - Metadata migration that rewrites content body unnecessarily.
 - Using trackers as if they were decision contracts.
+- Parallel edits to shared docs such as `docs/technical/code-docs-map.md`, `AGENT.md`, `CONTEXT.md`, or workflow docs without explicit ready-spec ownership.
+- Shipping code changes while mapped technical docs are known stale or missing.
 
 ## Validation Expectations
 
 - Technical checks are necessary but not sufficient.
 - User-facing success and error behavior should be observable or explicitly justified.
 - Docs that affect product understanding must be checked when behavior changes.
+- Mapped code changes require a `Documentation Update Plan` or an explicit no-impact justification.
 
 ## Change Routing
 
@@ -84,7 +90,20 @@ This file defines stable engineering and documentation rules for working inside 
 - `AGENT.md` routes to the right context.
 - `CONTEXT.md` maps the repo operationally.
 - Specialized context docs stay narrow.
+- `docs/technical/README.md` indexes subsystem technical docs.
+- `docs/technical/code-docs-map.md` maps code paths to primary docs, validation, and docs update triggers.
+- Every technical module doc needs owned files, entrypoints, invariants, validation, Reader checklist, and a maintenance rule.
 - Business, product, GTM, brand, architecture, and guidelines docs should each keep an exclusive role.
+
+## Technical Docs Maintenance
+
+- `docs/technical/` is internal-only in v1.
+- The Reader produces a `Documentation Update Plan` after every code-changing execution wave and again during end verification.
+- The Reader diagnoses docs impact; an executor or integrator applies the docs update.
+- Shared files stay sequential by default: `docs/technical/code-docs-map.md`, `AGENT.md`, `CONTEXT.md`, `GUIDELINES.md`, `shipflow-spec-driven-workflow.md`, and `tools/shipflow_metadata_lint.py`.
+- Parallel technical-doc edits are allowed only when a ready spec defines disjoint file ownership.
+- Technical docs may link to architecture, context, specs, and decisions, but must not copy their full content.
+- Technical docs do not include per-file `last_verified_against` fields in v1.
 
 ## Language Doctrine
 

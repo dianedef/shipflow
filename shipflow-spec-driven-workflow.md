@@ -1,10 +1,10 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "0.4.0"
+artifact_version: "0.5.0"
 project: ShipFlow
 created: "2026-04-22"
-updated: "2026-04-29"
+updated: "2026-05-01"
 status: draft
 source_skill: sf-docs
 scope: spec-driven-workflow
@@ -18,6 +18,7 @@ linked_systems:
   - templates/artifacts/
   - tools/shipflow_metadata_lint.py
   - skills/references/canonical-paths.md
+  - docs/technical/
 depends_on: []
 supersedes: []
 evidence:
@@ -26,6 +27,7 @@ evidence:
   - "Updated on 2026-04-26 to add CONTENT_MAP.md as the content architecture and repurposing artifact"
   - "Updated on 2026-04-27 to define canonical ShipFlow path resolution for tools and references"
   - "Updated on 2026-04-29 to formalize the ShipFlow language doctrine: English internal contracts, user-facing interaction in the user's active language."
+  - "Updated on 2026-05-01 to add the internal technical documentation layer and Documentation Update Plan gate."
 next_review: "unknown"
 next_step: "/sf-docs audit shipflow-spec-driven-workflow.md"
 ---
@@ -80,6 +82,42 @@ sf-start -> sf-verify -> sf-end
 ```
 
 The goal is not to remove iteration. The goal is to move ambiguity reduction before coding, then let verification close the loop when implementation or spec drift appears without turning the workflow into iterative prompt repair.
+
+## Technical Documentation Layer
+
+ShipFlow maintains an internal code-proximate technical documentation layer under `docs/technical/`.
+
+- `docs/technical/README.md` indexes subsystem technical docs.
+- `docs/technical/code-docs-map.md` maps code paths to primary technical docs, secondary docs, required validation, and docs update triggers.
+- `templates/artifacts/technical_module_context.md` is the standard template for subsystem docs.
+- `skills/references/technical-docs-corpus.md` tells skills how to load the layer without polluting context.
+
+This layer does not replace `ARCHITECTURE.md`, `CONTEXT.md`, `GUIDELINES.md`, specs, or decision records. It gives agents the closest durable technical context for a code area.
+
+### Documentation Update Gate
+
+After every code-changing execution wave, the Reader must produce a `Documentation Update Plan` from `docs/technical/code-docs-map.md`. End verification must produce or re-check the plan again.
+
+```markdown
+## Documentation Update Plan
+
+- Code changed: `path/or/pattern`
+- Subsystem: `name`
+- Primary technical doc: `docs/technical/example.md`
+- Secondary docs: `...`
+- Required action: `none | review | update | create`
+- Priority: `low | medium | high`
+- Reason: `why this doc is impacted`
+- Owner role: `executor | integrator`
+- Parallel-safe: `yes | no`
+- Notes: `constraints or blockers`
+```
+
+The Reader diagnoses impact; an executor or integrator applies updates. A mapped code change must either update the impacted technical doc or record a no-impact justification. There is no stale-doc shipping exception for mapped technical docs.
+
+Shared files are sequential integration files by default: `docs/technical/code-docs-map.md`, `AGENT.md`, `CONTEXT.md`, `GUIDELINES.md`, `shipflow-spec-driven-workflow.md`, and `tools/shipflow_metadata_lint.py`. Parallel documentation work is allowed only when a ready spec defines disjoint file ownership.
+
+`AGENT.md` remains the canonical agent entrypoint. `AGENTS.md`, when present, is a compatibility symlink to `AGENT.md`, not a second maintained Markdown source. `docs/technical/` remains internal-only in v1 and must not be published to the public site.
 
 ## Core Principles
 
@@ -193,6 +231,7 @@ Skill-aligned artifact templates live in `templates/artifacts/`. They should enc
 - `architecture_context`
 - `gtm_context`
 - `technical_guidelines`
+- `technical_module_context`
 - `audit_report`
 - `verification_report`
 - `readiness_report`
@@ -612,7 +651,7 @@ Status lifecycle:
 - `closed`
 
 Rules:
-- no `TBD`
+- no unresolved filler markers
 - no blocking open questions
 - every implementation task must name a file and an action
 - every implementation task should also name its validation and dependency ordering

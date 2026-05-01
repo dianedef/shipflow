@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "0.2.0"
+artifact_version: "0.3.0"
 project: "shipflow"
 created: "2026-04-25"
-updated: "2026-04-25"
+updated: "2026-05-01"
 status: draft
 source_skill: manual
 scope: "context"
@@ -13,10 +13,10 @@ confidence: "high"
 risk_level: "medium"
 security_impact: "none"
 docs_impact: "yes"
-linked_systems: ["shipflow.sh", "lib.sh", "config.sh", "install.sh", "local/local.sh", "skills/", "shipflow-spec-driven-workflow.md", "CONTEXT-FUNCTION-TREE.md", "CONTENT_MAP.md"]
+linked_systems: ["shipflow.sh", "lib.sh", "config.sh", "install.sh", "local/local.sh", "skills/", "shipflow-spec-driven-workflow.md", "CONTEXT-FUNCTION-TREE.md", "CONTENT_MAP.md", "docs/technical/"]
 depends_on: []
 supersedes: []
-evidence: ["README.md", "CLAUDE.md", "CONTENT_MAP.md", function extraction from core shell scripts]
+evidence: ["README.md", "CLAUDE.md", "CONTENT_MAP.md", function extraction from core shell scripts, "docs/technical added as code-proximate subsystem documentation"]
 next_step: "/sf-docs update CONTEXT.md"
 ---
 
@@ -52,6 +52,7 @@ ShipFlow combine deux couches :
 - `shipflow-spec-driven-workflow.md`: doctrine de workflow.
 - `shipflow-metadata-migration-guide.md`: doctrine de migration metadata.
 - `CONTENT_MAP.md`: carte des surfaces de contenu, pages piliers, cocons semantiques et destinations de repurposing.
+- `docs/technical/`: couche interne de documentation technique proche du code.
 - `BUSINESS.md`, `PRODUCT.md`, `BRANDING.md`, `GTM.md`: contrats business, produit et promesse publique.
 - `ARCHITECTURE.md`, `GUIDELINES.md`: contrats structurels et techniques.
 
@@ -114,6 +115,7 @@ Fast paths existent aussi :
 - Les operations destructives doivent rester idempotentes.
 - Les paths projet doivent etre absolus et valides.
 - Les docs ShipFlow actives doivent avoir un frontmatter versionne.
+- Les changements de code mappes par `docs/technical/code-docs-map.md` doivent produire un `Documentation Update Plan` ou une justification no-impact.
 - `CONTENT_MAP.md` doit rester structurel : surfaces, roles, clusters et regles de mise a jour, pas backlog editorial.
 - Les trackers operationnels (`TASKS.md`, `AUDIT_LOG.md`, `PROJECTS.md`) ne recoivent pas de frontmatter.
 - Les contenus runtime applicatifs gardent leur propre schema de frontmatter.
@@ -134,6 +136,7 @@ Fast paths existent aussi :
 - `lib.sh::action_publish`: integration Caddy + DuckDNS.
 - `local/local.sh::main`: UX locale complete pour tunnels.
 - `skills/sf-docs/SKILL.md`: logique de migration metadata et audit documentaire.
+- `docs/technical/code-docs-map.md`: fichier partage qui mappe code, docs primaires, validations et triggers de mise a jour.
 
 ## Where To Edit What
 
@@ -143,6 +146,7 @@ Fast paths existent aussi :
 - Changer les tunnels locaux : `local/local.sh` et `local/dev-tunnel.sh`.
 - Changer le workflow d'agent : `skills/` + `shipflow-spec-driven-workflow.md`.
 - Changer les regles metadata : `skills/sf-docs/SKILL.md`, `tools/shipflow_metadata_lint.py`, `shipflow-metadata-migration-guide.md`, `templates/artifacts/`.
+- Changer la documentation technique proche du code : `docs/technical/code-docs-map.md` puis le doc primaire dans `docs/technical/`.
 - Changer la cartographie editoriale, les destinations de contenu ou les cocons semantiques : `CONTENT_MAP.md`, puis `site/src/pages/docs.astro` ou les surfaces concernees.
 - Changer le positionnement, l'audience ou le scope produit : `BUSINESS.md`, `PRODUCT.md`, `GTM.md`, `BRANDING.md`.
 - Changer la structure technique globale : `ARCHITECTURE.md`, `GUIDELINES.md`, puis `lib.sh` ou les scripts concernes.
@@ -153,6 +157,7 @@ Fast paths existent aussi :
 - Install / bootstrap : `install.sh`, `config.sh`, `README.md`.
 - Skill / workflow : `README.md`, `shipflow-spec-driven-workflow.md`, puis la skill cible.
 - Metadata docs : `shipflow-metadata-migration-guide.md`, `skills/sf-docs/SKILL.md`, `tools/shipflow_metadata_lint.py`.
+- Docs techniques / code change : `docs/technical/code-docs-map.md`, puis le doc primaire mappe.
 - Tunnels / acces local : `local/README.md`, `local/local.sh`, `local/dev-tunnel.sh`.
 - Produit / business / site : `BUSINESS.md`, `PRODUCT.md`, `BRANDING.md`, `GTM.md`.
 - Contenu / repurposing : `CONTENT_MAP.md`, `skills/sf-repurpose/SKILL.md`, puis la surface cible.
@@ -165,6 +170,8 @@ Fast paths existent aussi :
 - [README.md](${SHIPFLOW_ROOT:-$HOME/shipflow}/README.md)
 - [CONTEXT-FUNCTION-TREE.md](${SHIPFLOW_ROOT:-$HOME/shipflow}/CONTEXT-FUNCTION-TREE.md)
 - [CONTENT_MAP.md](${SHIPFLOW_ROOT:-$HOME/shipflow}/CONTENT_MAP.md)
+- [docs/technical/README.md](${SHIPFLOW_ROOT:-$HOME/shipflow}/docs/technical/README.md)
+- [docs/technical/code-docs-map.md](${SHIPFLOW_ROOT:-$HOME/shipflow}/docs/technical/code-docs-map.md)
 - [shipflow-spec-driven-workflow.md](${SHIPFLOW_ROOT:-$HOME/shipflow}/shipflow-spec-driven-workflow.md)
 - [shipflow-metadata-migration-guide.md](${SHIPFLOW_ROOT:-$HOME/shipflow}/shipflow-metadata-migration-guide.md)
 - [BUSINESS.md](${SHIPFLOW_ROOT:-$HOME/shipflow}/BUSINESS.md)
@@ -183,4 +190,5 @@ Mettre a jour `CONTEXT.md` quand un changement modifie :
 - les hotspots
 - un invariant critique
 - la destination officielle des docs de contexte
+- la carte `docs/technical/code-docs-map.md` ou les docs techniques primaires
 - les surfaces de contenu ou regles de repurposing officielles

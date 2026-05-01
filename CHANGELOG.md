@@ -29,6 +29,9 @@ next_step: "/sf-docs audit CHANGELOG.md"
 ## [Unreleased]
 
 ### Added
+- Internal `docs/technical/` layer with a code-to-docs map, subsystem technical docs, a technical module template, and a skill-facing technical docs corpus reference for agent handoffs
+- `technical_module_context` artifact support in the ShipFlow metadata linter and template set
+- `sf-docs technical` / `technical audit` contract for scaffolding, auditing, and planning code-proximate documentation updates
 - Project development mode doctrine for ShipFlow skills, covering local development, Vercel preview-push validation, and hybrid validation workflows
 - Self-hosted public site font assets for Space Grotesk and IBM Plex Mono, removing the remaining Google Fonts runtime dependency
 - Professional bug management doctrine with compact `TEST_LOG.md`, compact `BUGS.md`, per-bug `bugs/BUG-ID.md` dossiers, and redacted `test-evidence/BUG-ID/` evidence directories
@@ -49,6 +52,8 @@ next_step: "/sf-docs audit CHANGELOG.md"
 - Skill discovery budget audit for ShipFlow skills, with strict checks for one-sentence descriptions, name/path metadata, listing budgets, and separate long-body risks
 
 ### Changed
+- Agent and workflow docs now route code-changing work through `docs/technical/code-docs-map.md` and require a `Documentation Update Plan` for mapped code changes
+- Ready specs with missing confidence or draft-style versions were normalized so the default ShipFlow metadata lint baseline passes again
 - `sf-start`, `sf-fix`, `sf-auth-debug`, `sf-test`, `sf-verify`, `sf-check`, `sf-end`, `sf-ship`, and `sf-prod` now distinguish local evidence from Vercel preview-push evidence and route through `sf-ship` -> `sf-prod` when remote validation is required
 - Local tunnel tools now share SSH validation and remote PM2 port parsing through `local/remote-helpers.sh` to reduce drift between `local/local.sh`, `local/dev-tunnel.sh`, and `local/mcp-login.sh`
 - `sf-explore`, workflow docs, help docs, and public skill docs now explain when substantial explorations create or update durable reports without writing chantier spec history

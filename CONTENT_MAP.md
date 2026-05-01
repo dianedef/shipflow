@@ -1,10 +1,10 @@
 ---
 artifact: content_map
 metadata_schema_version: "1.0"
-artifact_version: "0.2.0"
+artifact_version: "0.2.1"
 project: ShipFlow
 created: "2026-04-26"
-updated: "2026-04-27"
+updated: "2026-05-01"
 status: draft
 source_skill: manual
 scope: content-map
@@ -26,6 +26,7 @@ evidence:
   - "site/src/content/skills contains public skill content"
   - "skills/sf-repurpose/SKILL.md needs a reusable content surface map"
   - "skills/references/canonical-paths.md defines ShipFlow-owned path resolution"
+  - "Corrected public skill page route paths against site/src/pages/skills/ on 2026-05-01"
 linked_artifacts:
   - "README.md"
   - "PRODUCT.md"
@@ -74,7 +75,7 @@ It is a structural context artifact, not a content calendar or backlog.
 |---|---|---|---|---|---|
 | AI-assisted execution discipline | `site/src/pages/index.astro` | `site/src/pages/docs.astro`, `site/src/content/skills/*.md` | Understand ShipFlow as a work framework | Landing page links to docs and skills; skills link back to framework story | live |
 | Documentation and decision contracts | `site/src/pages/docs.astro` | `README.md`, `shipflow-spec-driven-workflow.md`, `skills/references/canonical-paths.md`, `templates/artifacts/*.md` | Learn how context and contracts stay coherent | Docs overview points to canonical repo docs and artifact roles | live |
-| Skill workflow | `site/src/pages/skills.astro` | `site/src/content/skills/*.md`, `skills/*/SKILL.md` | Choose the right skill for a task | Public skill pages should match internal skill names and promises | live |
+| Skill workflow | `site/src/pages/skills/index.astro`, `site/src/pages/skills/[slug].astro` | `site/src/content/skills/*.md`, `skills/*/SKILL.md` | Choose the right skill for a task | Public skill pages should match internal skill names and promises | live |
 | Remote agent operations | `site/src/pages/remote-mcp-oauth-tunnel.astro` | `site/src/pages/docs.astro`, `README.md`, `local/README.md`, `specs/local-mcp-oauth-tunnel-login.md` | Understand why remote agents need local callback routing for OAuth MCP login | Dedicated guide owns the SEO topic; docs overview points to it; repo docs point operators to the local guided setup | live |
 | Content repurposing | `CONTENT_MAP.md` | `skills/sf-repurpose/SKILL.md`, `templates/artifacts/content_map.md`, future public docs section | Reuse product work and source ideas as faithful content | `sf-repurpose` reads the map first and routes output to known surfaces | draft |
 

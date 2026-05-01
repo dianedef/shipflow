@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "0.2.0"
 project: "shipflow"
 created: "2026-04-25"
-updated: "2026-04-28"
+updated: "2026-05-01"
 status: draft
 source_skill: sf-docs
 scope: readme
@@ -19,6 +19,7 @@ linked_systems:
   - config.sh
   - install.sh
   - skills
+  - docs/technical
 depends_on: []
 supersedes: []
 evidence: []
@@ -65,6 +66,8 @@ It helps operators run apps on servers, but its deeper job is to reduce ambiguit
 - [CONTEXT.md](./CONTEXT.md) — compact operational map of the project, hotspots, invariants, and edit routing
 - [CONTEXT-FUNCTION-TREE.md](./CONTEXT-FUNCTION-TREE.md) — grouped function tree for the main shell scripts
 - [CONTENT_MAP.md](./CONTENT_MAP.md) — editorial map for blog, docs, landing pages, semantic clusters, and repurposing destinations
+- [docs/technical/README.md](./docs/technical/README.md) — internal technical documentation layer for code-proximate subsystem docs
+- [docs/technical/code-docs-map.md](./docs/technical/code-docs-map.md) — map from code paths to primary docs, validations, and documentation update triggers
 - [BUSINESS.md](./BUSINESS.md) — target audience, value proposition, business assumptions, and market framing
 - [PRODUCT.md](./PRODUCT.md) — product scope, workflows, outcomes, and non-goals
 - [BRANDING.md](./BRANDING.md) — tone, trust posture, vocabulary, and claims boundaries
@@ -251,6 +254,14 @@ ShipFlow keeps bug records split on purpose:
 - `BUGS.md` stays compact and lists the actionable bug index.
 - `bugs/BUG-ID.md` holds the detailed dossier for one bug.
 - `test-evidence/BUG-ID/` holds redacted evidence when screenshots, logs, or traces are too large or sensitive to inline.
+
+Technical documentation layer:
+
+```text
+docs/technical/code-docs-map.md -> primary subsystem doc -> Documentation Update Plan
+```
+
+Use this layer for code-changing work. It keeps technical details close to the code without bloating `AGENT.md`, `CONTEXT.md`, or public docs. `docs/technical/` is internal-only in v1.
 
 For non-trivial coding work, the default workflow is:
 
