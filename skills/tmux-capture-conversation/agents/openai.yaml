@@ -1,0 +1,4 @@
+interface:
+  display_name: "tmux Capture Conversation"
+  short_description: "Export tmux panes to Markdown files"
+  default_prompt: "Use $tmux-capture-conversation to export the current tmux conversation to a Markdown transcript."

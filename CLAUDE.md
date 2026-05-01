@@ -98,7 +98,7 @@ shipflow/
 ├── lib.sh                      # Core library
 ├── config.sh                   # Configuration
 ├── install.sh                  # Server installation
-├── skills/                     # 35 Claude Code skills (sf-*)
+├── skills/                     # ShipFlow skill library
 ├── .claude/statusline-starship.sh  # Status bar
 ├── local/                      # SSH tunnel scripts
 │   ├── dev-tunnel.sh
