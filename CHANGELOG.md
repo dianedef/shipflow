@@ -4,7 +4,7 @@ metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
 project: "shipflow"
 created: "2026-04-25"
-updated: "2026-04-30"
+updated: "2026-05-01"
 status: draft
 source_skill: sf-docs
 scope: documentation
@@ -45,6 +45,7 @@ next_step: "/sf-docs audit CHANGELOG.md"
 - Dedicated public FAQ page for common ShipFlow questions around skills, docs scope, and workflow behavior
 - Local MCP OAuth helper with guided server IP and optional SSH key configuration for local tunnels and remote Codex MCP login
 - Durable `exploration_report` artifacts for `sf-explore`, including the reusable template and default `docs/explorations/` report location
+- Skill discovery budget audit for ShipFlow skills, with strict checks for one-sentence descriptions, name/path metadata, listing budgets, and separate long-body risks
 
 ### Changed
 - Local tunnel tools now share SSH validation and remote PM2 port parsing through `local/remote-helpers.sh` to reduce drift between `local/local.sh`, `local/dev-tunnel.sh`, and `local/mcp-login.sh`
@@ -64,6 +65,8 @@ next_step: "/sf-docs audit CHANGELOG.md"
 - Dotfiles installer now delegates Claude/Codex install and client MCP mutation to ShipFlow, and keeps only shared MCP registry linking
 - CLI fallback choice parsing now normalizes uppercase input, trailing `)`, whitespace, and carriage returns so letter-based deploy and submenu prompts accept the expected keys more reliably
 - ShipFlow CLI menus and submenus now use instant letter shortcuts consistently, with one-key confirmations and pauses while preserving text-entry and FZF/gum-filter flows.
+- All current skill descriptions were compacted for Codex and Claude Code discovery: the strict audit now reports 49 skills, 0 hard violations, 0 warnings, a 7230-character absolute estimate, and an 88.4-character average description length
+- `sf-docs` and `sf-skills-refresh` now run the skill budget audit only when work touches skills, discovery wording, `agents/openai.yaml`, or Codex/Claude Code skill compatibility
 
 ### Security
 - Added root autonomous-mode guard in ShipFlow installer: autonomous Claude/Codex permissions on root now require explicit opt-in (`SHIPFLOW_AI_ALLOW_ROOT_AUTONOMOUS=1`)

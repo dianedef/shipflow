@@ -6,7 +6,7 @@ project: "shipflow"
 created: "2026-04-30"
 created_at: "2026-04-30 22:58:17 UTC"
 updated: "2026-05-01"
-updated_at: "2026-05-01 06:23:35 UTC"
+updated_at: "2026-05-01 13:18:50 UTC"
 status: ready
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
@@ -28,7 +28,7 @@ linked_systems:
   - "Claude Code"
 depends_on:
   - artifact: "GUIDELINES.md"
-    artifact_version: "1.0.0"
+    artifact_version: "1.2.0"
     required_status: reviewed
   - artifact: "ARCHITECTURE.md"
     artifact_version: "1.0.0"
@@ -49,7 +49,7 @@ evidence:
   - "User request 2026-05-01: confirm all official skill limits and ensure validation exists for them."
   - "sf-ready 2026-05-01: rechecked official Codex, Claude Code, Claude.ai, and Agent Skills documentation before readiness verdict."
   - "User decision 2026-05-01: keep skill budget compliance scoped to skill documentation and skill refresh workflows, not broad agent context."
-next_step: "/sf-start Skill Description Budget Compliance"
+next_step: "/sf-ship Skill Description Budget Compliance"
 ---
 
 # Spec: Skill Description Budget Compliance
@@ -356,18 +356,20 @@ None for the spec. The user has already decided to formalize the constraint and 
 | 2026-05-01 06:23:35 UTC | sf-ready | GPT-5 Codex | Evaluated readiness, rechecked official external docs, and recorded explicit security review | Ready for remaining description remediation implementation | /sf-start Skill Description Budget Compliance |
 | 2026-05-01 06:37:27 UTC | sf-start | GPT-5 Codex | Compacted 49 skill descriptions and ran strict budget validation | Implemented: 0 hard violations, 0 warnings, 7230 absolute estimate, 88.4 average description length; long bodies remain separate risks | /sf-verify Skill Description Budget Compliance |
 | 2026-05-01 12:37:19 UTC | sf-docs | GPT-5 Codex | Scoped skill budget compliance to skill docs and skill refresh workflows, and kept broad agent context files out of the rule | Verified: no global reminders in README/AGENT/CONTEXT/GUIDELINES; strict audit still passes | /sf-verify Skill Description Budget Compliance |
+| 2026-05-01 13:04:56 UTC | sf-verify | GPT-5 Codex | Verified skill budget compliance against the ready spec, official docs, audit tooling, metadata, and chantier tracking rules | Verified: strict audit passes with 49 skills, 0 hard violations, 0 warnings, 7230 absolute estimate, 88.4 average description length; only separate long-body risks remain | /sf-end Skill Description Budget Compliance |
+| 2026-05-01 13:18:50 UTC | sf-end | GPT-5 Codex | Closed the skill description budget compliance chantier and recorded tracker/changelog closeout | Closed: audit-backed discovery budget compliance is verified; remaining long skill bodies are separate follow-up risk | /sf-ship Skill Description Budget Compliance |
 
 ## Current Chantier Flow
 
 - sf-spec: done, spec saved in `specs/skill-description-budget-compliance.md`
 - sf-ready: ready
 - sf-start: implemented
-- sf-verify: not launched
-- sf-end: not launched
-- sf-ship: shipped quick commit for audit tooling and documentation
+- sf-verify: verified
+- sf-end: closed
+- sf-ship: shipped quick commit for audit tooling and documentation; final closeout not shipped
 
 Next command:
 
 ```bash
-/sf-verify Skill Description Budget Compliance
+/sf-ship Skill Description Budget Compliance
 ```

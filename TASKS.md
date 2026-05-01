@@ -37,6 +37,7 @@
 | 🟠 | Faire des specs le registre global des chantiers spec-first avec historique de skills | ✅ done |
 | 🟠 | Ajouter la taxonomie interne des skills et les sources de chantier potentiel | ✅ done |
 | 🟠 | Durable Exploration Reports for `sf-explore` | ✅ done |
+| ✅ | Skill description budget compliance: audit script, descriptions compactes et checks `sf-docs`/`sf-skills-refresh` scoppés | ✅ done |
 | ✅ | Patch global des skills pour résoudre les références et outils internes depuis le root canonique ShipFlow | ✅ done |
 | ✅ | Créer `sf-test` pour guider les tests manuels, loguer `TEST_LOG.md` et ouvrir `BUGS.md` | ✅ done |
 | 🟠 | Implémenter Professional Bug Management avec index compact, dossiers bug et preuves séparées | ✅ done |
