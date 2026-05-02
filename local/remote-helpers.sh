@@ -60,7 +60,7 @@ validate_tcp_port() {
 }
 
 ssh_args() {
-    printf '%s\n' "-o" "ConnectTimeout=7"
+    printf '%s\n' "-o" "ConnectTimeout=7" "-o" "BatchMode=yes"
     if [ -n "${SSH_IDENTITY_FILE:-}" ]; then
         printf '%s\n' "-i" "$(normalize_identity_path "$SSH_IDENTITY_FILE")" "-o" "IdentitiesOnly=yes"
     fi

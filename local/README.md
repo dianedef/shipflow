@@ -94,6 +94,12 @@ Le menu offre :
 - 🔄 **Redémarrer** - Redémarre tous les tunnels
 - 🔐 **Login OAuth MCP (distant)** - Lance `codex mcp login` sur le serveur et crée un tunnel OAuth éphémère local
 
+Au démarrage, le menu affiche un scan animé pendant la recherche d'identité de session distante. Pour le désactiver dans un terminal lent ou automatisé :
+
+```bash
+SHIPFLOW_NO_ANIMATION=1 urls
+```
+
 ### Pourquoi le tunnel OAuth existe
 
 Quand Codex tourne sur un serveur distant, le process `codex mcp login <provider>` écoute son callback OAuth sur le serveur. Le navigateur, lui, s'ouvre sur votre machine locale et essaie de joindre `127.0.0.1:<port>/callback`. Sans tunnel, `127.0.0.1` désigne votre machine locale, pas le serveur distant.

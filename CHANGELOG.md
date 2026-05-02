@@ -79,6 +79,7 @@ next_step: "/sf-docs audit CHANGELOG.md"
 - CLI fallback choice parsing now normalizes uppercase input, trailing `)`, whitespace, and carriage returns so letter-based deploy and submenu prompts accept the expected keys more reliably
 - ShipFlow CLI menus and submenus now use instant letter shortcuts consistently, with one-key confirmations and pauses while preserving text-entry and FZF/gum-filter flows.
 - Local SSH setup prompts now explain default values explicitly and save custom identity-file paths as stable absolute paths before using `ssh -i` / `autossh -i`.
+- Local tunnel startup now shows an animated SSH session scan while the menu checks the remote server, with `SHIPFLOW_NO_ANIMATION=1` as an opt-out for automated or slow terminals.
 - All current skill descriptions were compacted for Codex and Claude Code discovery: the strict audit now reports 49 skills, 0 hard violations, 0 warnings, a 7230-character absolute estimate, and an 88.4-character average description length
 - `sf-docs` and `sf-skills-refresh` now run the skill budget audit only when work touches skills, discovery wording, `agents/openai.yaml`, or Codex/Claude Code skill compatibility
 

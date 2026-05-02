@@ -324,22 +324,141 @@ fetch_server_session_info() {
     '" 2>/dev/null
 }
 
+should_show_session_scan_loader() {
+    [ -n "$REMOTE_HOST" ] || return 1
+    [ "${SHIPFLOW_NO_ANIMATION:-}" != "1" ] || return 1
+    [ "${TERM:-}" != "dumb" ] || return 1
+    [ -w /dev/tty ] 2>/dev/null || return 1
+}
+
+render_session_scan_frame() {
+    local frame="$1"
+    local sweep_a sweep_b sweep_c sweep_d
+
+    case $((frame % 4)) in
+        0)
+            sweep_a="          |          "
+            sweep_b="          |          "
+            sweep_c="----------o----------"
+            sweep_d="          |          "
+            ;;
+        1)
+            sweep_a="       /             "
+            sweep_b="     /               "
+            sweep_c="----o----------------"
+            sweep_d="       \\             "
+            ;;
+        2)
+            sweep_a="                     "
+            sweep_b="                     "
+            sweep_c="----------o----------"
+            sweep_d="                     "
+            ;;
+        *)
+            sweep_a="             \\       "
+            sweep_b="               \\     "
+            sweep_c="----------------o----"
+            sweep_d="             /       "
+            ;;
+    esac
+
+    printf "%b\n" "${CYAN}        .----------------------------.${NC}" > /dev/tty
+    printf "%b\n" "${CYAN}        |${NC} ${BLUE}SONAR SSH${NC}  ${YELLOW}scan réseau${NC}       ${CYAN}|${NC}" > /dev/tty
+    printf "%b\n" "${CYAN}        |${NC}      .-----------.       ${CYAN}|${NC}" > /dev/tty
+    printf "%b\n" "${CYAN}        |${NC}    .( ${GREEN}${sweep_a}${NC} ).    ${CYAN}|${NC}" > /dev/tty
+    printf "%b\n" "${CYAN}        |${NC}   (  ${GREEN}${sweep_b}${NC}  )   ${CYAN}|${NC}" > /dev/tty
+    printf "%b\n" "${CYAN}        |${NC}   (  ${GREEN}${sweep_c}${NC}  )   ${CYAN}|${NC}" > /dev/tty
+    printf "%b\n" "${CYAN}        |${NC}   (  ${GREEN}${sweep_d}${NC}  )   ${CYAN}|${NC}" > /dev/tty
+    printf "%b\n" "${CYAN}        |${NC}      '-----------'       ${CYAN}|${NC}" > /dev/tty
+    printf "%b\n" "${CYAN}        '----------------------------'${NC}" > /dev/tty
+    printf "%b\n" "${BLUE}        Recherche de session sur ${GREEN}${REMOTE_HOST}${BLUE}...${NC}" > /dev/tty
+}
+
+clear_session_scan_loader() {
+    local lines=10
+    local i=0
+
+    while [ "$i" -lt "$lines" ]; do
+        printf "\033[2K\r\n" > /dev/tty
+        i=$((i + 1))
+    done
+    printf "\033[%sA\r" "$lines" > /dev/tty
+}
+
+cleanup_session_scan_loader_state() {
+    local fetch_pid="${1:-}"
+    local tmp_file="${2:-}"
+
+    [ -n "$fetch_pid" ] && kill "$fetch_pid" 2>/dev/null || true
+    clear_session_scan_loader 2>/dev/null || true
+    printf "\033[?25h" > /dev/tty 2>/dev/null || true
+    [ -n "$tmp_file" ] && rm -f "$tmp_file"
+}
+
+fetch_server_session_info_with_loader() {
+    local tmp_file=""
+    local fetch_pid=""
+    local frame=0
+    local status=0
+
+    tmp_file=$(mktemp "${TMPDIR:-/tmp}/shipflow-session.XXXXXX") || {
+        fetch_server_session_info
+        return
+    }
+
+    trap 'status=$?; cleanup_session_scan_loader_state "$fetch_pid" "$tmp_file"; exit "$status"' INT TERM
+
+    fetch_server_session_info > "$tmp_file" &
+    fetch_pid=$!
+
+    printf "\033[?25l" > /dev/tty
+    while kill -0 "$fetch_pid" 2>/dev/null; do
+        printf "\033[s" > /dev/tty
+        render_session_scan_frame "$frame"
+        printf "\033[u" > /dev/tty
+        frame=$((frame + 1))
+        sleep 0.18
+    done
+
+    wait "$fetch_pid" || status=$?
+    clear_session_scan_loader
+    printf "\033[?25h" > /dev/tty
+    trap - INT TERM
+
+    cat "$tmp_file"
+    rm -f "$tmp_file"
+    return "$status"
+}
+
 # Function to retrieve server session info (with caching)
 get_server_session_info() {
+    local target_var="${1:-}"
     local current_time=$(date +%s)
     local cache_ttl=300  # Cache for 5 minutes
 
     # Return cached info if fresh
     if [ -n "$CACHED_SESSION_INFO" ] && [ $((current_time - CACHED_SESSION_TIME)) -lt $cache_ttl ]; then
-        echo "$CACHED_SESSION_INFO"
+        if [ -n "$target_var" ]; then
+            printf -v "$target_var" '%s' "$CACHED_SESSION_INFO"
+        else
+            echo "$CACHED_SESSION_INFO"
+        fi
         return 0
     fi
 
     # Retrieve session info from server
-    CACHED_SESSION_INFO=$(fetch_server_session_info)
+    if should_show_session_scan_loader; then
+        CACHED_SESSION_INFO=$(fetch_server_session_info_with_loader)
+    else
+        CACHED_SESSION_INFO=$(fetch_server_session_info)
+    fi
 
     CACHED_SESSION_TIME=$current_time
-    echo "$CACHED_SESSION_INFO"
+    if [ -n "$target_var" ]; then
+        printf -v "$target_var" '%s' "$CACHED_SESSION_INFO"
+    else
+        echo "$CACHED_SESSION_INFO"
+    fi
 }
 
 center_session_banner_text() {
@@ -358,7 +477,8 @@ center_session_banner_text() {
 
 # Function to display server session banner
 display_server_session_banner() {
-    local session_info=$(get_server_session_info)
+    local session_info=""
+    get_server_session_info session_info
 
     if echo "$session_info" | grep -q "SESSION_START"; then
         # Parse session info

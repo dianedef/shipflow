@@ -56,6 +56,7 @@ This doc covers the local tools that connect a workstation to a remote ShipFlow 
 ```text
 local/local.sh
   -> load current connection
+  -> fetch remote session identity with animated TTY scan feedback
   -> fetch remote PM2 ports
   -> validate local port availability
   -> start autossh tunnels
@@ -79,6 +80,8 @@ shipflow-mcp-login
 - Managed tunnel stop logic should select ShipFlow-owned tunnels, not broad process patterns.
 - OAuth tokens remain owned by Codex and the provider; ShipFlow only routes the callback.
 - Saved connection state is shared by app tunnels and MCP login.
+- Remote SSH helper calls run in batch mode so menu scans fail visibly instead of blocking on hidden SSH prompts.
+- The startup session scan is operator feedback only; set `SHIPFLOW_NO_ANIMATION=1` to disable the animated TTY loader.
 
 ## Failure Modes
 
