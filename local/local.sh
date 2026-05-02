@@ -142,12 +142,16 @@ save_and_activate_connection() {
         echo -e "${YELLOW}  Laissez vide pour utiliser la configuration SSH normale.${NC}"
         return 1
     fi
+    if [ -n "$identity_file" ]; then
+        identity_file=$(normalize_identity_path "$identity_file")
+        chmod 600 "$identity_file" 2>/dev/null || true
+    fi
 
     echo ""
     echo -e "${BLUE}Test SSH vers $target...${NC}"
     local ssh_args=("-o" "ConnectTimeout=7" "-o" "BatchMode=yes")
     if [ -n "$identity_file" ]; then
-        ssh_args+=("-i" "$(expand_identity_path "$identity_file")" "-o" "IdentitiesOnly=yes")
+        ssh_args+=("-i" "$identity_file" "-o" "IdentitiesOnly=yes")
     fi
 
     if ssh "${ssh_args[@]}" "$target" "echo ok" &>/dev/null; then
@@ -194,17 +198,19 @@ configure_new_server() {
         echo ""
         echo -e "${BLUE}L'utilisateur SSH est le compte Linux utilisé pour te connecter au serveur.${NC}"
         echo -e "${BLUE}Sur beaucoup de serveurs Ubuntu cloud, c'est ${GREEN}ubuntu${BLUE}. Selon l'hébergeur, ça peut aussi être ${GREEN}root${BLUE}, ${GREEN}debian${BLUE}, ${GREEN}ec2-user${BLUE}, etc.${NC}"
-        echo -e "${YELLOW}Si tu ne sais pas, laisse ${GREEN}ubuntu${YELLOW}; si le test échoue, réessaie avec l'utilisateur indiqué par ton hébergeur.${NC}"
-        echo -e "${YELLOW}Utilisateur SSH [ubuntu]:${NC} \c"
+        echo -e "${YELLOW}Laisse vide pour utiliser la valeur par défaut : ${GREEN}ubuntu${YELLOW}.${NC}"
+        echo -e "${YELLOW}Si le test échoue, réessaie avec l'utilisateur indiqué par ton hébergeur.${NC}"
+        echo -e "${YELLOW}Utilisateur SSH:${NC} \c"
         read -r server_user
         server_user="${server_user:-ubuntu}"
         target="${server_user}@${server_host}"
     fi
 
     echo ""
-    echo -e "${BLUE}Clé SSH: laisse vide si ta connexion SSH marche déjà sans option spéciale.${NC}"
-    echo -e "${BLUE}Sinon, indique le chemin de la clé privée, par exemple ~/.ssh/id_ed25519.${NC}"
-    echo -e "${YELLOW}Chemin de clé SSH (optionnel, Entrée = SSH normal):${NC} \c"
+    echo -e "${BLUE}La clé SSH est le fichier privé utilisé si ta connexion demande une clé spéciale.${NC}"
+    echo -e "${BLUE}Exemple: ~/.ssh/id_ed25519${NC}"
+    echo -e "${YELLOW}Laisse vide pour utiliser la valeur par défaut : connexion SSH normale.${NC}"
+    echo -e "${YELLOW}Chemin de la clé SSH si tu l'as enregistrée dans un dossier particulier ou avec un nom spécifique:${NC} \c"
     read -r identity_file
 
     echo ""
@@ -250,7 +256,7 @@ select_connection() {
     echo -e "  ${CYAN}n)${NC} ➕ Nouvelle connexion"
     echo -e "  ${CYAN}x)${NC} ← Retour"
     echo ""
-    echo -e "${YELLOW}Votre choix:${NC} \c"
+    echo -e "${YELLOW}Tape la lettre de ton choix ?${NC} \c"
     read_menu_choice choice true
 
     case "$choice" in
@@ -426,7 +432,7 @@ run_mcp_login_menu() {
     echo -e "  ${CYAN}c)${NC} custom"
     echo -e "  ${CYAN}x)${NC} retour"
     echo ""
-    echo -e "${YELLOW}Votre choix :${NC} \c"
+    echo -e "${YELLOW}Tape la lettre de ton choix ?${NC} \c"
     read_menu_choice login_choice
 
     case "$login_choice" in
@@ -571,7 +577,7 @@ start_tunnels() {
             -L "${port}:localhost:${port}"
         )
         if [ -n "${SSH_IDENTITY_FILE:-}" ]; then
-            autossh_args+=("-i" "$(expand_identity_path "$SSH_IDENTITY_FILE")" "-o" "IdentitiesOnly=yes")
+            autossh_args+=("-i" "$(normalize_identity_path "$SSH_IDENTITY_FILE")" "-o" "IdentitiesOnly=yes")
         fi
         autossh "${autossh_args[@]}" "$REMOTE_HOST" 2>/dev/null
     done <<< "$PORTS"
@@ -733,7 +739,7 @@ main() {
         print_header
         show_menu
 
-        echo -e "${YELLOW}Votre choix :${NC} \c"
+        echo -e "${YELLOW}Tape la lettre de ton choix ?${NC} \c"
         read_menu_choice CHOICE
 
         case $CHOICE in

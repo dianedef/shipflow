@@ -10,6 +10,34 @@ expand_identity_path() {
     esac
 }
 
+normalize_identity_path() {
+    local identity_file="$1"
+    [ -z "$identity_file" ] && return 0
+
+    local expanded
+    expanded=$(expand_identity_path "$identity_file")
+
+    case "$expanded" in
+        /*)
+            echo "$expanded"
+            ;;
+        *)
+            local dir="${expanded%/*}"
+            local base="${expanded##*/}"
+            if [ "$dir" = "$expanded" ]; then
+                dir="."
+            fi
+
+            local abs_dir
+            if abs_dir=$(cd "$dir" 2>/dev/null && pwd -P); then
+                echo "$abs_dir/$base"
+            else
+                echo "$(pwd -P)/$expanded"
+            fi
+            ;;
+    esac
+}
+
 validate_connection_target() {
     local target="$1"
     [[ -n "$target" ]] || return 1
@@ -22,7 +50,7 @@ validate_identity_file() {
     [ -z "$identity_file" ] && return 0
     [[ "$identity_file" != -* ]] || return 1
     [[ "$identity_file" != *$'\n'* ]] || return 1
-    [ -f "$(expand_identity_path "$identity_file")" ] || return 1
+    [ -f "$(normalize_identity_path "$identity_file")" ] || return 1
 }
 
 validate_tcp_port() {
@@ -34,7 +62,7 @@ validate_tcp_port() {
 ssh_args() {
     printf '%s\n' "-o" "ConnectTimeout=7"
     if [ -n "${SSH_IDENTITY_FILE:-}" ]; then
-        printf '%s\n' "-i" "$(expand_identity_path "$SSH_IDENTITY_FILE")" "-o" "IdentitiesOnly=yes"
+        printf '%s\n' "-i" "$(normalize_identity_path "$SSH_IDENTITY_FILE")" "-o" "IdentitiesOnly=yes"
     fi
 }
 

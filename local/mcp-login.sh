@@ -102,7 +102,7 @@ load_remote_host() {
         SSH_IDENTITY_FILE="$(cat "$CURRENT_IDENTITY_FILE")"
     fi
 
-    if [ -n "$SSH_IDENTITY_FILE" ] && [ ! -f "$(expand_identity_path "$SSH_IDENTITY_FILE")" ]; then
+    if [ -n "$SSH_IDENTITY_FILE" ] && [ ! -f "$(normalize_identity_path "$SSH_IDENTITY_FILE")" ]; then
         echo -e "${RED}✗ Clé SSH configurée introuvable: $SSH_IDENTITY_FILE${NC}"
         echo -e "${YELLOW}  Ouvrez 'urls', choisissez c) Configurer nouveau serveur, puis renseignez le bon chemin de clé.${NC}"
         exit 1

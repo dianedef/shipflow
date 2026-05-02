@@ -98,7 +98,7 @@ main() {
         print_header
         show_menu
 
-        echo -e "${YELLOW}Votre choix :${NC} \c"
+        echo -e "${YELLOW}Tape la lettre de ton choix ?${NC} \c"
         read -r CHOICE
 
         case $CHOICE in

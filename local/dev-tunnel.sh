@@ -277,7 +277,7 @@ for port_info in "${PORT_ARRAY[@]}"; do
         -L "${port}:localhost:${port}"
     )
     if [ -n "${SSH_IDENTITY_FILE:-}" ]; then
-        autossh_args+=("-i" "$(expand_identity_path "$SSH_IDENTITY_FILE")" "-o" "IdentitiesOnly=yes")
+        autossh_args+=("-i" "$(normalize_identity_path "$SSH_IDENTITY_FILE")" "-o" "IdentitiesOnly=yes")
     fi
     if ! autossh "${autossh_args[@]}" "$REMOTE_HOST" 2>/dev/null; then
         echo -e "${RED}  ✗ Impossible de créer le tunnel localhost:${port} (${name})${NC}"

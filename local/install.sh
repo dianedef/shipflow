@@ -10,6 +10,8 @@ RED='\033[0;31m'
 NC='\033[0m'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=remote-helpers.sh
+source "$SCRIPT_DIR/remote-helpers.sh"
 SSH_CONFIG="$HOME/.ssh/config"
 SHELL_RC="$HOME/.bashrc"
 
@@ -149,9 +151,7 @@ fi
 
 SSH_TEST_ARGS=(-o ConnectTimeout=5 -o BatchMode=yes)
 if [ -n "$TEST_IDENTITY_FILE" ]; then
-    case "$TEST_IDENTITY_FILE" in
-        "~/"*) TEST_IDENTITY_FILE="$HOME/${TEST_IDENTITY_FILE#~/}" ;;
-    esac
+    TEST_IDENTITY_FILE="$(normalize_identity_path "$TEST_IDENTITY_FILE")"
     SSH_TEST_ARGS+=(-i "$TEST_IDENTITY_FILE" -o IdentitiesOnly=yes)
 fi
 
