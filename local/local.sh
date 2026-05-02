@@ -377,16 +377,16 @@ render_session_scan_frame() {
 
     case $((frame % 4)) in
         0)
-            scan_cap="   |    "
+            scan_cap="    |   "
             scan_upper="      |     "
             scan_top="       |      "
             scan_mid="-------o------"
             scan_bottom="       |      "
             scan_lower="      |     "
-            scan_base="   |    "
+            scan_base="    |   "
             ;;
         1)
-            scan_cap="      / "
+            scan_cap="       /"
             scan_upper="        /   "
             scan_top="        /     "
             scan_mid="-------o------"
@@ -410,20 +410,20 @@ render_session_scan_frame() {
             scan_mid="-------o------"
             scan_bottom="        \\     "
             scan_lower="        \\   "
-            scan_base="      \\ "
+            scan_base="       \\"
             ;;
     esac
 
     printf "\033[2K\r%b\n" "${CYAN}      .------------------------.${NC}" > /dev/tty
     printf "\033[2K\r%b\n" "${CYAN}      |${NC}${BLUE} SONAR SSH${NC}${YELLOW}  scan réseau ${CYAN}|${NC}" > /dev/tty
     printf "\033[2K\r%b\n" "${CYAN}      |${NC}        .------.        ${CYAN}|${NC}" > /dev/tty
-    printf "\033[2K\r%b\n" "${CYAN}      |${NC}      .'${GREEN}${scan_cap}${NC}'.      ${CYAN}|${NC}" > /dev/tty
-    printf "\033[2K\r%b\n" "${CYAN}      |${NC}     /${GREEN}${scan_upper}${NC}\\     ${CYAN}|${NC}" > /dev/tty
-    printf "\033[2K\r%b\n" "${CYAN}      |${NC}    |${GREEN}${scan_top}${NC}|    ${CYAN}|${NC}" > /dev/tty
-    printf "\033[2K\r%b\n" "${CYAN}      |${NC}    |${GREEN}${scan_mid}${NC}|    ${CYAN}|${NC}" > /dev/tty
-    printf "\033[2K\r%b\n" "${CYAN}      |${NC}    |${GREEN}${scan_bottom}${NC}|    ${CYAN}|${NC}" > /dev/tty
-    printf "\033[2K\r%b%s%b\n" "${CYAN}      |${NC}     " "\\" "${GREEN}${scan_lower}${NC}/     ${CYAN}|${NC}" > /dev/tty
-    printf "\033[2K\r%b\n" "${CYAN}      |${NC}      '.${GREEN}${scan_base}${NC}.'      ${CYAN}|${NC}" > /dev/tty
+    printf "\033[2K\r%b%s%b\n" "${CYAN}      |${NC}      .'${GREEN}" "$scan_cap" "${NC}'.      ${CYAN}|${NC}" > /dev/tty
+    printf "\033[2K\r%b%s%b\n" "${CYAN}      |${NC}     /${GREEN}" "$scan_upper" "${NC}\\     ${CYAN}|${NC}" > /dev/tty
+    printf "\033[2K\r%b%s%b\n" "${CYAN}      |${NC}    |${GREEN}" "$scan_top" "${NC}|    ${CYAN}|${NC}" > /dev/tty
+    printf "\033[2K\r%b%s%b\n" "${CYAN}      |${NC}    |${GREEN}" "$scan_mid" "${NC}|    ${CYAN}|${NC}" > /dev/tty
+    printf "\033[2K\r%b%s%b\n" "${CYAN}      |${NC}    |${GREEN}" "$scan_bottom" "${NC}|    ${CYAN}|${NC}" > /dev/tty
+    printf "\033[2K\r%b%s%b%s%b\n" "${CYAN}      |${NC}     " "\\" "${GREEN}" "$scan_lower" "${NC}/     ${CYAN}|${NC}" > /dev/tty
+    printf "\033[2K\r%b%s%b\n" "${CYAN}      |${NC}      '.${GREEN}" "$scan_base" "${NC}.'      ${CYAN}|${NC}" > /dev/tty
     printf "\033[2K\r%b\n" "${CYAN}      |${NC}        '------'        ${CYAN}|${NC}" > /dev/tty
     printf "\033[2K\r%b\n" "${CYAN}      '------------------------'${NC}" > /dev/tty
     printf "\033[2K\r%b\n" "${BLUE}      Recherche SSH: ${GREEN}${host_label}${BLUE}...${NC}" > /dev/tty
