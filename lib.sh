@@ -2869,6 +2869,112 @@ detect_project_type() {
     fi
 }
 
+validate_flox_runtime_package_token() {
+    local token=$1
+
+    if [ -z "$token" ]; then
+        return 1
+    fi
+
+    if [[ ! "$token" =~ ^[A-Za-z0-9][A-Za-z0-9._+-]*(@[A-Za-z0-9][A-Za-z0-9._+-]*)?$ ]]; then
+        return 1
+    fi
+
+    if [[ "$token" == -* ]]; then
+        return 1
+    fi
+
+    if [[ "$token" == *"@"* ]]; then
+        local version_part="${token#*@}"
+        if [[ "$version_part" == -* ]] || [ -z "$version_part" ]; then
+            return 1
+        fi
+    fi
+
+    return 0
+}
+
+ensure_flox_runtime_packages() {
+    local project_dir=$1
+    local lang=$2
+    local pm=$3
+    local package_var_name=""
+    local package_spec=""
+    local runtime_label=""
+    local runtime_check_cmd=""
+    local -a runtime_packages=()
+    local token=""
+
+    case "$lang" in
+        dart)
+            package_var_name="SHIPFLOW_FLOX_DART_PACKAGES"
+            package_spec="${SHIPFLOW_FLOX_DART_PACKAGES:-}"
+            runtime_label="Dart"
+            runtime_check_cmd="dart --version"
+            ;;
+        flutter)
+            package_var_name="SHIPFLOW_FLOX_FLUTTER_PACKAGES"
+            package_spec="${SHIPFLOW_FLOX_FLUTTER_PACKAGES:-}"
+            runtime_label="Flutter"
+            runtime_check_cmd="flutter --version"
+            ;;
+        *)
+            return 0
+            ;;
+    esac
+
+    read -r -a runtime_packages <<< "$package_spec"
+    if [ ${#runtime_packages[@]} -eq 0 ]; then
+        error "Aucun paquet Flox configuré pour le runtime $runtime_label"
+        info "Projet: $project_dir"
+        info "Type détecté: $lang ($pm)"
+        info "Variable attendue: $package_var_name"
+        return 1
+    fi
+
+    for token in "${runtime_packages[@]}"; do
+        if ! validate_flox_runtime_package_token "$token"; then
+            error "Valeur invalide pour $package_var_name: $token"
+            info "Projet: $project_dir"
+            info "Type détecté: $lang ($pm)"
+            info "Format accepté: package ou package@version (ex: flutter@3.41.5-sdk-links)"
+            info "Refusés: chemins, flake installables, tokens commençant par '-', quotes et caractères shell"
+            return 1
+        fi
+    done
+
+    if (cd "$project_dir" && flox activate -- bash -lc "$runtime_check_cmd" >/dev/null 2>&1); then
+        echo -e "${GREEN}✅ Runtime $runtime_label déjà disponible dans Flox${NC}"
+        return 0
+    fi
+
+    local package_string="${runtime_packages[*]}"
+    echo -e "${BLUE}📦 Projet $runtime_label détecté — provisioning Flox (${package_string})...${NC}"
+
+    if ! flox install -d "$project_dir" "${runtime_packages[@]}"; then
+        error "Échec du provisioning runtime Flox"
+        info "Projet: $project_dir"
+        info "Type détecté: $lang ($pm)"
+        info "Paquet(s): $package_string"
+        info "Retry: flox install -d \"$project_dir\" $package_string"
+        info "Override: export $package_var_name='<package>'"
+        return 1
+    fi
+
+    if ! (cd "$project_dir" && flox activate -- bash -lc "$runtime_check_cmd" >/dev/null 2>&1); then
+        error "Le runtime $runtime_label n'est pas disponible après installation Flox"
+        info "Projet: $project_dir"
+        info "Type détecté: $lang ($pm)"
+        info "Paquet(s): $package_string"
+        info "Vérification manuelle: (cd \"$project_dir\" && flox activate -- $runtime_check_cmd)"
+        info "Override: export $package_var_name='<package>'"
+        return 1
+    fi
+
+    echo -e "${GREEN}✅ Runtime $runtime_label prêt dans Flox${NC}"
+    return 0
+}
+
 python_runtime_command() {
     local project_dir=$1
 
@@ -2901,27 +3007,35 @@ init_flox_env() {
 
     cd "$project_dir" || return 1
 
+    # Detect project type
+    local project_type
+    project_type=$(detect_project_type "$project_dir")
+    local lang
+    lang=$(echo "$project_type" | cut -d: -f1)
+    local pm
+    pm=$(echo "$project_type" | cut -d: -f2)
+
     if [ -d ".flox" ]; then
-        echo -e "${GREEN}✅ Environnement Flox existe déjà${NC}"
-        log DEBUG "Flox environment already exists for $project_name"
+        if [ "$lang" = "dart" ] || [ "$lang" = "flutter" ]; then
+            echo -e "${BLUE}🔄 Environnement Flox existant — vérification runtime $lang...${NC}"
+            ensure_flox_runtime_packages "$project_dir" "$lang" "$pm" || return 1
+        else
+            echo -e "${GREEN}✅ Environnement Flox existe déjà${NC}"
+        fi
+        log DEBUG "Flox environment already exists for $project_name ($lang)"
         return 0
     fi
 
     echo -e "${BLUE}🔧 Création de l'environnement Flox...${NC}"
-    
-    # Detect project type
-    local project_type=$(detect_project_type "$project_dir")
-    local lang=$(echo "$project_type" | cut -d: -f1)
-    local pm=$(echo "$project_type" | cut -d: -f2)
-    
+
     echo -e "${BLUE}📦 Type détecté: $lang ($pm)${NC}"
-    
+
     # Init flox environment
     if ! flox init -d "$project_dir" 2>/dev/null; then
         error "Échec de l'initialisation Flox"
         return 1
     fi
-    
+
     # Install packages based on project type
     case "$lang" in
         nodejs)
@@ -2951,16 +3065,10 @@ init_flox_env() {
             flox install go
             ;;
         dart)
-            echo -e "${BLUE}🎯 Projet Dart détecté — installation de Dart...${NC}"
-            flox install dart
+            ensure_flox_runtime_packages "$project_dir" "$lang" "$pm" || return 1
             ;;
         flutter)
-            if command -v flutter >/dev/null 2>&1; then
-                echo -e "${BLUE}🦋 Projet Flutter détecté — SDK Flutter disponible${NC}"
-            else
-                echo -e "${YELLOW}⚠️ Projet Flutter détecté mais SDK non trouvé dans le PATH${NC}"
-                echo -e "${YELLOW}   Installez via : sf → Advanced → Install SDK${NC}"
-            fi
+            ensure_flox_runtime_packages "$project_dir" "$lang" "$pm" || return 1
             ;;
         generic)
             echo -e "${YELLOW}📄 Projet générique - environnement Flox de base${NC}"
@@ -3192,31 +3300,19 @@ detect_dev_command() {
     elif [ -f "pubspec.yaml" ]; then
         pubspec_kind=$(detect_pubspec_kind "$project_dir")
         if [ "$pubspec_kind" = "dart" ]; then
-            local db="dart"
-            if ! command -v dart >/dev/null 2>&1; then
-                for _p in "$HOME/.flutter-sdk/bin/dart" "/opt/flutter/bin/dart"; do
-                    if [ -x "$_p" ]; then db="$_p"; break; fi
-                done
-            fi
             local dart_entrypoint=""
             dart_entrypoint=$(detect_dart_entrypoint "$project_dir")
             if [ -n "$dart_entrypoint" ]; then
-                echo "$db pub get && $db run $dart_entrypoint"
+                echo "dart pub get && dart run $dart_entrypoint"
             else
-                echo "$db pub get && $db run"
+                echo "dart pub get && dart run"
             fi
         elif [ -x "./pm2-web.sh" ]; then
             echo "./pm2-web.sh"
         elif [ -x "./build.sh" ]; then
             echo "./build.sh --serve"
         elif [ -d "web" ]; then
-            local fb="flutter"
-            if ! command -v flutter >/dev/null 2>&1; then
-                for _p in "$HOME/.flutter-sdk/bin/flutter" "/opt/flutter/bin/flutter"; do
-                    if [ -x "$_p" ]; then fb="$_p"; break; fi
-                done
-            fi
-            echo "$fb config --enable-web >/dev/null 2>&1 || true && $fb pub get && $fb run -d web-server --web-hostname 0.0.0.0 --web-port \$PORT"
+            echo "flutter config --enable-web >/dev/null 2>&1 || true && flutter pub get && flutter run -d web-server --web-hostname 0.0.0.0 --web-port \$PORT"
         else
             echo "echo 'Flutter project detected but no web target or pm2 entrypoint found' && exit 1"
         fi
@@ -3334,9 +3430,15 @@ env_start() {
     env_name=$(basename "$project_dir") # Derive env_name from the resolved path
     pm2_config="$project_dir/ecosystem.config.cjs"
 
+    local project_type
+    project_type=$(detect_project_type "$project_dir")
+    local project_lang="${project_type%%:*}"
+
     # Check if Flox env exists, create if not
     if [ ! -d "$project_dir/.flox" ]; then
         echo -e "${YELLOW}⚠️  Pas d'environnement Flox détecté${NC}"
+        init_flox_env "$project_dir" "$env_name" || return 1
+    elif [ "$project_lang" = "dart" ] || [ "$project_lang" = "flutter" ]; then
         init_flox_env "$project_dir" "$env_name" || return 1
     fi
 

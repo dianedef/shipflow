@@ -4,7 +4,7 @@ metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
 project: "shipflow"
 created: "2026-04-25"
-updated: "2026-04-25"
+updated: "2026-05-02"
 status: draft
 source_skill: manual
 scope: "context"
@@ -233,6 +233,8 @@ GitHub / project detection
   -> detect_pubspec_kind
   -> detect_dart_entrypoint
   -> detect_project_type
+  -> validate_flox_runtime_package_token
+  -> ensure_flox_runtime_packages
   -> python_runtime_command
   -> init_flox_env
   -> fix_port_config

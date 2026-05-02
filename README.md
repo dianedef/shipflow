@@ -186,6 +186,13 @@ ShipFlow also installs the terminal tooling commonly needed to operate those int
 - `python3` and `PyYAML`
 - core tools: `git`, `curl`, `jq`, `fuser`, `ss` (`iproute2`), `python3-pip` (if needed)
 
+For Dart/Flutter projects, ShipFlow provisions runtime packages inside each
+project Flox environment (not as a required global SDK). Defaults are
+`SHIPFLOW_FLOX_DART_PACKAGES=dart` and
+`SHIPFLOW_FLOX_FLUTTER_PACKAGES=flutter@3.41.5-sdk-links`, with strict token
+validation on overrides. The `Advanced > Install SDK` menu stays available as
+an optional global convenience.
+
 Per-user configuration includes:
 - `~/.claude/skills/*` and `~/.codex/skills/*` symlinks for every ShipFlow skill
 - aliases in `~/.bashrc` for `shipflow`, `sf`, autonomous `c`/`co`, and safe escape hatches `cask`/`coask`

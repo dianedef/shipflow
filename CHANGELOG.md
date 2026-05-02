@@ -29,6 +29,7 @@ next_step: "/sf-docs audit CHANGELOG.md"
 ## [Unreleased]
 
 ### Added
+- Per-project Dart/Flutter Flox runtime provisioning for ShipFlow-managed `pubspec.yaml` projects, including strict package override validation, existing `.flox` repair, focused shell tests, and runtime/installer documentation.
 - Governance corpus lifecycle across `sf-init`, `sf-docs`, and the `sf-build` spec: init bootstraps technical/editorial corpus state, docs owns first-run adoption and audit, and `sf-build` now has a Governance Corpus Gate before implementation.
 - Editorial content governance layer under `docs/editorial/`, covering public surface mapping, page intent, claim boundaries, editorial update gates, Astro content schema policy, and missing blog/article surface rules
 - Read-only Editorial Reader role and editorial content corpus reference for public-content impact, claim impact, and runtime content schema analysis

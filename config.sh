@@ -150,10 +150,12 @@ export SHIPFLOW_OPTIONAL_TOOLS=("flox" "git" "jq" "python3")
 # ============================================================================
 
 # Default Flox packages to install for each project type
-export SHIPFLOW_FLOX_NODEJS_PACKAGES="nodejs"
-export SHIPFLOW_FLOX_PYTHON_PACKAGES="python3"
-export SHIPFLOW_FLOX_RUST_PACKAGES="rustc cargo"
-export SHIPFLOW_FLOX_GO_PACKAGES="go"
+export SHIPFLOW_FLOX_NODEJS_PACKAGES="${SHIPFLOW_FLOX_NODEJS_PACKAGES:-nodejs}"
+export SHIPFLOW_FLOX_PYTHON_PACKAGES="${SHIPFLOW_FLOX_PYTHON_PACKAGES:-python3}"
+export SHIPFLOW_FLOX_RUST_PACKAGES="${SHIPFLOW_FLOX_RUST_PACKAGES:-rustc cargo}"
+export SHIPFLOW_FLOX_GO_PACKAGES="${SHIPFLOW_FLOX_GO_PACKAGES:-go}"
+export SHIPFLOW_FLOX_DART_PACKAGES="${SHIPFLOW_FLOX_DART_PACKAGES:-dart}"
+export SHIPFLOW_FLOX_FLUTTER_PACKAGES="${SHIPFLOW_FLOX_FLUTTER_PACKAGES:-flutter@3.41.5-sdk-links}"
 
 # ============================================================================
 # VALIDATION CONFIGURATION

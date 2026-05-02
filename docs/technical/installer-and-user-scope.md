@@ -4,7 +4,7 @@ metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
 project: ShipFlow
 created: "2026-05-01"
-updated: "2026-05-01"
+updated: "2026-05-02"
 status: reviewed
 source_skill: sf-start
 scope: installer-and-user-scope
@@ -73,6 +73,7 @@ sudo ./install.sh
 - Existing user config must be preserved outside ShipFlow-managed blocks.
 - Symlinks and aliases should be idempotent and updated consistently.
 - Installer errors should stop before partial or misleading success.
+- `install.sh` provides Flox/system tooling; Flutter/Dart runtimes are provisioned per project Flox environment unless the operator explicitly uses optional global SDK install.
 
 ## Failure Modes
 

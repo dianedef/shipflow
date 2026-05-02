@@ -4,7 +4,7 @@ metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
 project: ShipFlow
 created: "2026-05-01"
-updated: "2026-05-01"
+updated: "2026-05-02"
 status: reviewed
 source_skill: sf-start
 scope: runtime-cli
@@ -68,6 +68,14 @@ shipflow.sh
   -> PM2 / Flox / Caddy / DuckDNS side effect
 ```
 
+For projects detected from `pubspec.yaml`, runtime provisioning is explicit:
+- `dart` projects must ensure Dart packages in project Flox before launch.
+- `flutter` projects must ensure Flutter packages in project Flox before launch.
+- existing `.flox` environments are repaired idempotently for Dart/Flutter
+  runtime packages before startup continues.
+- runtime override variables are treated as untrusted input and validated as
+  simple Flox package tokens before any `flox install` call.
+
 ## Invariants
 
 - PM2 is the execution state source.
@@ -76,6 +84,7 @@ shipflow.sh
 - Port allocation must avoid active socket collisions and PM2 hidden collisions.
 - User-visible success and failure should be observable.
 - Generated ecosystem/runtime config is not the hand-edited source of truth.
+- Dart/Flutter runtime provisioning failures must stop startup before PM2 launch.
 
 ## Failure Modes
 
@@ -83,6 +92,7 @@ shipflow.sh
 - PM2 cache drift can make dashboard, health, and port decisions wrong.
 - Caddy/DuckDNS publishing failures must not be reported as successful public exposure.
 - Broad shell parsing can misread structured state; use `jq`, Node, or existing structured helpers where available.
+- Invalid Dart/Flutter package overrides (paths, shell fragments, option-like tokens) must be rejected before invoking `flox install`.
 
 ## Security Notes
 
@@ -95,6 +105,7 @@ shipflow.sh
 ```bash
 bash -n shipflow.sh lib.sh config.sh
 rg -n "invalidate_pm2_cache" lib.sh
+./test_flox_runtime_provisioning.sh
 ```
 
 Run a focused runtime smoke for the touched behavior when practical, for example dashboard/status for read-only changes or a non-production test project for lifecycle changes.
