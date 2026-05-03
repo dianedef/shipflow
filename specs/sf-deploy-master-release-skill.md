@@ -67,7 +67,7 @@ evidence:
   - "Skill budget audit passes after compacting selected existing skill descriptions; absolute estimate is 7985/8000."
   - "Site build generated /skills/sf-deploy successfully."
   - "skill-creator quick_validate.py was attempted and rejected ShipFlow's existing argument-hint frontmatter convention; the field was preserved to match local ShipFlow skill contracts."
-next_step: "/sf-ship \"add sf-deploy release orchestrator\""
+next_step: "none"
 ---
 
 # Spec: sf-deploy Master Release Skill
