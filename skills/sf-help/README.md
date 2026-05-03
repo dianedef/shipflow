@@ -6,7 +6,7 @@
 
 `sf-help` is the entrypoint when you know you want ShipFlow, but not which skill should lead. It acts as a cheatsheet for the system: execution paths, audit modes, prompting behavior, tracking conventions, metadata rules, and common next-step chains.
 
-It also explains the browser evidence boundary: `sf-browser` for non-auth page checks, `sf-auth-debug` for auth/session/protected flows, `sf-prod` for deployment/runtime truth, and `sf-test` for durable manual QA logs.
+It also explains the browser and bug-loop boundaries: `sf-browser` for non-auth page checks, `sf-auth-debug` for auth/session/protected flows, `sf-prod` for deployment/runtime truth, `sf-test` for durable manual QA logs, and `sf-bug` for BUG-ID lifecycle routing.
 
 For solo founders, it shortens the learning curve. Instead of memorizing dozens of skills, you can quickly locate the one that matches your situation.
 
@@ -32,7 +32,7 @@ For solo founders, it shortens the learning curve. Instead of memorizing dozens 
 
 - a compact map of the skill system
 - guidance on common sequences and branching decisions
-- help choosing between `sf-browser`, `sf-auth-debug`, `sf-prod`, and `sf-test`
+- help choosing between `sf-browser`, `sf-auth-debug`, `sf-prod`, `sf-test`, and `sf-bug`
 - reminders about tracking, docs, and security guardrails
 
 ## Typical Examples
@@ -51,6 +51,7 @@ For solo founders, it shortens the learning curve. Instead of memorizing dozens 
 ## Related Skills
 
 - `sf-fix` for bug-first intake
+- `sf-bug` for routing bug dossiers through fix, retest, verify, and ship risk
 - `sf-browser` for non-auth page, visual, console, screenshot, or network evidence
 - `sf-start` for implementation
 - `sf-audit` for broad project reviews

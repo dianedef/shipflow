@@ -1,6 +1,6 @@
 ---
 name: sf-migrate
-description: "Framework migration assistant for upgrade research, breaking changes, and safe application."
+description: "Framework migration assistant for upgrades and breaking changes."
 disable-model-invocation: true
 argument-hint: '[package@version] (e.g., "astro@5")'
 ---

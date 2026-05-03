@@ -1,6 +1,6 @@
 ---
 name: sf-audit
-description: "Master audit across code, design, copy, SEO, GTM, translation, dependencies, and performance."
+description: "Master audit across product, code, design, SEO, GTM, and performance."
 disable-model-invocation: true
 argument-hint: '[file-path | "global"] (omit for full project)'
 ---

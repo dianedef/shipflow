@@ -1,6 +1,6 @@
 ---
 name: sf-audit-design
-description: "UI/UX design audit for heuristics, visual hierarchy, accessibility, and interaction quality."
+description: "UI/UX audit for hierarchy, accessibility, interaction, and quality."
 disable-model-invocation: true
 argument-hint: '[file-path | "global" | "deep"] (omit for full project light audit)'
 ---

@@ -251,7 +251,15 @@ That means:
 - if a fresh context is needed and cannot be created automatically, the skill must ask the user to open a new thread
 - “prompt and correct” is a fallback for bounded drift, not the normal operating mode
 
-Bug-first entrypoint:
+Bug loop entrypoint:
+
+```text
+sf-bug -> sf-test -> bug dossier -> sf-fix -> sf-test --retest -> sf-verify -> sf-ship
+```
+
+Use `sf-bug` when you want the professional bug loop orchestrated from a `BUG-ID`, a fresh bug report, a retest request, or a ship-risk question. It routes to the narrower owner skill without bypassing the dossier, retest, verification, or ship-risk gates.
+
+Bug-first repair entrypoint:
 
 ```text
 sf-fix -> (fix directly or spec-first path)

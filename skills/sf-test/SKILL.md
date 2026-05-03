@@ -1,6 +1,6 @@
 ---
 name: sf-test
-description: "Guided manual QA for feature flows, retests, environments, structured logs, and bug capture."
+description: "Manual QA for feature flows, retests, environments, logs, and bug capture."
 argument-hint: [optional: feature, flow, bug id, --retest BUG-ID, --prod, --preview, --local]
 ---
 

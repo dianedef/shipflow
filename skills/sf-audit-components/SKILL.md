@@ -1,6 +1,6 @@
 ---
 name: sf-audit-components
-description: "Component architecture audit for duplication, variants, composition, API hygiene, and reuse."
+description: "Component audit for reuse, variants, composition, and API hygiene."
 disable-model-invocation: true
 argument-hint: '[file-path | "global"] (omit for full project)'
 ---

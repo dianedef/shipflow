@@ -31,6 +31,7 @@ Quick reference for the skill system, modes, and workflows.
 |-------|---------|-----------|
 | `/sf-build` | Master user-facing orchestrator from story to spec, implementation, verification, closure, and ship | `<story, bug, or goal>` |
 | `/sf-skill-build` | Master skill-maintenance orchestrator for creating or modifying ShipFlow skills with lifecycle gates | `<new skill idea | existing skill path>` |
+| `/sf-bug` | Professional bug loop orchestrator for intake, dossiers, fixes, retests, verification, and ship risk | `BUG-ID`, `--retest BUG-ID`, `--ship BUG-ID` |
 | `/sf-fix` | Bug-first intake and routing (direct fix vs spec-first) | `<bug description>` |
 | `/sf-auth-debug` | Browser-auth diagnosis for Clerk, Supabase Auth, OAuth, Google/YouTube, Convex, sessions, callbacks | `<bug/URL/flow>` |
 | `/sf-browser` | General browser verification for public UI, visual state, console/network evidence, screenshots, and page-level assertions | `<URL or route> <objective>` |
@@ -69,6 +70,7 @@ Note: `/sf-verify` now includes guided next-step prompting when verdict is not r
 Note: `/sf-auth-debug` is the required diagnostic path for auth bugs that need browser evidence before implementation.
 Note: `/sf-browser` is the generic browser evidence path for non-auth page assertions; use `/sf-auth-debug` for auth/session/provider issues, `/sf-prod` for deployment truth, and `/sf-test` for durable manual QA logs.
 Note: `/sf-test` sits after verification and before shipping when a human needs to confirm the real user flow; it writes compact `TEST_LOG.md`, compact `BUGS.md`, and a bug dossier when needed.
+Note: `/sf-bug` is the recommended entrypoint when you want the whole professional bug loop routed from a `BUG-ID`, retest, closure question, or ship-risk question.
 Note: `/sf-start` now reuses the `sf-model` routing matrix and can choose `single-agent` vs `multi-agent` execution with explicit file ownership and per-group model overrides.
 Note: `/sf-spec` → `/sf-ready` → `/sf-start` → `/sf-verify` now share a `User Story` contract and should ask targeted user questions whenever behavior, scope, or security is still ambiguous.
 Note: `/sf-build` is the recommended end-user entrypoint for non-trivial work; invocation authorizes bounded delegated sequential execution for the current chantier, while parallel execution requires ready non-overlapping `Execution Batches`.
@@ -78,12 +80,13 @@ Note: `/sf-skill-build` is the recommended entrypoint for ShipFlow skill mainten
 ### Professional Bug Loop (concise)
 
 Flow:
-1. `/sf-test [scope]` detects a fail and logs a compact test pointer.
-2. `BUGS.md` keeps a compact index row (`BUG-ID`, status, severity, last-tested, bug dossier path).
-3. `bugs/BUG-ID.md` is the full bug dossier (repro, expected/observed, diagnosis, Fix Attempts, Retest History, redaction state, next step).
-4. `/sf-fix BUG-ID` appends diagnosis + fix attempts; when no `BUG-ID` exists yet, `sf-fix` should usually create one rather than leaving the bug memory only in chat or git history.
-5. `/sf-test --retest BUG-ID` appends Retest History in the bug dossier and updates status (`open` or `fixed-pending-verify`).
-6. `/sf-verify` and `/sf-ship` gate optimistic closure when open high/critical bugs remain.
+1. `/sf-bug [BUG-ID or summary]` chooses the safest next command.
+2. `/sf-test [scope]` detects a fail and logs a compact test pointer.
+3. `BUGS.md` keeps a compact index row (`BUG-ID`, status, severity, last-tested, bug dossier path).
+4. `bugs/BUG-ID.md` is the full bug dossier (repro, expected/observed, diagnosis, Fix Attempts, Retest History, redaction state, next step).
+5. `/sf-fix BUG-ID` appends diagnosis + fix attempts; when no `BUG-ID` exists yet, `sf-fix` should usually create one rather than leaving the bug memory only in chat or git history.
+6. `/sf-test --retest BUG-ID` appends Retest History in the bug dossier and updates status (`open` or `fixed-pending-verify`).
+7. `/sf-verify` and `/sf-ship` gate optimistic closure when open high/critical bugs remain.
 
 File roles:
 - `TEST_LOG.md`: tracker of manual test runs (compact pointers only).
@@ -125,6 +128,7 @@ Internal role matrix:
 | `skills/sf-deploy/SKILL.md` | obligatoire | lifecycle | Orchestrates the release confidence loop through checks, ship, deploy truth, post-deploy evidence, verification, and changelog routing. |
 | `skills/sf-enrich/SKILL.md` | conditionnel | support-de-chantier | Supports content upgrades; route only when follow-up needs a spec. |
 | `skills/sf-explore/SKILL.md` | non-applicable | helper | Exploration can recommend `/sf-spec` and may write durable `exploration_report` artifacts, but does not write chantier history. |
+| `skills/sf-bug/SKILL.md` | conditionnel | source-de-chantier | Bug lifecycle orchestration becomes a chantier when status, severity, reproduction, closure, or ship risk needs a durable spec. |
 | `skills/sf-fix/SKILL.md` | conditionnel | source-de-chantier | Bug triage becomes a chantier when the fix is non-local, risky, or spec-first. |
 | `skills/sf-help/SKILL.md` | non-applicable | helper | Help is doctrine/read-only; never writes to specs. |
 | `skills/sf-init/SKILL.md` | conditionnel | support-de-chantier | Supports project bootstrap; route to spec only when setup policy must be formalized. |
@@ -394,6 +398,7 @@ Provide explicit arguments and prompts don't appear:
 
 ### Fix a bug
 ```bash
+/sf-bug BUG-2026-05-03-001      # Route the next step from dossier status
 /sf-fix "short bug description"    # Triage + direct fix or route
 /sf-auth-debug "Google login returns to sign-in" # Reproduce auth flow and isolate the failure point
 /sf-browser "https://example.com" "verify Example Domain is visible" # Collect non-auth browser evidence
@@ -484,6 +489,8 @@ Provide explicit arguments and prompts don't appear:
 **End of day?** → `/sf-tasks` then `/sf-review daily`
 
 **Before deploy?** → `/sf-deploy` (runs check + ship + prod + proof routing + verify)
+
+**Bug has a BUG-ID?** → `/sf-bug BUG-ID` (routes fix, retest, verify, or ship risk from dossier state)
 
 **Audit everything?** → `/sf-audit global` (all 8 domains)
 

@@ -1,6 +1,6 @@
 ---
 name: continue
-description: "Resume paused work, choose the next useful action, and report progress plus remaining steps."
+description: "Resume paused work and report the next useful step."
 argument-hint: <optional focus>
 ---
 

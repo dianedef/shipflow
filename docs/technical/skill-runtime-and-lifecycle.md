@@ -74,6 +74,7 @@ This doc covers ShipFlow skills, lifecycle flow, references, templates, model/to
 - `sf-docs`: documentation generation, audit, metadata, and technical-docs mode.
 - `sf-docs technical`: technical governance bootstrap, code-docs map creation, and audit.
 - `sf-docs editorial`: editorial governance scaffolding and audit for public-content drift, claim register, page intent, and runtime content schema preservation.
+- `sf-bug`: professional bug loop orchestrator (`sf-test -> bug dossier -> sf-fix -> sf-test --retest -> sf-verify -> sf-ship`).
 - `sf-browser`: generic non-auth browser verification through Playwright MCP for URLs, page-level assertions, screenshots, console summaries, and network summaries.
 - `sf-build`: user-facing orchestrator that consumes the governance corpus gate before implementation, closure, and ship.
 - `sf-deploy`: release confidence orchestrator (`sf-check -> sf-ship -> sf-prod -> sf-browser/sf-auth-debug/sf-test -> sf-verify -> sf-changelog`).
@@ -111,6 +112,17 @@ sf-deploy
   -> sf-changelog when useful
 ```
 
+Professional bug flow:
+
+```text
+sf-bug
+  -> sf-test for capture or retest
+  -> sf-fix for diagnosis and fix attempts
+  -> sf-auth-debug / sf-browser when evidence is missing
+  -> sf-verify for closure
+  -> sf-ship for final bug-risk-aware shipping
+```
+
 ## Invariants
 
 - Lifecycle skills trace into exactly one chantier spec when one is identified.
@@ -130,6 +142,7 @@ sf-deploy
   ARM64 Chrome-stable fallback evidence.
 - `sf-browser` owns generic non-auth browser proof. `sf-auth-debug` owns auth, session, callback, provider, tenant, and protected-route browser proof.
 - `sf-deploy` owns release orchestration only; `sf-ship` owns commit/push, `sf-prod` owns deployed truth, and proof skills own observed behavior.
+- `sf-bug` owns bug lifecycle orchestration only; phase skills still own bug record mutation, diagnosis, retest evidence, verification, and shipping.
 - A release is not considered verified from push success, provider success, or a bare `200 OK` alone.
 
 ## Failure Modes

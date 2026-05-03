@@ -67,7 +67,15 @@ Default operating stance:
 - avoid “prompt and correct” loops as the normal path
 - treat late clarification as a bounded exception, not the workflow itself
 
-Bug intake entrypoint:
+Bug loop entrypoint:
+
+```text
+sf-bug -> sf-test -> bug dossier -> sf-fix -> sf-test --retest -> sf-verify -> sf-ship
+```
+
+Use `sf-bug` when the operator wants one bug lifecycle router for a new report, a `BUG-ID`, a retest, a closure question, or a ship-risk question. It routes to the existing owner skill rather than mutating bug records or code itself.
+
+Bug repair entrypoint:
 
 ```text
 sf-fix -> fix directly or route to spec-first path
@@ -621,11 +629,12 @@ ShipFlow uses a three-layer bug record so tests, triage, and evidence stay reada
 The standard bug loop is:
 
 ```text
-sf-test -> bug dossier -> sf-fix -> sf-test --retest -> sf-verify -> sf-ship
+sf-bug -> sf-test -> bug dossier -> sf-fix -> sf-test --retest -> sf-verify -> sf-ship
 ```
 
 Each stage has a narrow job:
 
+- `sf-bug` reads bug state and routes the next command without bypassing lifecycle gates.
 - `sf-test` captures the failure, opens or updates the dossier, and links to the compact index.
 - `sf-fix` reads the dossier and appends diagnosis and fix attempts.
 - `sf-test --retest BUG-ID` appends the retest history and updates the bug state.
@@ -869,7 +878,8 @@ It should:
 
 Use this rule of thumb:
 
-- bug intake -> `sf-fix`
+- bug lifecycle orchestration -> `sf-bug`
+- bug repair intake -> `sf-fix`
 - unclear problem -> `sf-explore`
 - non-trivial scoped work -> `sf-spec`
 - spec candidate before first implementation -> `sf-ready`

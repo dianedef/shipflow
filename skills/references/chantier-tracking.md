@@ -97,7 +97,7 @@ This block coexists with the standard `Chantier` block. If the source skill is a
 |-------------|----------------|--------------|------------------|
 | `sf-spec`, `sf-ready`, `sf-build`, `sf-deploy`, `sf-start`, `sf-verify`, `sf-end`, `sf-ship` | `obligatoire` | `lifecycle` | Not a source; continue the existing chantier. |
 | `sf-audit*`, `sf-deps`, `sf-perf` | `conditionnel` | `source-de-chantier` | Major audit findings, P0/P1, cross-domain P2 clusters, or fixes needing a spec. |
-| `sf-auth-debug`, `sf-prod`, `sf-check`, `sf-test`, `sf-migrate`, `sf-fix` | `conditionnel` | `source-de-chantier` | Incidents, failing flows, migration risk, bug dossiers, or validation failures beyond a direct fix. |
+| `sf-auth-debug`, `sf-prod`, `sf-check`, `sf-test`, `sf-migrate`, `sf-fix`, `sf-bug` | `conditionnel` | `source-de-chantier` | Incidents, failing flows, migration risk, bug dossiers, bug lifecycle routing, or validation failures beyond a direct fix. |
 | `sf-market-study`, `sf-veille`, `sf-research` | `conditionnel` | `source-de-chantier` | Strategic or research output that requires a product, content, architecture, or implementation decision. |
 | `sf-docs`, `sf-enrich`, `sf-redact`, `sf-repurpose`, `sf-scaffold`, `sf-changelog`, `sf-design-playground`, `sf-skills-refresh`, `sf-init` | `conditionnel` | `support-de-chantier` | Route to a source or `/sf-spec` only when the user explicitly asks to formalize follow-up work. |
 | `sf-tasks`, `sf-backlog`, `sf-priorities`, `sf-review`, `continue` | `conditionnel` | `pilotage` | Do not create a chantier from every note; route only when the user or evidence requires a durable spec. |

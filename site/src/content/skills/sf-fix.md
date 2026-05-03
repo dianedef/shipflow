@@ -34,6 +34,7 @@ limits:
   - "When a bug id is supplied, the skill consumes bugs/BUG-ID.md and appends diagnosis and fix attempts there instead of relying on chat history"
 related_skills:
   - "sf-spec"
+  - "sf-bug"
   - "sf-browser"
   - "sf-start"
   - "sf-verify"

@@ -40,6 +40,7 @@ limits:
 related_skills:
   - "sf-check"
   - "sf-verify"
+  - "sf-bug"
   - "sf-browser"
   - "sf-auth-debug"
   - "sf-fix"

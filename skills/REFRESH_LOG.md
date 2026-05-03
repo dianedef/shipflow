@@ -4,6 +4,22 @@ Chronological log of skill refreshes via `/sf-skills-refresh`. Most recent first
 
 ---
 
+## 2026-05-03 — sf-bug
+
+**Added:**
+- New professional bug loop orchestrator for `sf-test -> bug dossier -> sf-fix -> sf-test --retest -> sf-verify -> sf-ship`
+- Explicit ownership boundaries so `sf-bug` routes without duplicating bug capture, fix, retest, browser evidence, verification, or shipping internals
+- Stop conditions for missing dossiers, unsafe closure, unresolved high/critical ship risk, sensitive evidence, destructive production actions, and preview-validation gaps
+- Public skill page and internal discoverability updates for the professional bug lifecycle workflow
+
+**Updated:**
+- Compact descriptions for selected existing skills so adding `sf-bug` keeps discovery budget under the hard limit
+
+**New phases:**
+- None
+
+**Sources:** 0 URLs consulted (local Professional Bug Management doctrine and existing bug skill contracts)
+
 ## 2026-05-03 — sf-deploy
 
 **Added:**

@@ -1,0 +1,4 @@
+interface:
+  display_name: "SF Bug"
+  short_description: "Orchestrate bug intake and closure"
+  default_prompt: "Use $sf-bug to route bug intake, dossiers, fixes, retests, verification, and ship risk."

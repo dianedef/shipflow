@@ -1,6 +1,6 @@
 ---
 name: sf-audit-copywriting
-description: "Marketing copy audit from persona and offer through persuasion strategy and conversion path."
+description: "Marketing copy audit for persona, offer, persuasion, and conversion."
 argument-hint: '[file-path | "global"] (omit for full project)'
 ---
 

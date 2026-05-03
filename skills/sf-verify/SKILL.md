@@ -1,6 +1,6 @@
 ---
 name: sf-verify
-description: "Ship-readiness verification for user story, completeness, correctness, coherence, and risks."
+description: "Ship-readiness verification for story, correctness, coherence, and risk."
 argument-hint: [optional: tâche ou scope à vérifier]
 ---
 
