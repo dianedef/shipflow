@@ -201,12 +201,13 @@ run_remote_ssh() {
 
 shipflow_remote_pm2_ports_command() {
     local format="${1:-lines}"
-    local separator="\\n"
+    local formatter="cat"
     if [ "$format" = "comma" ]; then
-        separator=","
+        formatter="paste -sd, -"
     fi
 
     cat <<EOF
+{
 pm2 jlist 2>/dev/null | node -e '
 const fs = require("fs");
 try {
@@ -221,10 +222,27 @@ try {
     const port = Number(portValue);
     if (port < 1 || port > 65535) continue;
     const name = String(app.name || "unknown").replace(/[,:\\n\\r]/g, " ").trim() || "unknown";
-    ports.push(\`\${port}:\${name}\`);
+    ports.push(String(port) + ":" + name);
   }
-  process.stdout.write(ports.join("$separator"));
+  if (ports.length) process.stdout.write(ports.join("\\n") + "\\n");
 } catch {}
 '
+if command -v tmux >/dev/null 2>&1; then
+  registry="\${SHIPFLOW_FLUTTER_WEB_SESSIONS_FILE:-\$HOME/.shipflow/flutter-web-sessions.tsv}"
+  if [ -f "\$registry" ]; then
+    while IFS='|' read -r name port project_dir session_name; do
+      [ -n "\$name" ] || continue
+      case "\$port" in ''|*[!0-9]*) continue ;; esac
+      [ "\$port" -ge 1 ] && [ "\$port" -le 65535 ] || continue
+      [ -n "\$session_name" ] || continue
+      if tmux has-session -t "\$session_name" 2>/dev/null; then
+        safe_name=\$(printf '%s' "\$name" | sed 's/[,:]/ /g')
+        [ -n "\$safe_name" ] || safe_name="flutter-web"
+        printf '%s:%s\n' "\$port" "\$safe_name"
+      fi
+    done < "\$registry"
+  fi
+fi
+} | awk -F: '!seen[\$1]++' | $formatter
 EOF
 }

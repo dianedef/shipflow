@@ -32,7 +32,7 @@ next_step: "/sf-docs technical audit local"
 
 ## Purpose
 
-This doc covers the local tools that connect a workstation to a remote ShipFlow server: app tunnels, saved SSH connection state, remote PM2 port discovery, and `shipflow-mcp-login` for remote Codex MCP OAuth callbacks.
+This doc covers the local tools that connect a workstation to a remote ShipFlow server: app tunnels, saved SSH connection state, remote PM2 and Flutter Web `tmux` port discovery, and `shipflow-mcp-login` for remote Codex MCP OAuth callbacks.
 
 ## Owned Files
 
@@ -41,7 +41,7 @@ This doc covers the local tools that connect a workstation to a remote ShipFlow 
 | `local/local.sh` | Interactive local menu for tunnel lifecycle, status, server config, and MCP login | Preserve shared connection file semantics |
 | `local/dev-tunnel.sh` | Non-interactive managed tunnel helper | Keep managed PID selection narrow |
 | `local/mcp-login.sh` | Remote Codex MCP OAuth login tunnel flow | Do not store OAuth tokens |
-| `local/remote-helpers.sh` | SSH target, identity, and remote PM2 helper functions | Validate inputs before building SSH args |
+| `local/remote-helpers.sh` | SSH target, identity, and remote port helper functions | Validate inputs before building SSH args |
 | `local/install.sh`, `local/install_local.ps1` | Local installer scripts | Keep platform-specific assumptions explicit |
 | `local/README.md` | Operator-facing setup and troubleshooting | Update when commands or flow change |
 
@@ -57,7 +57,7 @@ This doc covers the local tools that connect a workstation to a remote ShipFlow 
 local/local.sh
   -> load current connection
   -> fetch remote session identity with animated TTY scan feedback
-  -> fetch remote PM2 ports
+  -> fetch remote PM2 ports and active Flutter Web tmux ports
   -> validate local port availability
   -> start autossh tunnels
   -> show localhost URLs
@@ -79,6 +79,9 @@ shipflow-mcp-login
 - Bare SSH identity filenames resolve from the menu launch directory, then `~/.ssh/`, then the user's home directory; the saved identity path should be absolute.
 - Local port occupancy is checked before opening a tunnel.
 - Managed tunnel stop logic should select ShipFlow-owned tunnels, not broad process patterns.
+- Active Flutter Web `tmux` ports are discovered from the server-side
+  `SHIPFLOW_FLUTTER_WEB_SESSIONS_FILE` registry and included only when the
+  recorded `tmux` session still exists.
 - OAuth tokens remain owned by Codex and the provider; ShipFlow only routes the callback.
 - Saved connection state is shared by app tunnels and MCP login.
 - Remote SSH helper calls run in batch mode so menu scans fail visibly instead of blocking on hidden SSH prompts.
@@ -90,6 +93,8 @@ shipflow-mcp-login
 - Reusing an old OAuth URL can fail because provider URLs and callback ports are per attempt.
 - A malformed SSH identity path or target can become an SSH option if validation regresses.
 - Duplicate local ports should block before creating partial tunnels.
+- A stale Flutter Web registry entry should be ignored by local tunnel tools
+  when its `tmux` session is no longer active.
 
 ## Security Notes
 

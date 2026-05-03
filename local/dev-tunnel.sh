@@ -211,14 +211,14 @@ fi
 echo -e "${BLUE}🔌 Connexion: ${GREEN}$REMOTE_HOST${NC}"
 echo ""
 
-# Récupérer les ports actifs depuis PM2 sur le serveur distant
-echo -e "${BLUE}📡 Récupération des ports actifs depuis PM2...${NC}"
+# Récupérer les ports actifs depuis ShipFlow sur le serveur distant
+echo -e "${BLUE}📡 Récupération des ports actifs depuis ShipFlow...${NC}"
 
 PORTS=$(run_remote_ssh "$(shipflow_remote_pm2_ports_command comma)" 2>/dev/null || true)
 
 if [ -z "$PORTS" ]; then
-    echo -e "${RED}✗ Aucun port trouvé ou PM2 n'est pas accessible${NC}"
-    echo -e "${YELLOW}  Vérifiez que PM2 tourne sur le serveur distant${NC}"
+    echo -e "${RED}✗ Aucun port trouvé sur le serveur distant${NC}"
+    echo -e "${YELLOW}  Vérifiez que PM2 tourne ou qu'une session Flutter Web tmux est active.${NC}"
     exit 1
 fi
 

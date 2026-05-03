@@ -731,12 +731,12 @@ start_tunnels() {
     sleep 1
     
     # Récupérer les ports
-    echo -e "${BLUE}📡 Récupération des ports actifs depuis PM2...${NC}"
+    echo -e "${BLUE}📡 Récupération des ports actifs depuis ShipFlow...${NC}"
     PORTS=$(get_active_ports)
     
     if [ -z "$PORTS" ]; then
-        echo -e "${RED}✗ Aucun port trouvé ou PM2 n'est pas accessible${NC}"
-        echo -e "${YELLOW}  Vérifiez que PM2 tourne sur le serveur distant${NC}"
+        echo -e "${RED}✗ Aucun port trouvé sur le serveur distant${NC}"
+        echo -e "${YELLOW}  Vérifiez que PM2 tourne ou qu'une session Flutter Web tmux est active.${NC}"
         return 1
     fi
     

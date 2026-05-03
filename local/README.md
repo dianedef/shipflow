@@ -87,7 +87,7 @@ shipflow-mcp-login all      # Enchaîne vercel puis supabase
 ### Menu interactif
 
 Le menu offre :
-- 🚇 **Démarrer les tunnels** - Détecte automatiquement les projets PM2 actifs
+- 🚇 **Démarrer les tunnels** - Détecte automatiquement les projets PM2 actifs et les sessions Flutter Web `tmux`
 - 📋 **Afficher les URLs** - Liste toutes les URLs localhost disponibles
 - 🛑 **Arrêter les tunnels** - Arrête tous les tunnels en cours
 - 📊 **Statut** - Vérifie l'état des tunnels actifs
@@ -146,7 +146,7 @@ urls              # Ouvre le menu interactif
 ```
 
 Le système :
-- ✅ Détecte automatiquement tous les projets PM2 actifs sur le serveur configuré
+- ✅ Détecte automatiquement tous les projets PM2 actifs et les sessions Flutter Web `tmux` sur le serveur configuré
 - ✅ Récupère leurs ports
 - ✅ Crée des tunnels SSH pour chaque port
 - ✅ Affiche les URLs accessibles (localhost:3000, etc.)
@@ -177,10 +177,15 @@ Ne réutilisez pas un port d'une tentative précédente: l'URL OAuth est périss
 
 ### Le script ne trouve pas de ports
 
-Vérifiez que PM2 tourne sur le serveur :
+Vérifiez que PM2 tourne sur le serveur, ou qu'une session Flutter Web a été lancée depuis `sf` :
 ```bash
 ssh "$(cat ~/.shipflow/current_connection)" "pm2 list"
+ssh "$(cat ~/.shipflow/current_connection)" "tmux ls"
 ```
+
+Pour Flutter Web, lancez côté serveur `sf`, puis `Flutter Web - tmux hot reload`
+et `Start session`. Le tunnel local lira le port enregistré si la session
+`tmux` est encore active.
 
 ### Les tunnels ne se créent pas
 

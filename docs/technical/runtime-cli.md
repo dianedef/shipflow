@@ -53,6 +53,8 @@ This doc covers the server-side CLI runtime: `shipflow.sh`, `lib.sh`, and `confi
 - `shipflow.sh::main`: checks prerequisites, cleans orphan state, and starts the menu.
 - `lib.sh::run_menu`: dispatches menu choices to `action_*` handlers.
 - `lib.sh::env_start`, `env_stop`, `env_restart`, `env_remove`: core environment lifecycle.
+- `lib.sh::action_flutter_web`: interactive Flutter Web preview through `tmux`
+  with hot reload/hot restart control.
 - `lib.sh::action_publish`: public exposure through Caddy and DuckDNS.
 
 ## Control Flow
@@ -76,6 +78,14 @@ For projects detected from `pubspec.yaml`, runtime provisioning is explicit:
 - runtime override variables are treated as untrusted input and validated as
   simple Flox package tokens before any `flox install` call.
 
+Flutter Web has two runtime paths:
+- PM2-managed launch remains available through the normal environment lifecycle.
+- Interactive preview uses `tmux` from `action_flutter_web`, starts
+  `flutter run -d web-server --web-hostname 0.0.0.0 --web-port <port>` inside
+  the project Flox environment, records the session in
+  `SHIPFLOW_FLUTTER_WEB_SESSIONS_FILE`, and sends `r`/`R` to that session for
+  hot reload or hot restart.
+
 ## Invariants
 
 - PM2 is the execution state source.
@@ -85,6 +95,8 @@ For projects detected from `pubspec.yaml`, runtime provisioning is explicit:
 - User-visible success and failure should be observable.
 - Generated ecosystem/runtime config is not the hand-edited source of truth.
 - Dart/Flutter runtime provisioning failures must stop startup before PM2 launch.
+- Flutter Web `tmux` preview sessions are interactive developer sessions, not
+  PM2-managed production-like processes.
 
 ## Failure Modes
 
@@ -93,6 +105,8 @@ For projects detected from `pubspec.yaml`, runtime provisioning is explicit:
 - Caddy/DuckDNS publishing failures must not be reported as successful public exposure.
 - Broad shell parsing can misread structured state; use `jq`, Node, or existing structured helpers where available.
 - Invalid Dart/Flutter package overrides (paths, shell fragments, option-like tokens) must be rejected before invoking `flox install`.
+- Missing `tmux` should block only the interactive Flutter Web preview path and
+  produce an actionable operator message.
 
 ## Security Notes
 
@@ -104,8 +118,8 @@ For projects detected from `pubspec.yaml`, runtime provisioning is explicit:
 
 ```bash
 bash -n shipflow.sh lib.sh config.sh
+test_flox_runtime_provisioning.sh
 rg -n "invalidate_pm2_cache" lib.sh
-./test_flox_runtime_provisioning.sh
 ```
 
 Run a focused runtime smoke for the touched behavior when practical, for example dashboard/status for read-only changes or a non-production test project for lifecycle changes.

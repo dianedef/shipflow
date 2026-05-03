@@ -210,6 +210,15 @@ PM2 / ports
   -> get_pm2_status
   -> get_port_from_pm2
 
+Flutter Web interactive dev
+  -> flutter_web_sessions_file
+  -> flutter_web_session_name
+  -> list_flutter_web_projects
+  -> flutter_web_registry_lines
+  -> start_flutter_web_tmux_session
+  -> send_flutter_web_key
+  -> action_flutter_web
+
 environment discovery
   -> resolve_project_path
   -> list_all_environments

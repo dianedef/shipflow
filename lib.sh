@@ -3325,6 +3325,362 @@ escape_single_quotes_for_bash() {
     printf "%s" "$1" | sed "s/'/'\"'\"'/g"
 }
 
+flutter_web_sessions_file() {
+    printf '%s\n' "${SHIPFLOW_FLUTTER_WEB_SESSIONS_FILE:-$SHIPFLOW_SECRETS_DIR/flutter-web-sessions.tsv}"
+}
+
+ensure_flutter_web_sessions_file() {
+    local sessions_file
+    sessions_file=$(flutter_web_sessions_file)
+    local sessions_dir
+    sessions_dir=$(dirname "$sessions_file")
+
+    mkdir -p "$sessions_dir" 2>/dev/null || return 1
+    touch "$sessions_file" 2>/dev/null || return 1
+    chmod 600 "$sessions_file" 2>/dev/null || true
+}
+
+flutter_web_session_name() {
+    local env_name="$1"
+    local safe_name
+    safe_name=$(printf '%s' "$env_name" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_.-]/-/g')
+    safe_name="${safe_name#.}"
+    safe_name="${safe_name#-}"
+    safe_name="${safe_name:-flutter}"
+    printf 'shipflow-flutter-%s\n' "$safe_name"
+}
+
+is_flutter_web_project() {
+    local project_dir="$1"
+
+    [ -d "$project_dir" ] || return 1
+    [ -f "$project_dir/pubspec.yaml" ] || return 1
+    [ "$(detect_pubspec_kind "$project_dir" 2>/dev/null)" = "flutter" ] || return 1
+}
+
+list_flutter_web_projects() {
+    if [ ! -d "$PROJECTS_DIR" ]; then
+        return 0
+    fi
+
+    find "$PROJECTS_DIR" -maxdepth "$SHIPFLOW_MAX_SEARCH_DEPTH" \
+        \( -name "node_modules" -o -name ".git" -o -name "venv" -o -name ".venv" \
+           -o -name "__pycache__" -o -name "target" -o -name ".next" -o -name ".nuxt" \
+           -o -name "dist" -o -name ".cache" -o -name ".pnpm" -o -name ".yarn" \) -prune \
+        -o -type f -name "pubspec.yaml" -print 2>/dev/null | while read -r pubspec; do
+        local project_dir
+        project_dir=$(dirname "$pubspec")
+        case "$project_dir" in
+            "$PROJECTS_DIR"/.*) continue ;;
+        esac
+        if is_flutter_web_project "$project_dir"; then
+            echo "$project_dir"
+        fi
+    done | sort -u
+}
+
+flutter_web_registry_lines() {
+    local active_only="${1:-false}"
+    local sessions_file
+    sessions_file=$(flutter_web_sessions_file)
+
+    [ -f "$sessions_file" ] || return 0
+
+    while IFS='|' read -r name port project_dir session_name; do
+        [ -n "$name" ] || continue
+        [[ "$port" =~ ^[0-9]+$ ]] || continue
+        [ "$port" -ge 1 ] && [ "$port" -le 65535 ] || continue
+        [ -n "$project_dir" ] || continue
+        [ -n "$session_name" ] || continue
+        if [ "$active_only" = "true" ]; then
+            command -v tmux >/dev/null 2>&1 || continue
+            tmux has-session -t "$session_name" 2>/dev/null || continue
+        fi
+        printf '%s|%s|%s|%s\n' "$name" "$port" "$project_dir" "$session_name"
+    done < "$sessions_file"
+}
+
+flutter_web_registered_line_for_project() {
+    local project_dir="$1"
+    flutter_web_registry_lines false | awk -F'|' -v p="$project_dir" '$3 == p { print; exit }'
+}
+
+flutter_web_registered_port_for_project() {
+    local project_dir="$1"
+    local line
+    line=$(flutter_web_registered_line_for_project "$project_dir")
+    [ -n "$line" ] || return 1
+    printf '%s\n' "$line" | cut -d'|' -f2
+}
+
+flutter_web_write_registry_entry() {
+    local name="$1"
+    local port="$2"
+    local project_dir="$3"
+    local session_name="$4"
+
+    [[ "$port" =~ ^[0-9]+$ ]] || return 1
+    [ "$port" -ge 1 ] && [ "$port" -le 65535 ] || return 1
+    [ -n "$name" ] && [ -n "$project_dir" ] && [ -n "$session_name" ] || return 1
+    ensure_flutter_web_sessions_file || return 1
+
+    local sessions_file
+    sessions_file=$(flutter_web_sessions_file)
+    local tmp_file
+    tmp_file=$(mktemp "${sessions_file}.tmp.XXXXXX") || return 1
+    register_temp_file "$tmp_file"
+
+    awk -F'|' -v p="$project_dir" -v s="$session_name" '$3 != p && $4 != s' "$sessions_file" > "$tmp_file" 2>/dev/null || true
+    printf '%s|%s|%s|%s\n' "$name" "$port" "$project_dir" "$session_name" >> "$tmp_file"
+    mv "$tmp_file" "$sessions_file" || return 1
+    chmod 600 "$sessions_file" 2>/dev/null || true
+}
+
+flutter_web_remove_registry_entry() {
+    local session_name="$1"
+    local sessions_file
+    sessions_file=$(flutter_web_sessions_file)
+
+    [ -f "$sessions_file" ] || return 0
+
+    local tmp_file
+    tmp_file=$(mktemp "${sessions_file}.tmp.XXXXXX") || return 1
+    register_temp_file "$tmp_file"
+
+    awk -F'|' -v s="$session_name" '$4 != s' "$sessions_file" > "$tmp_file" 2>/dev/null || true
+    mv "$tmp_file" "$sessions_file" || return 1
+    chmod 600 "$sessions_file" 2>/dev/null || true
+}
+
+select_flutter_web_project() {
+    local projects
+    projects=$(list_flutter_web_projects)
+
+    local options=()
+    if [ -n "$projects" ]; then
+        while IFS= read -r project_dir; do
+            [ -n "$project_dir" ] && options+=("$project_dir")
+        done <<< "$projects"
+    fi
+    options+=("Custom path")
+
+    local selected
+    selected=$(ui_choose "Select Flutter project:" "${options[@]}") || return 1
+    if [ "$selected" = "Custom path" ]; then
+        selected=$(ui_input "Path (absolute):" "$PROJECTS_DIR/my-flutter-app")
+        [ -n "$selected" ] || return 1
+    fi
+
+    if ! validate_project_path "$selected"; then
+        error "Chemin de projet invalide ou non sûr: $selected"
+        return 1
+    fi
+    if ! is_flutter_web_project "$selected"; then
+        error "Ce projet n'est pas un projet Flutter détecté: $selected"
+        return 1
+    fi
+
+    printf '%s\n' "$selected"
+}
+
+select_flutter_web_session() {
+    local prompt="${1:-Select Flutter Web session}"
+    local lines
+    lines=$(flutter_web_registry_lines true)
+
+    if [ -z "$lines" ]; then
+        error "Aucune session Flutter Web active"
+        info "Lance d'abord: Flutter Web Dev → Start session"
+        return 1
+    fi
+
+    local registry_lines=()
+    local options=()
+    local line name port project_dir session_name
+    while IFS= read -r line; do
+        [ -n "$line" ] || continue
+        registry_lines+=("$line")
+        IFS='|' read -r name port project_dir session_name <<< "$line"
+        options+=("$name — localhost:$port — $project_dir")
+    done <<< "$lines"
+
+    local selected
+    selected=$(ui_choose "$prompt" "${options[@]}") || return 1
+
+    local i
+    for ((i=0; i<${#options[@]}; i++)); do
+        if [ "$selected" = "${options[$i]}" ]; then
+            printf '%s\n' "${registry_lines[$i]}"
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+start_flutter_web_tmux_session() {
+    local project_dir="$1"
+
+    if ! command -v tmux >/dev/null 2>&1; then
+        error "tmux n'est pas installé"
+        info "Installe tmux sur le serveur puis relance cette action."
+        return 1
+    fi
+
+    if ! is_flutter_web_project "$project_dir"; then
+        error "Projet Flutter invalide: $project_dir"
+        return 1
+    fi
+    if [ ! -d "$project_dir/web" ]; then
+        error "Cible web Flutter absente pour $project_dir"
+        info "Dans le projet: flutter create . --platforms web"
+        return 1
+    fi
+
+    local env_name
+    env_name=$(basename "$project_dir")
+    local session_name
+    session_name=$(flutter_web_session_name "$env_name")
+
+    local existing_line=""
+    existing_line=$(flutter_web_registered_line_for_project "$project_dir" || true)
+    if [ -n "$existing_line" ]; then
+        local existing_name existing_port existing_project existing_session
+        IFS='|' read -r existing_name existing_port existing_project existing_session <<< "$existing_line"
+        if tmux has-session -t "$existing_session" 2>/dev/null; then
+            success "Session Flutter Web déjà active"
+            echo -e "  ${BLUE}Projet:${NC} $existing_project"
+            echo -e "  ${BLUE}Session:${NC} ${CYAN}$existing_session${NC}"
+            echo -e "  ${BLUE}URL:${NC} ${CYAN}http://localhost:$existing_port${NC}"
+            echo -e "  ${YELLOW}Utilise Flutter Web Dev → Hot Reload pour envoyer r.${NC}"
+            return 0
+        fi
+    fi
+
+    init_flox_env "$project_dir" "$env_name" || return 1
+
+    local port=""
+    if [ -n "$existing_line" ]; then
+        port=$(printf '%s\n' "$existing_line" | cut -d'|' -f2)
+        if ! [[ "$port" =~ ^[0-9]+$ ]] || is_port_in_use "$port"; then
+            port=""
+        fi
+    fi
+    if [ -z "$port" ]; then
+        port=$(find_available_port "$SHIPFLOW_PORT_RANGE_START")
+        [ -n "$port" ] || return 1
+    fi
+
+    if tmux has-session -t "$session_name" 2>/dev/null; then
+        error "Une session tmux existe déjà: $session_name"
+        info "Attache-la ou arrête-la depuis Flutter Web Dev."
+        return 1
+    fi
+
+    local flutter_cmd
+    flutter_cmd="export PORT=$port; flutter config --enable-web >/dev/null 2>&1 || true; flutter pub get && flutter run -d web-server --web-hostname 0.0.0.0 --web-port $port"
+    local escaped_flutter_cmd
+    escaped_flutter_cmd=$(escape_single_quotes_for_bash "$flutter_cmd")
+    local runtime_cmd="flox activate -- bash -lc '$escaped_flutter_cmd'"
+    local escaped_runtime_cmd
+    escaped_runtime_cmd=$(escape_single_quotes_for_bash "$runtime_cmd")
+
+    echo -e "${BLUE}🚀 Démarrage Flutter Web dans tmux...${NC}"
+    echo -e "  ${BLUE}Projet:${NC} $project_dir"
+    echo -e "  ${BLUE}Session:${NC} ${CYAN}$session_name${NC}"
+    echo -e "  ${BLUE}Port:${NC} ${CYAN}$port${NC}"
+
+    if ! tmux new-session -d -s "$session_name" -c "$project_dir" "bash -lc '$escaped_runtime_cmd'"; then
+        error "Impossible de créer la session tmux Flutter"
+        return 1
+    fi
+
+    sleep 0.5
+    if ! tmux has-session -t "$session_name" 2>/dev/null; then
+        error "La session Flutter Web s'est arrêtée immédiatement"
+        info "Relance et attache la session pour voir les logs: tmux attach -t $session_name"
+        return 1
+    fi
+
+    flutter_web_write_registry_entry "$env_name" "$port" "$project_dir" "$session_name" || return 1
+
+    success "Flutter Web lancé en session interactive"
+    echo -e "  ${BLUE}URL tunnelable:${NC} ${CYAN}http://localhost:$port${NC}"
+    echo -e "  ${BLUE}Hot reload:${NC} Flutter Web Dev → Hot Reload"
+    echo -e "  ${BLUE}Terminal:${NC} ${CYAN}tmux attach -t $session_name${NC}"
+    echo -e "  ${YELLOW}Côté téléphone, relance urls/tunnel pour exposer ce port si besoin.${NC}"
+}
+
+send_flutter_web_key() {
+    local key="$1"
+    local label="$2"
+    local line
+    line=$(select_flutter_web_session "Select Flutter Web session") || return 1
+
+    local name port project_dir session_name
+    IFS='|' read -r name port project_dir session_name <<< "$line"
+
+    if ! tmux has-session -t "$session_name" 2>/dev/null; then
+        error "Session tmux introuvable: $session_name"
+        flutter_web_remove_registry_entry "$session_name" || true
+        return 1
+    fi
+
+    tmux send-keys -t "$session_name" "$key"
+    success "$label envoyé à $name"
+    echo -e "  ${BLUE}Session:${NC} ${CYAN}$session_name${NC}"
+    echo -e "  ${BLUE}URL:${NC} ${CYAN}http://localhost:$port${NC}"
+}
+
+attach_flutter_web_session() {
+    local line
+    line=$(select_flutter_web_session "Select Flutter Web session to attach") || return 1
+
+    local name port project_dir session_name
+    IFS='|' read -r name port project_dir session_name <<< "$line"
+    echo -e "${BLUE}Attache tmux:${NC} ${CYAN}$session_name${NC}"
+    tmux attach-session -t "$session_name"
+}
+
+stop_flutter_web_session() {
+    local line
+    line=$(select_flutter_web_session "Select Flutter Web session to stop") || return 1
+
+    local name port project_dir session_name
+    IFS='|' read -r name port project_dir session_name <<< "$line"
+    if tmux kill-session -t "$session_name" 2>/dev/null; then
+        flutter_web_remove_registry_entry "$session_name" || true
+        success "Session Flutter Web arrêtée: $name"
+    else
+        error "Impossible d'arrêter la session: $session_name"
+        return 1
+    fi
+}
+
+show_flutter_web_sessions() {
+    local lines
+    lines=$(flutter_web_registry_lines false)
+
+    echo -e "${GREEN}🧩 Flutter Web sessions${NC}"
+    echo ""
+    if [ -z "$lines" ]; then
+        echo -e "${YELLOW}Aucune session enregistrée${NC}"
+        return 0
+    fi
+
+    local name port project_dir session_name status
+    while IFS='|' read -r name port project_dir session_name; do
+        if command -v tmux >/dev/null 2>&1 && tmux has-session -t "$session_name" 2>/dev/null; then
+            status="${GREEN}active${NC}"
+        else
+            status="${YELLOW}inactive${NC}"
+        fi
+        echo -e "  ${CYAN}•${NC} $name ${BLUE}http://localhost:$port${NC} [$status]"
+        echo -e "    ${BLUE}Session:${NC} $session_name"
+        echo -e "    ${BLUE}Projet:${NC} $project_dir"
+    done <<< "$lines"
+}
+
 project_has_doppler_manifest() {
     local project_dir=$1
 
@@ -5666,6 +6022,46 @@ action_stop_all() { echo -e "${GREEN}🛑 Stop All Environments${NC}"; batch_sto
 action_restart_all() { echo -e "${GREEN}🔄 Restart All Environments${NC}"; batch_restart_all; }
 action_mobile() { show_mobile_guide; }
 
+action_flutter_web() {
+    echo -e "${GREEN}🧩 Flutter Web Dev${NC}"
+    echo ""
+    local choice
+    choice=$(printf '%s\n' \
+        "Start session" \
+        "Hot Reload (r)" \
+        "Hot Restart (R)" \
+        "Attach terminal" \
+        "Stop session" \
+        "Show sessions" \
+        "Back" | ui_choose "Flutter Web Dev:") || return 0
+
+    case "$choice" in
+        "Start session")
+            local project_dir
+            project_dir=$(select_flutter_web_project) || return 1
+            start_flutter_web_tmux_session "$project_dir"
+            ;;
+        "Hot Reload (r)")
+            send_flutter_web_key "r" "Hot reload"
+            ;;
+        "Hot Restart (R)")
+            send_flutter_web_key "R" "Hot restart"
+            ;;
+        "Attach terminal")
+            attach_flutter_web_session
+            ;;
+        "Stop session")
+            stop_flutter_web_session
+            ;;
+        "Show sessions")
+            show_flutter_web_sessions
+            ;;
+        *)
+            return 0
+            ;;
+    esac
+}
+
 action_health() {
     echo -e "${CYAN}╔══════════════════════════════════════════════════╗${NC}"
     echo -e "${CYAN}║${NC}              ${YELLOW}Health Check${NC}                      ${CYAN}║${NC}"
@@ -5936,6 +6332,7 @@ MAIN_MENU_ITEMS=(
     "o|Stop All - Stop all environments|action_stop_all"
     "b|Restart All - Restart all environments|action_restart_all"
     "---|🔧 TOOLS|"
+    "g|Flutter Web - tmux hot reload|action_flutter_web"
     "l|Logs - Display application logs|action_view_logs"
     "p|Publish - Configure HTTPS (Caddy + DuckDNS)|action_publish"
     "i|Inspector - Toggle browser web inspector|action_inspector"

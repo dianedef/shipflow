@@ -92,11 +92,22 @@ project path
 local/local.sh
   -> select connection
   -> fetch remote session identity
-  -> inspect active remote ports
+  -> inspect active remote ports (PM2 + Flutter Web tmux registry)
   -> start_tunnels / stop_tunnels / show_status
 ```
 
-### 4. Skill Workflow
+### 4. Flutter Web Interactive Flow
+
+```text
+lib.sh::action_flutter_web
+  -> select Flutter project
+  -> ensure project Flox runtime
+  -> start flutter run -d web-server inside tmux
+  -> record port in SHIPFLOW_FLUTTER_WEB_SESSIONS_FILE
+  -> send r/R to tmux for hot reload / hot restart
+```
+
+### 5. Skill Workflow
 
 ```text
 sf-explore -> exploration_report -> sf-spec -> sf-ready -> sf-start -> sf-verify -> sf-end
@@ -135,6 +146,7 @@ Fast paths existent aussi :
 - `lib.sh::deploy_github_project`: deploy depuis GitHub.
 - `lib.sh::action_publish`: integration Caddy + DuckDNS.
 - `local/local.sh::main`: UX locale complete pour tunnels.
+- `lib.sh::action_flutter_web`: session Flutter Web interactive en tmux et hot reload.
 - `skills/sf-docs/SKILL.md`: logique de migration metadata et audit documentaire.
 - `docs/technical/code-docs-map.md`: fichier partage qui mappe code, docs primaires, validations et triggers de mise a jour.
 
@@ -144,6 +156,7 @@ Fast paths existent aussi :
 - Changer le dashboard ou la sante : `lib.sh` autour de `show_dashboard`, `health_check_all`, `diagnose_app_errors`.
 - Changer la publication web : `lib.sh` autour de `action_publish`.
 - Changer les tunnels locaux : `local/local.sh` et `local/dev-tunnel.sh`.
+- Changer le mode Flutter Web interactif : `lib.sh` autour de `action_flutter_web`, puis `local/remote-helpers.sh` si le tunnel doit découvrir de nouveaux ports.
 - Changer le workflow d'agent : `skills/` + `shipflow-spec-driven-workflow.md`.
 - Changer les regles metadata : `skills/sf-docs/SKILL.md`, `tools/shipflow_metadata_lint.py`, `shipflow-metadata-migration-guide.md`, `templates/artifacts/`.
 - Changer la documentation technique proche du code : `docs/technical/code-docs-map.md` puis le doc primaire dans `docs/technical/`.

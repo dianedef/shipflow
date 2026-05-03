@@ -37,6 +37,10 @@ export SHIPFLOW_SSH_KEEPALIVE_MAX="${SHIPFLOW_SSH_KEEPALIVE_MAX:-3}"
 export SHIPFLOW_SSH_REMOTE_USER="${SHIPFLOW_SSH_REMOTE_USER:-root}"
 export SHIPFLOW_SSH_REMOTE_HOST="${SHIPFLOW_SSH_REMOTE_HOST:-}"
 
+# Server-side registry for interactive Flutter Web tmux sessions. Local tunnel
+# tools read this file over SSH to expose non-PM2 Flutter preview ports.
+export SHIPFLOW_FLUTTER_WEB_SESSIONS_FILE="${SHIPFLOW_FLUTTER_WEB_SESSIONS_FILE:-$HOME/.shipflow/flutter-web-sessions.tsv}"
+
 # ============================================================================
 # LOGGING CONFIGURATION
 # ============================================================================
