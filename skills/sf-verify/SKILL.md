@@ -17,6 +17,8 @@ Before verifying a spec-first chantier, load `$SHIPFLOW_ROOT/skills/references/c
 
 When the verified work changes ShipFlow skill instructions, include a coherence check against `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`: every modified `skills/*/SKILL.md` must expose a `Trace category` and `Process role`; every modified `source-de-chantier` skill must contain `Chantier potentiel` instructions; helper skills must not present themselves as chantier sources.
 
+When the verified work creates, renames, or changes runtime-discoverable ShipFlow skills, include current-user runtime visibility evidence with `${SHIPFLOW_ROOT:-$HOME/shipflow}/tools/shipflow_sync_skills.sh --check --skill <name>` or `--check --all`. Treat missing, stale, broken, or non-symlink Claude/Codex entries as an incomplete skill lifecycle until repaired by the shared helper.
+
 ## Context
 
 - Current directory: !`pwd`

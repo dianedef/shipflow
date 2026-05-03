@@ -5,8 +5,8 @@ artifact_version: "1.0.1"
 project: "shipflow"
 created: "2026-05-02"
 created_at: "2026-05-02 15:22:13 UTC"
-updated: "2026-05-02"
-updated_at: "2026-05-02 22:11:44 UTC"
+updated: "2026-05-03"
+updated_at: "2026-05-03 04:16:07 UTC"
 status: ready
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
@@ -124,20 +124,20 @@ As a ShipFlow maintainer creating or changing skills, I want one master skill to
 
 ## Minimal Behavior Contract
 
-When the user asks to create or modify a ShipFlow skill, `sf-skill-build` must become the single lifecycle pilot for that skill work: it confirms or creates the chantier spec, guides the implementation of the target `SKILL.md`, runs `sf-skills-refresh` on the changed skill contract, runs the skill discovery budget audit, verifies behavior against the spec, updates internal help and public skill content surfaces, and only then routes to ship. Success is observable through a ready or verified chantier, a changed or newly created skill contract, budget and metadata validation, public skill pages/listing coherence, and a final ship-ready report. Failure is observable through a blocked status, a concrete reason, and the next safe command. The easy edge case to miss is treating a skill as only an internal prompt: every new or materially changed skill also affects discovery budget, public catalog truth, `sf-help`, workflow docs, technical docs, and possibly public claims.
+When the user asks to create or modify a ShipFlow skill, `sf-skill-build` must become the single lifecycle pilot for that skill work: it confirms or creates the chantier spec, guides the implementation of the target `SKILL.md`, publishes current-user Claude/Codex runtime symlinks, runs `sf-skills-refresh` on the changed skill contract, runs the skill discovery budget audit, verifies behavior against the spec, updates internal help and public skill content surfaces, and only then routes to ship. Success is observable through a ready or verified chantier, a changed or newly created skill contract, current-user runtime symlinks, budget and metadata validation, public skill pages/listing coherence, and a final ship-ready report. Failure is observable through a blocked status, a concrete reason, and the next safe command. The easy edge case to miss is treating a skill as only an internal prompt: every new or materially changed skill also affects runtime visibility in Claude/Codex, discovery budget, public catalog truth, `sf-help`, workflow docs, technical docs, and possibly public claims.
 
 ## Success Behavior
 
 - Preconditions: the user provides a skill creation or skill modification goal; the current repository is ShipFlow; the target skill name or existing skill path is explicit or inferable from the user request; and only one chantier spec is in scope.
 - Trigger: the user invokes `/sf-skill-build <skill idea or skill path>` or asks explicitly to create or modify a ShipFlow skill through this lifecycle.
 - User/operator result: the user gets one guided path instead of manually remembering `sf-spec`, direct file edits, refresh, budget audit, verification, docs/help updates, public site updates, and ship.
-- System effect: `sf-skill-build` checks for an existing matching spec, creates or updates the spec via `sf-spec` when needed, executes only after readiness, creates or edits the target `skills/<name>/SKILL.md`, runs `sf-skills-refresh <name>` or records why refresh is not appropriate, runs `tools/skill_budget_audit.py`, routes verification through `sf-verify`, produces `Documentation Update Plan` and `Editorial Update Plan` items for changed technical and public surfaces, updates `sf-help`, README/workflow docs, public skill content, and public skill listing surfaces when impacted, then routes to `sf-ship`.
-- Success proof: the target `SKILL.md` exists and matches its directory name, the public skill page exists or is explicitly justified as not public, the skill budget audit passes or reports only accepted warnings, `shipflow_metadata_lint.py` passes for changed ShipFlow artifacts, `npm --prefix site run build` passes when site content changed, and `sf-verify` confirms the user story and documentation coherence.
+- System effect: `sf-skill-build` checks for an existing matching spec, creates or updates the spec via `sf-spec` when needed, executes only after readiness, creates or edits the target `skills/<name>/SKILL.md`, creates or verifies current-user `~/.claude/skills/<name>` and `~/.codex/skills/<name>` symlinks, runs `sf-skills-refresh <name>` or records why refresh is not appropriate, runs `tools/skill_budget_audit.py`, routes verification through `sf-verify`, produces `Documentation Update Plan` and `Editorial Update Plan` items for changed technical and public surfaces, updates `sf-help`, README/workflow docs, public skill content, and public skill listing surfaces when impacted, then routes to `sf-ship`.
+- Success proof: the target `SKILL.md` exists and matches its directory name, the current-user Claude/Codex skill symlinks resolve to that skill and expose `SKILL.md`, the public skill page exists or is explicitly justified as not public, the skill budget audit passes or reports only accepted warnings, `shipflow_metadata_lint.py` passes for changed ShipFlow artifacts, `npm --prefix site run build` passes when site content changed, and `sf-verify` confirms the user story and documentation coherence.
 - Silent success: not allowed. The final report must name the target skill, spec path, changed surfaces, validations, public-content decision, remaining warnings if any, and next lifecycle command.
 
 ## Error Behavior
 
-- Expected failures: ambiguous skill name, duplicate or overlapping existing skill, missing or ambiguous chantier spec, invalid skill name/path, unclear public promise, overlong description, budget audit failure, `SKILL.md` body growth beyond policy, missing public skill page when one is required, Astro schema failure, public claim without evidence, stale `sf-help`, missing docs update plan, failed readiness, failed verification, unrelated dirty files before ship, or user refusal to approve scope.
+- Expected failures: ambiguous skill name, duplicate or overlapping existing skill, missing or ambiguous chantier spec, invalid skill name/path, unclear public promise, overlong description, runtime symlink creation blocked by a non-symlink file, budget audit failure, `SKILL.md` body growth beyond policy, missing public skill page when one is required, Astro schema failure, public claim without evidence, stale `sf-help`, missing docs update plan, failed readiness, failed verification, unrelated dirty files before ship, or user refusal to approve scope.
 - User/operator response: ask one targeted question when the answer changes behavior, public promise, skill name, scope, safety, or ship risk; otherwise report blocked with the exact validation or gate that failed.
 - System effect: no `SKILL.md` edit happens without a spec or an explicit direct-fix contract for a narrow wording update; no public claim is strengthened without claim-register review; no site content is changed outside the Astro schema; no ship happens while skill budget, metadata, verification, or required site build checks are failing.
 - Must never happen: create a duplicate skill for an already covered workflow, rename a skill invocation key without explicit approval, hide argument semantics in an overlong description, skip budget audit after adding or materially expanding a skill, publish a public skill page that promises behavior not present in `SKILL.md`, add ShipFlow governance frontmatter to `site/src/content/skills/*.md`, ship stale `sf-help` or stale public skill catalog text, or commit unrelated dirty files.
@@ -158,6 +158,7 @@ Create a new master skill, `sf-skill-build`, that orchestrates the skill-mainten
 - Create `skills/sf-skill-build/SKILL.md` as the master skill contract for creating and modifying ShipFlow skills.
 - Define the canonical lifecycle: `sf-spec -> edit/create SKILL.md -> sf-skills-refresh -> skill budget audit -> sf-verify -> sf-docs/help update -> sf-ship`.
 - Require canonical path resolution through `${SHIPFLOW_ROOT:-$HOME/shipflow}` for ShipFlow-owned skills, references, tools, and workflow docs.
+- Create or verify current-user runtime symlinks for new or renamed skills: `~/.claude/skills/<name>` and `~/.codex/skills/<name>` must resolve to `${SHIPFLOW_ROOT:-$HOME/shipflow}/skills/<name>` and expose `SKILL.md`.
 - Check existing active specs before creating a new chantier for the skill work.
 - Validate new skill names against skill context budget rules: lowercase letters, numbers, hyphens, no leading/trailing hyphen, no `--`, maximum 64 characters, and directory name matching frontmatter `name`.
 - Keep `description` compact, one sentence, trigger-focused, and within the ShipFlow budget thresholds in `skills/references/skill-context-budget.md`.
@@ -215,6 +216,7 @@ Create a new master skill, `sf-skill-build`, that orchestrates the skill-mainten
 ## Invariants
 
 - `skills/*/SKILL.md` is the internal source of truth for skill behavior.
+- Current-user `~/.claude/skills/*` and `~/.codex/skills/*` symlinks are the runtime discovery surface for local Claude/Codex sessions.
 - `site/src/content/skills/*.md` is the public source for rendered skill detail pages and must stay schema-compatible.
 - `sf-help` must not describe a skill lifecycle that differs from the implemented skill contracts.
 - A public skill page must not promise a capability absent from its internal `SKILL.md`.
@@ -228,7 +230,7 @@ Create a new master skill, `sf-skill-build`, that orchestrates the skill-mainten
 
 ## Links & Consequences
 
-- Skill runtime consequence: new or changed skill instructions can affect future agent behavior, automatic skill selection, and lifecycle routing.
+- Skill runtime consequence: new or changed skill instructions can affect future agent behavior, automatic skill selection, and lifecycle routing, but only after Claude/Codex runtime links expose the skill.
 - Budget consequence: adding `sf-skill-build` increases the discovery index and can worsen Codex or Claude Code skill-list budget pressure unless descriptions stay compact.
 - Public content consequence: a new skill needs a public skill page or a documented no-public-page decision, and the `/skills` hub must remain coherent.
 - Documentation consequence: `sf-help`, README, workflow doctrine, technical docs, and editorial governance can drift if only `SKILL.md` changes.
@@ -376,10 +378,12 @@ Create a new master skill, `sf-skill-build`, that orchestrates the skill-mainten
 - [ ] AC 13: Given unrelated dirty files exist, when `sf-ship` is requested, then they are excluded unless the user explicitly authorizes the broader ship scope.
 - [ ] AC 14: Given any gate fails (readiness, budget, metadata, verification, site build, or ship scope), when the skill reports the failure, then it includes a concrete failure reason and a safe recovery command.
 - [ ] AC 15: Given validation logs or reports are produced, when output is rendered to the user, then secrets, tokens, credentials, and private keys are never printed.
+- [ ] AC 16: Given a new skill is created or a skill invocation directory changes, when validation runs, then current-user `~/.claude/skills/<name>` and `~/.codex/skills/<name>` symlinks resolve to the ShipFlow skill directory and expose `SKILL.md`, or the run blocks with a concrete reason.
 
 ## Test Strategy
 
 - Static skill validation: run `python3 tools/skill_budget_audit.py --skills-root skills --format markdown` and consider `--strict` before ship if warnings remain.
+- Runtime link validation: verify `readlink -f ~/.claude/skills/<name>` and `readlink -f ~/.codex/skills/<name>` match `${SHIPFLOW_ROOT:-$HOME/shipflow}/skills/<name>`, and verify both expose `SKILL.md`.
 - Metadata validation: run `python3 tools/shipflow_metadata_lint.py` on the spec and changed ShipFlow artifacts; include `docs/technical` and `docs/editorial` when they are edited.
 - Public site validation: run `npm --prefix site run build` when `site/src/content/skills/`, `site/src/content.config.ts`, or public skill routes change.
 - Focused content scans: use `rg` to check stale skill names, old lifecycle wording, internal-only technical-doc links in public site content, and sensitive public-claim keywords.
@@ -422,6 +426,7 @@ None.
 | 2026-05-02 20:22:02 UTC | sf-verify | GPT-5 Codex | Verified user-story delivery, lifecycle coherence, metadata/budget/site validations, and chantier-tracking role coherence for touched skills. | verified | /sf-end specs/sf-skill-build-master-skill.md |
 | 2026-05-02 22:10:07 UTC | sf-verify | GPT-5 Codex | Re-ran verification after reservation corrections: updated dependency versions, consistency checks, and revalidation gates all passed. | verified | /sf-end specs/sf-skill-build-master-skill.md |
 | 2026-05-02 22:11:44 UTC | sf-ship | GPT-5 Codex | Logged full run history and current flow updates, completed chantier-boundary stage/commit steps, and validated final scope + checks before shipping `sf-skill-build` master skill changes. | shipped | /sf-end specs/sf-skill-build-master-skill.md |
+| 2026-05-03 04:16:07 UTC | sf-fix | GPT-5 Codex | Fixed missing runtime symlink coverage: linked `sf-skill-build` into current-user Claude/Codex skill directories and added symlink publication/validation gates to the master skill contract. | fix-attempted | /sf-test --retest BUG-2026-05-03-001 |
 
 ## Current Chantier Flow
 
@@ -431,6 +436,7 @@ None.
 - sf-start: implemented from this ready spec.
 - SKILL.md creation/edit: done (`skills/sf-skill-build/SKILL.md`).
 - sf-skills-refresh: done (refresh entry recorded in `skills/REFRESH_LOG.md`).
+- runtime skill links: done for `sf-skill-build` current-user Claude/Codex symlinks; now required by `sf-skill-build`.
 - skill budget audit: done (pass, aggregate under threshold).
 - sf-verify: verified against the ready spec and validation evidence.
 - sf-docs/help update: done (help + workflow + technical/public docs aligned).

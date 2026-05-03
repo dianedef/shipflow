@@ -42,6 +42,7 @@ This doc covers `install.sh` and the root/user boundary for ShipFlow setup. Read
 | Path | Role | Edit notes |
 | --- | --- | --- |
 | `install.sh` | Root-level server bootstrap and per-user setup | Preserve idempotence and explicit root-only behavior |
+| `tools/shipflow_sync_skills.sh` | Shared Claude/Codex skill symlink sync helper | Reuse instead of duplicating skill-link repair logic |
 | `README.md` | Operator install contract | Update when commands, privilege, or installed tooling changes |
 | `local/install.sh`, `local/install_local.ps1` | Workstation-side setup | Keep separate from root server install assumptions |
 | `.env.example` | Example configuration | Keep secrets as placeholders only |
@@ -51,7 +52,8 @@ This doc covers `install.sh` and the root/user boundary for ShipFlow setup. Read
 - `sudo ./install.sh`: server installer.
 - `setup_user`: per-user configuration for eligible users.
 - `configure_*_mcp`: Claude/Codex MCP provider setup.
-- `configure_skills`, `configure_aliases`, `configure_data`: user workflow setup.
+- `configure_skills`: delegates skill symlink check/repair to `tools/shipflow_sync_skills.sh`.
+- `configure_aliases`, `configure_data`: user workflow setup.
 
 ## Control Flow
 
@@ -72,6 +74,8 @@ sudo ./install.sh
 - Daily work should run under an operational user, not by forcing all state into root.
 - Existing user config must be preserved outside ShipFlow-managed blocks.
 - Symlinks and aliases should be idempotent and updated consistently.
+- ShipFlow skill runtime entries under `~/.claude/skills` and `~/.codex/skills` are symlinks to `$SHIPFLOW_ROOT/skills/<name>`.
+- Runtime skill link repair blocks on non-symlink targets by default; installer compatibility may pass `--backup-existing` to move collisions aside explicitly.
 - Installer errors should stop before partial or misleading success.
 - `install.sh` provides Flox/system tooling; Flutter/Dart runtimes are provisioned per project Flox environment unless the operator explicitly uses optional global SDK install.
 
@@ -94,6 +98,9 @@ sudo ./install.sh
 
 ```bash
 bash -n install.sh local/install.sh
+bash -n tools/shipflow_sync_skills.sh test_skill_runtime_sync.sh
+bash test_skill_runtime_sync.sh
+tools/shipflow_sync_skills.sh --check --all
 rg -n "configure_aliases|configure_skills|configure_data|setup_user|collect_target_users|configure_codex" install.sh
 ```
 
@@ -102,7 +109,7 @@ For behavioral changes, prefer a disposable host/container or a narrowly scoped 
 ## Reader Checklist
 
 - `install.sh` changed -> review this doc and `README.md`.
-- Alias/symlink behavior changed -> check local and server install docs.
+- Alias/symlink behavior changed -> check local and server install docs, plus `tools/shipflow_sync_skills.sh --check --all`.
 - MCP config changed -> check provider docs references and remote login docs.
 - Playwright MCP config changed -> confirm Linux ARM64 keeps using the local
   Playwright Chromium executable instead of a Google Chrome stable channel.

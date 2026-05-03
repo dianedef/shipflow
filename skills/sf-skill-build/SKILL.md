@@ -86,6 +86,26 @@ The skill body must enforce:
 - `sf-verify` before closure
 - `sf-ship` only after verification and bounded ship scope
 
+### Step 2.5 — Publish runtime skill links
+
+After creating a new skill or changing a skill invocation directory, make the current operator runtimes discover it.
+
+- Source: `${SHIPFLOW_ROOT:-$HOME/shipflow}/skills/<name>`
+- Targets: `$HOME/.claude/skills/<name>` and `$HOME/.codex/skills/<name>`
+- If a target is missing or is a stale symlink, create or repair it through the shared helper.
+- If a target exists and is not a symlink, the helper blocks by default; stop and report the blocked path.
+- If install-wide eligible users must also receive the skill, route to `install.sh`; current-user Claude/Codex links are still mandatory before verification.
+- A successful filesystem sync may still require a new or reloaded Claude/Codex session before the skill appears in the runtime skill list.
+
+Use this pattern with the resolved skill name:
+
+```bash
+SHIPFLOW_ROOT="${SHIPFLOW_ROOT:-$HOME/shipflow}"
+skill_name="<name>"
+"$SHIPFLOW_ROOT/tools/shipflow_sync_skills.sh" --repair --skill "$skill_name"
+"$SHIPFLOW_ROOT/tools/shipflow_sync_skills.sh" --check --skill "$skill_name"
+```
+
 ### Step 3 — Run refresh
 
 Run `/sf-skills-refresh <name>` and apply only additive findings. Do not rewrite the skill from scratch.
@@ -101,6 +121,12 @@ npm --prefix site run build
 ```
 
 Also run focused `rg` checks for stale names, claim drift, and sensitive leaks when public content changed.
+
+Verify current-user runtime links before verification:
+
+```bash
+"${SHIPFLOW_ROOT:-$HOME/shipflow}/tools/shipflow_sync_skills.sh" --check --skill "<name>"
+```
 
 ### Step 5 — Update internal and public coherence
 
@@ -161,6 +187,7 @@ Stop and report `blocked` when:
 - budget audit fails hard or unresolved warnings are policy-blocking
 - metadata lint fails on changed artifacts
 - required site build fails for changed public content
+- current-user Claude/Codex runtime symlinks are missing, stale, or blocked by non-symlink files
 - verification fails
 - ship scope includes unrelated dirty files without explicit approval
 
@@ -178,6 +205,7 @@ Lifecycle gates:
 - sf-ready -> [status]
 - SKILL.md edit/create -> [status]
 - sf-skills-refresh -> [status]
+- runtime skill links -> [status]
 - skill budget audit -> [pass/fail]
 - sf-verify -> [status]
 - sf-docs/help update -> [status]

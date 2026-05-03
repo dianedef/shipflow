@@ -90,6 +90,11 @@ Based on the context above, identify the project stack and run the appropriate c
 - `bash -n` syntax check on `.sh` files
 - Run test scripts if they exist (`./test_*.sh`)
 
+**ShipFlow skill runtime visibility** (when the scope touches `skills/*/SKILL.md`, new/renamed skills, or reported Claude/Codex skill drift):
+- Check one skill: `${SHIPFLOW_ROOT:-$HOME/shipflow}/tools/shipflow_sync_skills.sh --check --skill <name>`
+- Check all source skills: `${SHIPFLOW_ROOT:-$HOME/shipflow}/tools/shipflow_sync_skills.sh --check --all`
+- Report missing/stale/non-symlink entries; do not repair unless the user asked for fix mode and the current task owns runtime visibility repair.
+
 Before concluding that the project is "green", explicitly note any major gap in coverage:
 - No tests available
 - No typecheck available on a typed codebase

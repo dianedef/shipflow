@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "0.3.1"
+artifact_version: "0.3.2"
 project: "shipflow"
 created: "2026-04-25"
-updated: "2026-05-02"
+updated: "2026-05-03"
 status: draft
 source_skill: sf-docs
 scope: documentation
@@ -38,6 +38,7 @@ next_step: "/sf-docs audit CHANGELOG.md"
 ## [Unreleased]
 
 ### Added
+- Shared `tools/shipflow_sync_skills.sh` helper for checking and repairing current-user Claude/Codex ShipFlow skill symlinks, with temp-home tests, installer reuse, and validation-skill routing.
 - Per-project Dart/Flutter Flox runtime provisioning for ShipFlow-managed `pubspec.yaml` projects, including strict package override validation, existing `.flox` repair, focused shell tests, and runtime/installer documentation.
 - Governance corpus lifecycle across `sf-init`, `sf-docs`, and the `sf-build` spec: init bootstraps technical/editorial corpus state, docs owns first-run adoption and audit, and `sf-build` now has a Governance Corpus Gate before implementation.
 - Editorial content governance layer under `docs/editorial/`, covering public surface mapping, page intent, claim boundaries, editorial update gates, Astro content schema policy, and missing blog/article surface rules

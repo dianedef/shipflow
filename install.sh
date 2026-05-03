@@ -90,6 +90,25 @@ warn_data_restore_before_work() {
     fi
 }
 
+warn_flutter_android_ci_policy() {
+    local arch
+    arch="$(uname -m 2>/dev/null || echo unknown)"
+
+    if [ "$arch" = "aarch64" ] || [ "$arch" = "arm64" ]; then
+        echo ""
+        echo -e "${YELLOW}╔══════════════════════════════════════════════════════════╗${NC}"
+        echo -e "${YELLOW}║  Flutter Android : builds release APK en CI x64          ║${NC}"
+        echo -e "${YELLOW}╚══════════════════════════════════════════════════════════╝${NC}"
+        echo -e "${YELLOW}Cette machine est ${arch}. Flutter peut tourner localement, mais les${NC}"
+        echo -e "${YELLOW}Android build tools officiels Linux sont principalement x86_64.${NC}"
+        echo -e "${YELLOW}Pour éviter de saturer ou crasher la VM, garde localement :${NC}"
+        echo -e "  ${CYAN}flutter analyze && flutter test && flutter build web --release${NC}"
+        echo -e "${YELLOW}et route les APK/AAB Android vers Blacksmith ou une CI Linux x64.${NC}"
+        echo ""
+        shipflow_log "WARN" "Flutter Android policy: host arch ${arch}; do not run local release APK/AAB builds here. Use Blacksmith or another Linux x64 CI runner."
+    fi
+}
+
 SHIPFLOW_PRE_STATUS_DIR_NODE=""
 SHIPFLOW_PRE_STATUS_PM2=""
 SHIPFLOW_PRE_STATUS_VERCEL=""
@@ -169,6 +188,7 @@ shipflow_capture_status
 INVOKING_USER="${SUDO_USER:-}"
 
 warn_data_restore_before_work
+warn_flutter_android_ci_policy
 
 echo -e "${BLUE}🔍 Vérification des dépendances...${NC}"
 echo ""
@@ -1329,13 +1349,14 @@ cleanup_legacy_skill_entries() {
 
 configure_skills() {
     local target_home="$1"
-    local expected=0
-    local claude_count=0
-    local codex_count=0
-    local failed=0
+    local sync_helper="$SHIPFLOW_DIR/tools/shipflow_sync_skills.sh"
 
     if [ ! -d "$SHIPFLOW_DIR/skills" ]; then
         warning "Dossier skills introuvable: $SHIPFLOW_DIR/skills"
+        return 1
+    fi
+    if [ ! -f "$sync_helper" ]; then
+        warning "Helper de synchronisation des skills introuvable: $sync_helper"
         return 1
     fi
 
@@ -1344,42 +1365,19 @@ configure_skills() {
     cleanup_legacy_skill_entries "$target_home/.claude/skills"
     cleanup_legacy_skill_entries "$target_home/.codex/skills"
 
-    for skill_dir in "$SHIPFLOW_DIR/skills"/*/; do
-        local skill_name
-        [ -d "$skill_dir" ] || continue
-        [ -f "$skill_dir/SKILL.md" ] || continue
-
-        expected=$((expected + 1))
-        skill_name=$(basename "$skill_dir")
-
-        if ensure_skill_link "$skill_dir" "$target_home/.claude/skills/$skill_name" \
-            && verify_skill_link "$target_home/.claude/skills/$skill_name"; then
-            claude_count=$((claude_count + 1))
-        else
-            warning "Skill Claude non lié: $skill_name -> $target_home/.claude/skills/$skill_name"
-            failed=$((failed + 1))
-        fi
-
-        if ensure_skill_link "$skill_dir" "$target_home/.codex/skills/$skill_name" \
-            && verify_skill_link "$target_home/.codex/skills/$skill_name"; then
-            codex_count=$((codex_count + 1))
-        else
-            warning "Skill Codex non lié: $skill_name -> $target_home/.codex/skills/$skill_name"
-            failed=$((failed + 1))
-        fi
-    done
-
-    if [ "$expected" -eq 0 ]; then
-        warning "Aucun skill ShipFlow valide trouvé dans $SHIPFLOW_DIR/skills"
+    if ! bash "$sync_helper" --repair --all --target-home "$target_home" \
+        --shipflow-root "$SHIPFLOW_DIR" --runtime all --backup-existing; then
+        warning "Synchronisation des skills incomplète pour $target_home"
         return 1
     fi
 
-    if [ "$failed" -gt 0 ] || [ "$claude_count" -ne "$expected" ] || [ "$codex_count" -ne "$expected" ]; then
-        warning "Skills incomplets pour $target_home: Claude $claude_count/$expected, Codex $codex_count/$expected"
+    if ! bash "$sync_helper" --check --all --target-home "$target_home" \
+        --shipflow-root "$SHIPFLOW_DIR" --runtime all; then
+        warning "Vérification des skills incomplète pour $target_home"
         return 1
     fi
 
-    echo -e "  ${GREEN}✅ Skills liés :${NC} $expected Claude + $expected Codex"
+    echo -e "  ${GREEN}✅ Skills liés :${NC} Claude + Codex synchronisés"
     return 0
 }
 
@@ -1412,6 +1410,29 @@ configure_shipflow_environment() {
 # >>> ShipFlow environment >>>
 export SHIPFLOW_ROOT='$SHIPFLOW_DIR'
 export SHIPFLOW_DATA_DIR='$target_home/shipflow_data'
+
+# Flutter / Android shared tooling, when installed for this user.
+if [ -d "\$HOME/flutter/bin" ]; then
+  export PATH="\$HOME/flutter/bin:\$PATH"
+fi
+
+if [ -d "\$HOME/Android/Sdk" ]; then
+  export ANDROID_HOME="\$HOME/Android/Sdk"
+  export ANDROID_SDK_ROOT="\$HOME/Android/Sdk"
+  export PATH="\$ANDROID_HOME/cmdline-tools/latest/bin:\$ANDROID_HOME/platform-tools:\$PATH"
+fi
+
+if [ -d "/usr/lib/jvm/java-17-openjdk-arm64" ]; then
+  export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-arm64"
+elif [ -d "/usr/lib/jvm/java-17-openjdk-amd64" ]; then
+  export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64"
+fi
+
+case "\$(uname -m 2>/dev/null)" in
+  aarch64|arm64)
+    export SHIPFLOW_ANDROID_RELEASE_BUILD_POLICY="ci-x64-required"
+    ;;
+esac
 # <<< ShipFlow environment <<<
 ENV
 }
@@ -1669,6 +1690,11 @@ echo -e "  • PyYAML: $(python3 -c 'import yaml' 2>/dev/null && echo '✅' || e
 echo -e "  • Git: $(command -v git >/dev/null 2>&1 && echo '✅' || echo '❌')"
 echo -e "  • jq: $(command -v jq >/dev/null 2>&1 && echo '✅ (2-5x faster JSON)' || echo '❌')"
 echo -e "  • fuser: $(command -v fuser >/dev/null 2>&1 && echo '✅ (port cleanup)' || echo '❌')"
+if [ "$(uname -m 2>/dev/null || echo unknown)" = "aarch64" ] || [ "$(uname -m 2>/dev/null || echo unknown)" = "arm64" ]; then
+    echo -e "  • Flutter Android release: ⚠️ CI x64 requise (Blacksmith recommandé)"
+else
+    echo -e "  • Flutter Android release: ✅ hôte non-ARM détecté"
+fi
 echo ""
 echo -e "${BLUE}🗂️  Logs :${NC}"
 echo -e "  • Fichier: ${SHIPFLOW_LOG_FILE}"
@@ -1740,11 +1766,13 @@ generate_install_report() {
 - Cibles de config: root + comptes éligibles sélectionnés
 - Compte d'invocation: ${INVOKING_USER:-root}
 - Résumé santé/diagnostic:
+- Flutter Android release policy: $(case "$(uname -m 2>/dev/null || echo unknown)" in aarch64|arm64) echo "CI x64 requise; utiliser Blacksmith pour APK/AAB Android";; *) echo "Build local possible si Android SDK/JDK sont configurés";; esac)
 - Actions correctives suggérées:
 
 ## Observations
 
 - Avertissements:
+- Sur hôte ARM64, éviter `flutter build apk --release` local; router Android release vers Blacksmith ou une CI Linux x64.
 - Erreurs bloquantes:
 - Recommandations:
 REPORT

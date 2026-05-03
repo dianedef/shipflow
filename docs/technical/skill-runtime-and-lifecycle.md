@@ -59,6 +59,7 @@ This doc covers ShipFlow skills, lifecycle flow, references, templates, model/to
 | `skills/*/SKILL.md` | Executable skill contracts | Keep descriptions compact; route heavy detail to references |
 | `skills/references/*.md` | Shared doctrine and provider-specific references | Resolve from `${SHIPFLOW_ROOT:-$HOME/shipflow}` |
 | `skills/references/subagent-roles/*.md` | Internal role contracts such as Technical Reader and Editorial Reader | Role files are read by orchestration skills; keep read-only roles explicit |
+| `tools/shipflow_sync_skills.sh` | Shared current-user Claude/Codex skill runtime sync helper | Use for check/repair instead of inline symlink snippets |
 | `shipflow-spec-driven-workflow.md` | Global workflow doctrine | Sequential shared file |
 | `templates/artifacts/*.md` | Durable artifact templates | Keep linter-compatible |
 | `AGENT.md`, `AGENTS.md` | Agent entrypoint and compatibility alias | `AGENT.md` canonical; `AGENTS.md` symlink only |
@@ -73,7 +74,8 @@ This doc covers ShipFlow skills, lifecycle flow, references, templates, model/to
 - `sf-docs editorial`: editorial governance scaffolding and audit for public-content drift, claim register, page intent, and runtime content schema preservation.
 - `sf-browser`: generic non-auth browser verification through Playwright MCP for URLs, page-level assertions, screenshots, console summaries, and network summaries.
 - `sf-build`: user-facing orchestrator that consumes the governance corpus gate before implementation, closure, and ship.
-- `sf-skill-build`: dedicated orchestrator for ShipFlow skill maintenance (`sf-spec -> SKILL.md -> sf-skills-refresh -> budget audit -> sf-verify -> sf-docs/help -> sf-ship`).
+- `sf-skill-build`: dedicated orchestrator for ShipFlow skill maintenance (`sf-spec -> SKILL.md -> runtime skill links -> sf-skills-refresh -> budget audit -> sf-verify -> sf-docs/help -> sf-ship`).
+- `tools/shipflow_sync_skills.sh --check|--repair`: reusable local helper for current-user Claude/Codex skill visibility and install-time selected-user linking.
 - `sf-ship` and `sf-prod`: shipping and deployed verification.
 
 ## Control Flow
@@ -102,6 +104,9 @@ source skill
 - Shared files are sequential by default.
 - Fresh context is preferred for non-trivial spec-first execution when available.
 - ShipFlow-owned references resolve from `$SHIPFLOW_ROOT`, not the project repo.
+- A newly created or renamed ShipFlow skill is not runtime-visible until current-user `~/.claude/skills/<name>` and `~/.codex/skills/<name>` symlink to `$SHIPFLOW_ROOT/skills/<name>` and expose `SKILL.md`.
+- `tools/shipflow_sync_skills.sh --check` is read-only and reports missing, stale, broken, and non-symlink runtime entries.
+- `tools/shipflow_sync_skills.sh --repair` creates missing links and replaces stale symlinks; it must not overwrite non-symlink entries unless an install-time caller explicitly passes `--backup-existing`.
 - `sf-init` bootstraps minimal governance corpus state; `sf-docs` owns corpus creation, update, and audit; `sf-build` consumes the corpus through gates.
 - Technical governance applies to code projects by default. Editorial governance applies when public pages, README promises, docs, FAQ, pricing, support copy, public skill pages, blog/article intent, claims, or runtime content surfaces exist.
 - Skills that use Playwright MCP for browser evidence must load
@@ -116,6 +121,8 @@ source skill
 - If public content, README, FAQ, pricing, public docs, skill pages, or claims are affected but missing from an `Editorial Update Plan`, the editorial gate fails.
 - If `sf-build` prepares implementation with missing or stale `docs/technical/code-docs-map.md`, applicable `docs/editorial/`, or `CONTENT_MAP.md`, it must route to `sf-docs` or record explicit no-impact/no-surface status before proceeding.
 - If future projects are told to rerun ShipFlow's shipped governance specs instead of using `sf-init` and `sf-docs`, treat that as workflow drift.
+- If a new skill exists under `skills/<name>/SKILL.md` but is missing from current-user Claude or Codex skill directories, treat the skill lifecycle as incomplete until the runtime symlinks are repaired.
+- If filesystem runtime links are correct but the current agent still does not list a skill, treat it as a process reload/session-cache issue before changing source contracts.
 - If the Reader edits docs directly outside assignment, treat it as role misuse.
 - If `AGENTS.md` diverges from `AGENT.md`, verification fails.
 - If Playwright MCP reports `/opt/google/chrome/chrome` on Linux ARM64 after
@@ -132,6 +139,9 @@ source skill
 
 ```bash
 python3 tools/skill_budget_audit.py --skills-root skills --format markdown
+bash -n tools/shipflow_sync_skills.sh test_skill_runtime_sync.sh
+bash test_skill_runtime_sync.sh
+tools/shipflow_sync_skills.sh --check --all
 python3 tools/shipflow_metadata_lint.py skills/references/technical-docs-corpus.md skills/references/editorial-content-corpus.md skills/references/subagent-roles/editorial-reader.md shipflow-spec-driven-workflow.md AGENT.md
 rg -n "Governance Corpus Gate|sf-init.*bootstrap|sf-docs.*maintain|sf-build.*consume|docs/technical|docs/editorial" skills/sf-init/SKILL.md skills/sf-docs/SKILL.md specs/sf-build-autonomous-master-skill.md shipflow-spec-driven-workflow.md README.md
 ```
@@ -141,6 +151,7 @@ Run focused `rg` checks for the affected skill contract and linked references.
 ## Reader Checklist
 
 - `skills/*/SKILL.md` changed -> check this doc, `technical-docs-corpus.md`, and workflow docs.
+- New/renamed skill or visibility drift -> run `tools/shipflow_sync_skills.sh --check --skill <name>` or `--check --all`.
 - Playwright MCP usage changed -> check `skills/references/playwright-mcp-runtime.md`
   and `skills/sf-auth-debug/references/playwright-auth.md`.
 - Public-content skill changed -> check `editorial-content-corpus.md`, `docs/editorial/`, and workflow docs.

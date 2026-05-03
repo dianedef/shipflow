@@ -181,6 +181,12 @@ Otherwise, stage only the files that belong to the current task/session, using e
 git add -- path/to/file path/to/other-file
 ```
 
+When shipping changes that create, rename, or materially update `skills/*/SKILL.md`, include a pre-commit runtime visibility check in the practical check set:
+```bash
+${SHIPFLOW_ROOT:-$HOME/shipflow}/tools/shipflow_sync_skills.sh --check --skill <name>
+```
+Use `--check --all` for broad skill visibility drift. Do not duplicate symlink repair logic in `sf-ship`; route repair to the shared helper or back to the owning lifecycle skill.
+
 Then commit:
 ```bash
 git commit -m "[message from $ARGUMENTS or derived summary]

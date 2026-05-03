@@ -50,6 +50,7 @@
 | ✅ | Créer `sf-browser` comme skill navigateur généraliste non-auth et l'intégrer aux routes `sf-auth-debug`, `sf-test`, `sf-prod`, `sf-fix`, `sf-start`, `sf-verify`, `sf-check`, aux specs de taxonomie/catalogue, aux README internes et au site public | ✅ done |
 | 🟠 | Construire `sf-build` comme skill maître autonome (orchestrateur spec -> ready -> start -> verify -> end -> ship avec délégation bornée) | ✅ done |
 | ✅ | Implémenter `sf-skill-build` comme skill maître de maintenance des skills (`sf-spec -> SKILL.md -> sf-skills-refresh -> budget audit -> sf-verify -> sf-docs/help -> sf-ship`) et aligner les surfaces publiques/docs | ✅ done |
+| ✅ | Ajouter un helper partagé de synchronisation des skills Claude/Codex (`tools/shipflow_sync_skills.sh`) et l'intégrer à l'installateur, `sf-skill-build`, `sf-check`, `sf-verify` et `sf-ship` | ✅ done |
 
 ---
 

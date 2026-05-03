@@ -198,6 +198,15 @@ Per-user configuration includes:
 - aliases in `~/.bashrc` for `shipflow`, `sf`, autonomous `c`/`co`, and safe escape hatches `cask`/`coask`
 - `~/shipflow_data/TASKS.md`, `AUDIT_LOG.md`, and `PROJECTS.md`
 
+Skill runtime visibility can also be checked or repaired without rerunning the full installer:
+
+```bash
+tools/shipflow_sync_skills.sh --check --all
+tools/shipflow_sync_skills.sh --repair --skill sf-example
+```
+
+The helper links current-user `~/.claude/skills/<name>` and `~/.codex/skills/<name>` entries to `$SHIPFLOW_ROOT/skills/<name>`. It reports missing or stale links, blocks non-symlink collisions by default, and notes that an already-running Claude or Codex session may need a reload before the repaired skill appears in the runtime list.
+
 If your Codex version does not expose one of these items (for example `thread`), adjust interactively in Codex:
 
 ```text
@@ -276,7 +285,7 @@ sf-build -> existing chantier check -> sf-spec/sf-ready loop -> sf-start -> sf-v
 For ShipFlow skill maintenance, use the dedicated entrypoint:
 
 ```text
-sf-skill-build -> sf-spec -> skill contract edit/create -> sf-skills-refresh -> skill budget audit -> sf-verify -> sf-docs/help update -> sf-ship
+sf-skill-build -> sf-spec -> skill contract edit/create -> runtime skill sync -> sf-skills-refresh -> skill budget audit -> sf-verify -> sf-docs/help update -> sf-ship
 ```
 
 `sf-skill-build` is scoped to creating or modifying `skills/*/SKILL.md` with explicit public-surface, documentation, and validation gates.
