@@ -267,8 +267,8 @@ Run focused `rg` checks for the affected skill contract and linked references.
   and `skills/sf-auth-debug/references/playwright-auth.md`.
 - Public-content skill changed -> check `editorial-content-corpus.md`, `docs/editorial/`, and workflow docs.
 - Governance corpus bootstrap or adoption changed -> check `skills/sf-init/SKILL.md`, `skills/sf-docs/SKILL.md`, `technical-docs-corpus.md`, `editorial-content-corpus.md`, `README.md`, and workflow docs.
-- A lifecycle rule changed -> update `shipflow-spec-driven-workflow.md`.
 - Content lifecycle changed -> check `CONTENT_MAP.md`, `docs/editorial/`, public skill content, `README.md`, `docs/skill-launch-cheatsheet.md`, and workflow docs.
+- A lifecycle rule changed -> update `shipflow-spec-driven-workflow.md`.
 - Report mode or final-report doctrine changed -> update `skills/references/reporting-contract.md`, `skills/references/chantier-tracking.md`, and affected master/audit skills.
 - A docs gate changed -> update `skills/sf-docs/SKILL.md`, `technical-docs-corpus.md`, and `code-docs-map.md`.
 - An editorial gate changed -> update `skills/sf-docs/SKILL.md`, `editorial-content-corpus.md`, `docs/editorial/`, and workflow docs.

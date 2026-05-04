@@ -1,10 +1,10 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.3.0"
 project: ShipFlow
 created: "2026-05-01"
-updated: "2026-05-01"
+updated: "2026-05-04"
 status: reviewed
 source_skill: sf-start
 scope: public-site-and-content-runtime
@@ -17,10 +17,11 @@ linked_systems:
   - site/
   - CONTENT_MAP.md
   - README.md
+  - docs/skill-launch-cheatsheet.md
   - docs/editorial/
 depends_on:
   - artifact: "CONTENT_MAP.md"
-    artifact_version: "0.3.0"
+    artifact_version: "0.5.0"
     required_status: draft
   - artifact: "docs/editorial/README.md"
     artifact_version: "1.0.0"
@@ -29,6 +30,8 @@ supersedes: []
 evidence:
   - "CONTENT_MAP.md and site directory inventory."
   - "docs/editorial added for public-content governance and Astro schema policy."
+  - "Skill modes page expanded into a public launch cheatsheet for master and supporting skill modes."
+  - "docs/skill-launch-cheatsheet.md added as the Markdown reference for the public launch cheatsheet."
 next_review: "2026-06-01"
 next_step: "/sf-docs technical audit site"
 ---
@@ -46,6 +49,7 @@ This doc covers the Astro public site under `site/`, public skill content, conte
 | `site/` | Astro public site | Do not publish internal-only technical docs by accident |
 | `site/src/pages/**` | Public routes | Public copy must match product and GTM contracts |
 | `site/src/content/skills/**` | Public skill pages | Summarize outcomes, not internal prompt bodies |
+| `docs/skill-launch-cheatsheet.md` | Markdown skill launch reference | Keep aligned with `/skill-modes`, README workflow, and public skill pages |
 | `CONTENT_MAP.md` | Content surface and repurposing map | Update when public surfaces or routing rules change |
 | `docs/editorial/**` | Public-content governance | Use for claim register, page intent, editorial gate, and Astro schema policy |
 | `site/README.md` | Site-local setup | Update when site commands or runtime change |
@@ -54,6 +58,8 @@ This doc covers the Astro public site under `site/`, public skill content, conte
 
 - `npm --prefix site run build`: public site build.
 - `site/src/pages/docs.astro`: public docs overview.
+- `site/src/pages/skill-modes.astro`: public launch cheatsheet and skill mode tutorial.
+- `docs/skill-launch-cheatsheet.md`: Markdown version of the launch cheatsheet.
 - `site/src/pages/skills/index.astro`, `site/src/pages/skills/[slug].astro`, and `site/src/content/skills/`: public skill surfaces.
 - `CONTENT_MAP.md`: source of truth for content surface roles and update triggers.
 - `docs/editorial/README.md`: editorial governance entrypoint.

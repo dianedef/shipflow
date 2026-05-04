@@ -1,10 +1,10 @@
 ---
 artifact: editorial_content_context
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.1"
 project: ShipFlow
 created: "2026-05-01"
-updated: "2026-05-01"
+updated: "2026-05-04"
 status: reviewed
 source_skill: sf-start
 scope: page-intent-map
@@ -39,6 +39,8 @@ depends_on:
 supersedes: []
 evidence:
   - "Inventory of current Astro pages and shared public components."
+  - "Skill modes route expanded into a launch cheatsheet for master and supporting skill modes."
+  - "docs/skill-launch-cheatsheet.md added as the Markdown reference behind the public skill modes route."
 next_review: "2026-06-01"
 next_step: "/sf-verify ShipFlow Editorial Content Governance Layer for AI Agents"
 ---
@@ -60,7 +62,7 @@ This map states the job of each public Astro page so agents can update copy with
 | `/faq` | `site/src/pages/faq.astro` | Visitors with recurring objections or scope questions | Answer common questions directly and safely | Skill modes, docs | `PRODUCT.md`, `GTM.md`, `BRANDING.md`, `README.md` | New objection, product scope change, pricing/support claim, skill behavior change | High: compact claims can drift |
 | `/pricing` | `site/src/pages/pricing.astro` | Visitors evaluating commercial fit | Present pricing as a current hypothesis, not a settled model | Docs, BUSINESS.md | `BUSINESS.md`, `GTM.md`, `BRANDING.md` | Business model, packaging, paid offer, proof, or pricing claim changes | High: pricing claims are sensitive |
 | `/remote-mcp-oauth-tunnel` | `site/src/pages/remote-mcp-oauth-tunnel.astro` | Operators dealing with remote Codex and local OAuth callbacks | Explain why local callback routing needs a temporary SSH path | Local guide and repo docs | `local/README.md`, `README.md`, `specs/local-mcp-oauth-tunnel-login.md`, `docs/technical/local-tunnels-and-mcp-login.md` | Tunnel behavior, OAuth callback, local install, security boundary, or MCP docs changes | High: security/privacy wording |
-| `/skill-modes` | `site/src/pages/skill-modes.astro` | Operators confused by skill arguments | Explain plain task arguments vs mode switches | Skills hub, relevant skill pages | `shipflow-spec-driven-workflow.md`, `skills/*/SKILL.md`, `README.md` | Skill argument semantics, mode detection, lifecycle routing | Medium |
+| `/skill-modes` | `site/src/pages/skill-modes.astro` | Operators choosing skill entrypoints or confused by skill arguments | Explain which master/support skill to launch and how plain task arguments differ from mode switches | Skills hub, relevant skill pages | `docs/skill-launch-cheatsheet.md`, `shipflow-spec-driven-workflow.md`, `skills/*/SKILL.md`, `README.md` | Skill inventory, argument modes, mode detection, lifecycle routing | Medium |
 | `/skills` | `site/src/pages/skills/index.astro` | Visitors choosing a workflow move | Present the public skill catalog by category and use case | Skill detail pages | `site/src/content/skills/*.md`, `skills/*/SKILL.md`, `PRODUCT.md` | Skill inventory, category, featured status, public promise | High: generated from content collection |
 | `/skills/[slug]` | `site/src/pages/skills/[slug].astro` | Visitors evaluating one skill | Render one public skill promise and related workflow context | Skills hub, GitHub skills | `site/src/content/skills/*.md`, `skills/*/SKILL.md`, `site/src/content.config.ts` | Skill behavior, public description, argument modes, related skills, schema changes | High: route depends on `getCollection` and `getStaticPaths` |
 | `/why-not-just-prompts` | `site/src/pages/why-not-just-prompts.astro` | Visitors comparing ShipFlow to stronger prompting | Explain why context, contracts, and verification are the product wedge | Docs or skills | `PRODUCT.md`, `GTM.md`, `BRANDING.md` | Positioning, objection handling, proof language | Medium |

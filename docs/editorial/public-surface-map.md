@@ -1,10 +1,10 @@
 ---
 artifact: editorial_content_context
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.2.0"
 project: ShipFlow
 created: "2026-05-01"
-updated: "2026-05-01"
+updated: "2026-05-04"
 status: reviewed
 source_skill: sf-start
 scope: public-surface-map
@@ -29,7 +29,7 @@ linked_systems:
   - README.md
 depends_on:
   - artifact: "CONTENT_MAP.md"
-    artifact_version: "0.3.0"
+    artifact_version: "0.5.0"
     required_status: draft
   - artifact: "PRODUCT.md"
     artifact_version: "1.1.0"
@@ -40,6 +40,8 @@ depends_on:
 supersedes: []
 evidence:
   - "Inventory of site/src/pages, site/src/components, site/src/content/skills, README, and CONTENT_MAP.md."
+  - "Skill modes tutorial repositioned as the public launch cheatsheet for master and supporting skill modes."
+  - "docs/skill-launch-cheatsheet.md added as the Markdown version of the skill launch reference."
 next_review: "2026-06-01"
 next_step: "/sf-verify ShipFlow Editorial Content Governance Layer for AI Agents"
 ---
@@ -63,7 +65,8 @@ This map lists ShipFlow's public content surfaces, the source contracts that bou
 | FAQ page | `site/src/pages/faq.astro` | Answer recurring public objections and support-style questions | `PRODUCT.md`, `GTM.md`, `BRANDING.md`, `README.md` | User-facing workflow, claim, pricing, support, or scope changes | Build; claim register review |
 | Pricing page | `site/src/pages/pricing.astro` and `site/src/components/PricingHypothesis.astro` | Present current packaging hypothesis without implying a settled business model | `BUSINESS.md`, `GTM.md`, `BRANDING.md` | Pricing, packaging, commercial model, or proof changes | Build; pricing claim review |
 | Remote MCP OAuth guide | `site/src/pages/remote-mcp-oauth-tunnel.astro` | Explain the public operator guide for local OAuth callback routing | `README.md`, `local/README.md`, `specs/local-mcp-oauth-tunnel-login.md`, `docs/technical/local-tunnels-and-mcp-login.md` | MCP login, tunnel, local callback, security, or install behavior changes | Build; sensitive detail review |
-| Skill modes tutorial | `site/src/pages/skill-modes.astro` | Explain how skill arguments and mode switches work in public language | `shipflow-spec-driven-workflow.md`, `skills/*/SKILL.md`, `README.md` | Skill mode semantics, argument contracts, or lifecycle flow changes | Build; skill contract review |
+| Skill launch cheatsheet | `site/src/pages/skill-modes.astro` | Explain which master/support skill to launch and how skill arguments or mode switches change workflow behavior | `docs/skill-launch-cheatsheet.md`, `shipflow-spec-driven-workflow.md`, `skills/*/SKILL.md`, `README.md` | Skill inventory, mode semantics, argument contracts, or lifecycle flow changes | Build; skill contract review |
+| Skill launch Markdown reference | `docs/skill-launch-cheatsheet.md` | Preserve the repo Markdown version of the skill launch and argument-mode reference | `shipflow-spec-driven-workflow.md`, `skills/*/SKILL.md`, `site/src/content/skills/` | Skill inventory, mode semantics, argument contracts, or lifecycle flow changes | Metadata lint; link/path review |
 | Skills hub | `site/src/pages/skills/index.astro` | Present public skill catalog and category framing | `skills/*/SKILL.md`, `site/src/content/skills/`, `PRODUCT.md`, `GTM.md` | Skill added, removed, renamed, recategorized, or repositioned | Build; content collection schema validation |
 | Skill detail pages | `site/src/pages/skills/[slug].astro` plus `site/src/content/skills/*.md` | Render public skill pages from the `skills` content collection | `skills/*/SKILL.md`, `site/src/content.config.ts`, `BRANDING.md` | Public skill promise, category, relation, argument mode, or schema changes | Build; `site/src/content.config.ts` check |
 | Why not just prompts page | `site/src/pages/why-not-just-prompts.astro` | Explain the positioning contrast with generic prompting | `PRODUCT.md`, `GTM.md`, `BRANDING.md` | Positioning, objections, proof, or category changes | Build; claim register review |

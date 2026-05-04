@@ -735,6 +735,10 @@ disk_free_human() {
     df -h --output=avail / 2>/dev/null | tail -n 1 | tr -d ' '
 }
 
+disk_used_pct() {
+    df -P / 2>/dev/null | awk 'NR == 2 { gsub("%", "", $5); print $5 }'
+}
+
 disk_warn_threshold_bytes() {
     local gb="${SHIPFLOW_DISK_WARN_GB:-5}"
     if ! [[ "$gb" =~ ^[0-9]+$ ]]; then
@@ -743,12 +747,87 @@ disk_warn_threshold_bytes() {
     echo $((gb * 1024 * 1024 * 1024))
 }
 
+disk_gb_to_bytes() {
+    local gb="$1"
+    if ! [[ "$gb" =~ ^[0-9]+$ ]]; then
+        gb=0
+    fi
+    echo $((gb * 1024 * 1024 * 1024))
+}
+
+disk_pressure_level() {
+    local free_bytes="${1:-}"
+    local used_pct="${2:-}"
+
+    if [ -z "$free_bytes" ]; then
+        free_bytes=$(disk_free_bytes)
+    fi
+    if [ -z "$used_pct" ]; then
+        used_pct=$(disk_used_pct)
+    fi
+
+    local critical_free
+    critical_free=$(disk_gb_to_bytes "${SHIPFLOW_DISK_CRITICAL_GB:-3}")
+    local high_free
+    high_free=$(disk_gb_to_bytes "${SHIPFLOW_DISK_HIGH_GB:-5}")
+    local warn_free
+    warn_free=$(disk_gb_to_bytes "${SHIPFLOW_DISK_WARN_GB:-8}")
+    local critical_pct="${SHIPFLOW_DISK_CRITICAL_PCT:-95}"
+    local high_pct="${SHIPFLOW_DISK_HIGH_PCT:-90}"
+    local warn_pct="${SHIPFLOW_DISK_WARN_PCT:-85}"
+
+    if { [ -n "$used_pct" ] && [ "$used_pct" -ge "$critical_pct" ]; } || \
+        { [ -n "$free_bytes" ] && [ "$free_bytes" -lt "$critical_free" ]; }; then
+        echo "critical"
+    elif { [ -n "$used_pct" ] && [ "$used_pct" -ge "$high_pct" ]; } || \
+        { [ -n "$free_bytes" ] && [ "$free_bytes" -lt "$high_free" ]; }; then
+        echo "high"
+    elif { [ -n "$used_pct" ] && [ "$used_pct" -ge "$warn_pct" ]; } || \
+        { [ -n "$free_bytes" ] && [ "$free_bytes" -lt "$warn_free" ]; }; then
+        echo "warning"
+    else
+        echo "ok"
+    fi
+}
+
 disk_is_low_space() {
     local free_bytes
     free_bytes=$(disk_free_bytes)
-    local threshold
-    threshold=$(disk_warn_threshold_bytes)
-    [ -n "$free_bytes" ] && [ -n "$threshold" ] && [ "$free_bytes" -lt "$threshold" ]
+    local used_pct
+    used_pct=$(disk_used_pct)
+    local level
+    level=$(disk_pressure_level "$free_bytes" "$used_pct")
+    [ "$level" != "ok" ]
+}
+
+print_disk_pressure_warning() {
+    local level="${1:-}"
+    local free_human="${2:-}"
+    local used_pct="${3:-}"
+
+    if [ -z "$level" ]; then
+        level=$(disk_pressure_level)
+    fi
+    if [ -z "$free_human" ]; then
+        free_human=$(disk_free_human)
+    fi
+    if [ -z "$used_pct" ]; then
+        used_pct=$(disk_used_pct)
+    fi
+
+    case "$level" in
+        critical)
+            echo -e "${RED}🚨 CRITICAL DISK SPACE: / is ${used_pct}% used (${free_human} free). VM freeze risk is high.${NC}"
+            echo -e "${RED}   Stop heavy builds. Run aggressive cleanup now or expand the disk before continuing.${NC}"
+            ;;
+        high)
+            echo -e "${RED}⚠️  HIGH DISK PRESSURE: / is ${used_pct}% used (${free_human} free). Builds can fail or stall.${NC}"
+            echo -e "${RED}   Run cleanup before Gradle, Flutter, npm, Nix, or Docker-heavy work.${NC}"
+            ;;
+        warning)
+            echo -e "${YELLOW}⚠️  Disk pressure: / is ${used_pct}% used (${free_human} free). Plan cleanup soon.${NC}"
+            ;;
+    esac
 }
 
 format_bytes() {
@@ -792,8 +871,13 @@ disk_cleanup_menu() {
     before_bytes=$(disk_free_bytes)
     local before_human
     before_human=$(disk_free_human)
+    local before_used_pct
+    before_used_pct=$(disk_used_pct)
+    local before_level
+    before_level=$(disk_pressure_level "$before_bytes" "$before_used_pct")
 
-    echo -e "${BLUE}Free space before:${NC} ${GREEN}${before_human}${NC}"
+    echo -e "${BLUE}Free space before:${NC} ${GREEN}${before_human}${NC} (${before_used_pct}% used on /)"
+    print_disk_pressure_warning "$before_level" "$before_human" "$before_used_pct"
     echo ""
 
     local choice
@@ -831,6 +915,9 @@ disk_cleanup_menu() {
         echo -e "  ${CYAN}•${NC} ~/.rustup/tmp/*"
         echo -e "  ${CYAN}•${NC} Rust/Tauri target/ build artifacts"
         echo ""
+        if [ "$before_level" = "critical" ] || [ "$before_level" = "high" ]; then
+            echo -e "${RED}This cleanup is recommended: current disk pressure is ${before_level}.${NC}"
+        fi
         if ! ui_confirm "Proceed with aggressive cleanup?"; then
             echo -e "${BLUE}Cancelled${NC}"
             return 0
@@ -842,13 +929,22 @@ disk_cleanup_menu() {
     after_bytes=$(disk_free_bytes)
     local after_human
     after_human=$(disk_free_human)
+    local after_used_pct
+    after_used_pct=$(disk_used_pct)
+    local after_level
+    after_level=$(disk_pressure_level "$after_bytes" "$after_used_pct")
 
     echo ""
-    echo -e "${BLUE}Free space after:${NC} ${GREEN}${after_human}${NC}"
+    echo -e "${BLUE}Free space after:${NC} ${GREEN}${after_human}${NC} (${after_used_pct}% used on /)"
 
     if [ -n "$before_bytes" ] && [ -n "$after_bytes" ] && [ "$after_bytes" -ge "$before_bytes" ]; then
         local freed=$((after_bytes - before_bytes))
         echo -e "${GREEN}Recovered:${NC} $(format_bytes "$freed")"
+    fi
+
+    print_disk_pressure_warning "$after_level" "$after_human" "$after_used_pct"
+    if [ "$before_level" != "ok" ] && [ "$after_level" = "ok" ]; then
+        echo -e "${GREEN}Disk pressure cleared.${NC}"
     fi
 }
 
@@ -1198,7 +1294,8 @@ updates_total_cached() {
 #
 # Outputs (globals):
 #   MENU_STATUS_TS, MENU_STATUS_FREE_HUMAN, MENU_STATUS_UPDATES_TOTAL,
-#   MENU_STATUS_LOW_SPACE
+#   MENU_STATUS_LOW_SPACE, MENU_STATUS_MEM_HUMAN, MENU_STATUS_MEM_TOTAL_HUMAN,
+#   MENU_STATUS_LOW_MEM
 # -----------------------------------------------------------------------------
 read_menu_status_cache() {
     MENU_STATUS_TS=0
@@ -1206,6 +1303,7 @@ read_menu_status_cache() {
     MENU_STATUS_UPDATES_TOTAL=""
     MENU_STATUS_LOW_SPACE=0
     MENU_STATUS_MEM_HUMAN=""
+    MENU_STATUS_MEM_TOTAL_HUMAN=""
     MENU_STATUS_LOW_MEM=0
 
     [ -f "$MENU_STATUS_CACHE_FILE" ] || return 1
@@ -1217,6 +1315,7 @@ read_menu_status_cache() {
             updates_total) MENU_STATUS_UPDATES_TOTAL="$value" ;;
             low_space) MENU_STATUS_LOW_SPACE="$value" ;;
             mem_human) MENU_STATUS_MEM_HUMAN="$value" ;;
+            mem_total_human) MENU_STATUS_MEM_TOTAL_HUMAN="$value" ;;
             low_mem) MENU_STATUS_LOW_MEM="$value" ;;
         esac
     done < "$MENU_STATUS_CACHE_FILE"
@@ -1246,6 +1345,8 @@ refresh_menu_status_cache_sync() {
     fi
     local mem_human
     mem_human=$(mem_available_human)
+    local mem_total_human
+    mem_total_human=$(mem_total_human)
     local low_mem=0
     if mem_is_low; then
         low_mem=1
@@ -1261,6 +1362,7 @@ refresh_menu_status_cache_sync() {
         echo "updates_total=$updates_total"
         echo "low_space=$low_space"
         echo "mem_human=$mem_human"
+        echo "mem_total_human=$mem_total_human"
         echo "low_mem=$low_mem"
     } > "$tmp_file"
 
@@ -5945,10 +6047,11 @@ print_header() {
     read_menu_status_cache >/dev/null 2>&1 || true
     refresh_menu_status_cache_async_if_stale
 
-    local status_left="Free: ..."
+    local status_left="Disk: ..."
     local status_right="Up: ..."
     local free_human="${MENU_STATUS_FREE_HUMAN:-}"
     local mem_human="${MENU_STATUS_MEM_HUMAN:-}"
+    local mem_total_human="${MENU_STATUS_MEM_TOTAL_HUMAN:-}"
 
     # Disk and RAM probes are cheap, so fall back to live values on first paint
     # instead of showing placeholders while the async cache warms up.
@@ -5958,14 +6061,25 @@ print_header() {
     if [ -z "$mem_human" ]; then
         mem_human=$(mem_available_human 2>/dev/null || true)
     fi
+    if [ -z "$mem_total_human" ]; then
+        mem_total_human=$(mem_total_human 2>/dev/null || true)
+    fi
 
     if [ -n "$free_human" ]; then
-        status_left="Free: $free_human"
+        status_left="Disk: ${free_human} free"
         if [ -n "$mem_human" ] && [ "$mem_human" != "?" ]; then
-            status_left="${status_left} | Mem: $mem_human"
+            if [ -n "$mem_total_human" ] && [ "$mem_total_human" != "?" ]; then
+                status_left="${status_left} | RAM: ${mem_human}/${mem_total_human}"
+            else
+                status_left="${status_left} | RAM avail: $mem_human"
+            fi
         fi
     elif [ -n "$mem_human" ] && [ "$mem_human" != "?" ]; then
-        status_left="Mem: $mem_human"
+        if [ -n "$mem_total_human" ] && [ "$mem_total_human" != "?" ]; then
+            status_left="RAM: ${mem_human}/${mem_total_human}"
+        else
+            status_left="RAM avail: $mem_human"
+        fi
     fi
     if [ -n "$MENU_STATUS_UPDATES_TOTAL" ]; then
         status_right="Up: $MENU_STATUS_UPDATES_TOTAL"
@@ -5974,7 +6088,15 @@ print_header() {
     ui_header "Shipflow DevServer" "Development Environment" "$status_left" "$status_right"
 
     if [ "${MENU_STATUS_LOW_SPACE:-0}" = "1" ]; then
-        echo -e "${RED}⚠️  Low disk space. Consider running Disk Cleanup.${NC}"
+        local header_used_pct
+        header_used_pct=$(disk_used_pct 2>/dev/null || true)
+        local header_free_human="${free_human:-}"
+        if [ -z "$header_free_human" ]; then
+            header_free_human=$(disk_free_human 2>/dev/null || true)
+        fi
+        local header_level
+        header_level=$(disk_pressure_level "" "$header_used_pct" 2>/dev/null || echo "warning")
+        print_disk_pressure_warning "$header_level" "$header_free_human" "$header_used_pct"
     fi
     if [ "${MENU_STATUS_LOW_MEM:-0}" = "1" ]; then
         echo -e "${RED}⚠️  Low memory (RAM). Press h) Health Check.${NC}"
@@ -6363,6 +6485,44 @@ action_local_connection_info() {
     echo -e "${YELLOW}Your local machine initiates SSH to this server, then ShipFlow opens tunnels from there.${NC}"
 }
 
+action_mcp_auth_setup() {
+    echo -e "${GREEN}🔐 MCP Auth Setup${NC}"
+    echo ""
+    echo -e "${BLUE}Run MCP OAuth from your local machine, not from this remote server.${NC}"
+    echo -e "${YELLOW}Your browser receives a localhost callback, so the local ShipFlow helper must create the temporary SSH tunnel.${NC}"
+    echo ""
+
+    echo -e "${CYAN}1. Install the local ShipFlow scripts on your local machine:${NC}"
+    echo -e "   ${GREEN}git clone <shipflow-repo-url> ~/shipflow${NC}"
+    echo -e "   ${GREEN}cd ~/shipflow/local${NC}"
+    echo -e "   ${GREEN}./install.sh${NC}"
+    echo ""
+    echo -e "${BLUE}   macOS/Linux/WSL:${NC} use ${GREEN}./install.sh${NC}"
+    echo -e "${BLUE}   Windows PowerShell:${NC} use ${GREEN}.\\install_local.ps1${NC}"
+    echo ""
+
+    echo -e "${CYAN}2. Configure this server from your local machine:${NC}"
+    echo -e "   ${GREEN}source ~/.bashrc${NC}  ${YELLOW}# or restart your terminal${NC}"
+    echo -e "   ${GREEN}urls${NC}"
+    echo -e "   ${YELLOW}Choose:${NC} c) Configure new server"
+    echo -e "   ${YELLOW}Enter:${NC} user@server-ip, plus your SSH key path if needed"
+    echo ""
+    echo -e "${BLUE}Need this server address?${NC} In this remote ShipFlow menu, use:"
+    echo -e "   ${GREEN}c) Local Setup - Show server address for tunnels${NC}"
+    echo ""
+
+    echo -e "${CYAN}3. Run the MCP login command on your local machine:${NC}"
+    echo -e "   ${GREEN}shipflow-mcp-login vercel${NC}"
+    echo -e "   ${GREEN}shipflow-mcp-login supabase${NC}"
+    echo -e "   ${GREEN}shipflow-mcp-login all${NC}"
+    echo ""
+    echo -e "${YELLOW}If Codex says the provider is missing on the remote server, add it there first:${NC}"
+    echo -e "   ${GREEN}codex mcp add vercel --url https://mcp.vercel.com${NC}"
+    echo -e "   ${GREEN}codex mcp add supabase --url https://mcp.supabase.com/mcp${NC}"
+    echo ""
+    echo -e "${BLUE}ShipFlow does not read or store OAuth tokens; Codex and the provider own the token exchange.${NC}"
+}
+
 action_publish() {
     echo -e "${GREEN}🌐 Publish to Web (HTTPS via Caddy + DuckDNS)${NC}"
     echo ""
@@ -6541,6 +6701,7 @@ MAIN_MENU_ITEMS=(
     "v|Tools Status - Voir les outils installés|action_tools"
     "j|Session Identity - View or reset session|action_session"
     "c|Local Setup - Show server address for tunnels|action_local_connection_info"
+    "q|MCP Auth Setup - Local OAuth login tunnel|action_mcp_auth_setup"
     "?|Help - How ShipFlow works|action_adv_help"
     "x|Exit|action_exit"
 )

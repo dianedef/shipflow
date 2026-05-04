@@ -229,6 +229,26 @@ Chronological log of skill refreshes via `/sf-skills-refresh`. Most recent first
 
 ---
 
+## 2026-05-04 — sf-repurpose existing content placement
+
+**Added:**
+- Existing-content placement analysis for internal documentation and public content surfaces
+- `Existing Content Opportunities` output section with surface, placement idea, audience learning moment, source proof, content move, priority, and next step
+- Requirement to evaluate which existing surface becomes clearer before proposing only net-new content
+- Shared delegation reference and parallel read-only fan-out rules for non-overlapping existing-content scans
+- Read-only execution boundary for project content and docs, with trace-spec-only mutation allowed
+- `Owner Skill Handoffs` routing for `sf-docs`, `sf-enrich`, `sf-redact`, `sf-audit-copy`, `sf-audit-copywriting`, and `sf-audit-seo`
+
+**Updated:**
+- Public skill page now promises existing-content improvement opportunities alongside article ideas and conversation titles
+- Output pack reference now separates internal docs and public content opportunities
+- Former apply behavior now routes to owner skills instead of writing files directly
+
+**New phases:**
+- None
+
+**Sources:** 0 URLs consulted (local user feedback and existing ShipFlow content governance)
+
 ## 2026-05-04 — sf-repurpose
 
 **Added:**
@@ -280,9 +300,9 @@ Chronological log of skill refreshes via `/sf-skills-refresh`. Most recent first
 ## 2026-05-03 — sf-bug
 
 **Added:**
-- New professional bug loop orchestrator for `sf-test -> bug dossier -> sf-fix -> sf-test --retest -> sf-verify -> sf-ship`
+- New professional bug loop orchestrator for `sf-test -> bug file -> sf-fix -> sf-test --retest -> sf-verify -> sf-ship`
 - Explicit ownership boundaries so `sf-bug` routes without duplicating bug capture, fix, retest, browser evidence, verification, or shipping internals
-- Stop conditions for missing dossiers, unsafe closure, unresolved high/critical ship risk, sensitive evidence, destructive production actions, and preview-validation gaps
+- Stop conditions for missing bug files, unsafe closure, unresolved high/critical ship risk, sensitive evidence, destructive production actions, and preview-validation gaps
 - Public skill page and internal discoverability updates for the professional bug lifecycle workflow
 
 **Updated:**

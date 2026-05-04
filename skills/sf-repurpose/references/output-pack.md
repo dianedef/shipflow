@@ -26,6 +26,40 @@ Use this template as the default shape of the response. Expand or compress secti
   Why this conversation supports it:
   Best destination:
 
+## Existing Content Opportunities
+
+### Internal Docs
+
+- Surface:
+  Placement idea:
+  Audience learning moment:
+  Source proof:
+  Content move:
+  Priority:
+  Next step:
+
+### Public Content
+
+- Surface:
+  Placement idea:
+  Audience learning moment:
+  Source proof:
+  Content move:
+  Priority:
+  Next step:
+
+## Owner Skill Handoffs
+
+- Owner skill:
+  Recommended command:
+  Target surface:
+  Source truth:
+  Source proof:
+  Intended content move:
+  Claim constraints:
+  Priority:
+  Context to pass forward:
+
 ## Source Pack
 
 ## Build Summary
@@ -84,10 +118,10 @@ Use this template as the default shape of the response. Expand or compress secti
 - Per-surface job:
 - Surfaces intentionally skipped:
 
-## Application Checklist
+## Handoff Checklist
 
-- Must write:
-- Should write:
+- Must route:
+- Should route:
 - Optional:
 - Deferred / blocked:
 
@@ -103,6 +137,8 @@ Guidance:
 - `Best Next Actions` must come first and stay short enough to act on without reading the full pack.
 - `Article Name Ideas` should give durable article concepts tied to existing product, docs, skill pages, FAQ, semantic clusters, or the current chantier. Default to 5 to 8 strong ideas.
 - `Titles For This Conversation` is mandatory in workstream mode and should give title candidates that can directly repurpose the current conversation. Default to 5 to 8 strong titles.
+- `Existing Content Opportunities` should identify where the source insight can improve existing internal docs and public content. It should explain the audience learning moment, not only name a file.
+- `Owner Skill Handoffs` should route writing and improvement work to `sf-docs`, `sf-enrich`, `sf-redact`, `sf-audit-copy`, `sf-audit-copywriting`, or `sf-audit-seo`; `sf-repurpose` does not write the content itself.
 - If no blog or article surface is declared, keep the ideas and titles but mark destination as `surface missing: blog`; do not invent paths.
 - `Build Summary` should read like the truth source for all other sections.
 - For external text sources, `Source Analysis` becomes the anchor section and `Build Summary` can be shortened or adapted.
@@ -112,7 +148,7 @@ Guidance:
 - `Marketing Claims` should stay tight and conservative. If only one safe claim exists, give one.
 - `Content Angles` should be reusable prompts or headlines, not full articles.
 - `Diffusion Map` is mandatory when the source idea is site-facing or SEO-relevant.
-- `Application Checklist` is mandatory when the user asks to apply, create, update, or fill site/docs surfaces.
+- `Handoff Checklist` is mandatory when the user asks to apply, create, update, or fill site/docs surfaces.
 - `Evidence Ledger` is mandatory whenever the output contains public-facing claims.
 
 Compression rules:
@@ -122,4 +158,5 @@ Compression rules:
 - If the user asked for one surface only, keep the other sections brief but do not remove the evidence ledger.
 - If the source is a third-party paragraph or article, favor `Source Analysis`, `Marketing Claims`, and `Content Angles` over build-specific sections.
 - If the user asks for ideas, names, titles, articles, blog, or outlines, expand `Best Next Actions`, `Article Name Ideas`, and `Titles For This Conversation` before any detailed source analysis.
-- If the skill is in apply mode, keep this pack internal and summarize only the files changed, concepts placed, validations, and deferred surfaces in the final answer.
+- If the user asks where to improve existing content, expand `Existing Content Opportunities` and compress article titles.
+- If the user asks to apply or write, expand `Owner Skill Handoffs` and `Handoff Checklist`; do not claim files were changed by `sf-repurpose`.

@@ -14,7 +14,7 @@ const items = [
   },
   {
     q: "Do ShipFlow skills work with both Codex and Claude Code?",
-    a: "Yes. ShipFlow maintains skill metadata for both discovery models: Codex starts from each skill name, description, and path, while Claude Code relies on description and optional when_to_use metadata with a 1536-character per-skill listing cap. ShipFlow treats the stricter shared budget as the rule: descriptions are front-loaded, audited, and kept within the roughly 2% or 8000-character Codex baseline. The current audit reports 49 skills, 0 hard violations, a 7230-character absolute discovery estimate, and an average description length of 88.4 characters.",
+    a: "Yes. ShipFlow maintains skill metadata for both discovery models: Codex starts from each skill name, description, and path, while Claude Code relies on description and optional when_to_use metadata with a 1536-character per-skill listing cap. ShipFlow treats the stricter shared budget as the rule: descriptions are front-loaded, audited, and kept within the roughly 2% or 8000-character Codex baseline. The current audit target is zero hard violations and zero warnings while keeping discovery text under the shared budget.",
     links: [
       ["Codex skills documentation", "https://developers.openai.com/codex/skills"],
       ["Claude Code skills documentation", "https://code.claude.com/docs/en/skills"]
@@ -115,9 +115,10 @@ const items = [
           <h3>Want the detailed version?</h3>
           <p>
             If your question is really about how skills interpret arguments,
-            start with the tutorial on skill modes and mode detection.
+            start with the launch cheatsheet for master skills, supporting
+            skills, and mode detection.
           </p>
-          <a class="doc-action" href="/skill-modes">Read the skill modes tutorial</a>
+          <a class="doc-action" href="/skill-modes">Read the launch cheatsheet</a>
         </article>
 
         <article class="doc-card">

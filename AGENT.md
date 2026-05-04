@@ -68,6 +68,7 @@ Ce fichier est le point d'entree rapide pour un agent qui arrive dans le repo. I
 ## Rules
 
 - Ne pas lire tout le repo avant d'identifier la zone utile.
+- Sur hote Linux ARM64 (`aarch64`/`arm64`), ne pas lancer de build Android release local: pas de `flutter build apk --release`, `flutter build appbundle --release`, `./gradlew assembleRelease` ou `./gradlew bundleRelease`; router les APK/AAB vers Blacksmith ou une CI Linux x64. Localement, limiter Flutter a `flutter analyze`, `flutter test` et `flutter build web --release`.
 - Utiliser `CONTEXT.md` comme index, pas comme verite absolue.
 - Si `CONTEXT.md` et le code divergent, le code gagne et la doc doit etre corrigee.
 - Pour une tache locale, lire seulement la doc specialisee necessaire.

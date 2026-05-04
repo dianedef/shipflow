@@ -9,6 +9,7 @@ const coreDocs = [
   ["CONTEXT-FUNCTION-TREE.md", "How to navigate large procedural shell files without re-reading everything."],
   ["CONTENT_MAP.md", "Where content lives: docs, landing pages, semantic clusters, public surfaces, and repurposing destinations."],
   ["docs/editorial/README.md", "How public content, claims, page intent, and Astro content schema boundaries stay aligned."],
+  ["docs/skill-launch-cheatsheet.md", "Markdown reference for master skills, supporting skills, and argument modes."],
   ["README.md", "Public overview, positioning, onboarding, and high-level framework story."],
   ["shipflow-spec-driven-workflow.md", "The execution doctrine behind sf-spec, sf-ready, sf-start, and sf-verify."]
 ];
@@ -63,13 +64,14 @@ const githubDocUrl = (name: string) => `https://github.com/dianedef/ShipFlow/blo
     <section class="section">
       <div class="doc-grid">
         <article class="doc-card">
-          <h3>How skill modes work</h3>
+          <h3>Skill launch cheatsheet</h3>
           <p>
-            Some skill arguments are plain task descriptions. Others switch the
-            workflow entirely. The public tutorial explains how to tell the
-            difference without guessing.
+            The public mode page now shows which master skill to launch first,
+            which focused skills own narrower proof lanes, and which arguments
+            switch a workflow instead of describing the task. The Markdown
+            reference lives in <code>docs/skill-launch-cheatsheet.md</code>.
           </p>
-          <a class="doc-action" href="/skill-modes">Open the tutorial</a>
+          <a class="doc-action" href="/skill-modes">Open the cheatsheet</a>
         </article>
 
         <article class="doc-card">
@@ -121,9 +123,9 @@ const githubDocUrl = (name: string) => `https://github.com/dianedef/ShipFlow/blo
           <h3>Skills stay readable by agents</h3>
           <p>
             ShipFlow audits skill discovery metadata so the catalog remains
-            usable by Codex and Claude Code. The current public proof is 49
-            skills, 0 hard violations, and a 7230-character discovery estimate
-            under the 8000-character baseline.
+            usable by Codex and Claude Code. The public proof keeps the
+            discovery budget visible instead of letting the skill catalog drift
+            into unreadable prompt inventory.
           </p>
           <a class="doc-action" href="/faq">Read the compatibility FAQ</a>
         </article>

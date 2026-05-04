@@ -70,13 +70,23 @@ const groupedSkills = categoryOrder.map((category) => ({
           enough for Codex and Claude Code to see them.
         </p>
         <div class="hero-actions">
-          <a class="button button-secondary" href="/skill-modes">Understand skill arguments</a>
+          <a class="button button-secondary" href="/skill-modes">Open the launch cheatsheet</a>
         </div>
       </div>
     </section>
 
     <section class="section">
       <div class="doc-grid">
+        <article class="doc-card">
+          <h3>Start with the master skills</h3>
+          <p>
+            Use `sf-build` for complete workstreams, `sf-maintain` for upkeep,
+            `sf-deploy` for release confidence, `sf-bug` for bug-loop routing,
+            and `sf-skill-build` for the skill system itself.
+          </p>
+          <a class="doc-action" href="/skill-modes">See launch modes</a>
+        </article>
+
         <article class="doc-card">
           <h3>Arguments can change scope</h3>
           <p>
@@ -85,15 +95,6 @@ const groupedSkills = categoryOrder.map((category) => ({
             current-session changes or every dirty file in a repo.
           </p>
           <a class="doc-action" href="/skills/sf-ship">See sf-ship arguments</a>
-        </article>
-
-        <article class="doc-card">
-          <h3>Learn the general rule</h3>
-          <p>
-            The tutorial explains why some arguments are plain task text while
-            others are mode switches or structured inputs.
-          </p>
-          <a class="doc-action" href="/skill-modes">Open the tutorial</a>
         </article>
       </div>
     </section>
