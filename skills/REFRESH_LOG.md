@@ -4,6 +4,22 @@ Chronological log of skill refreshes via `/sf-skills-refresh`. Most recent first
 
 ---
 
+## 2026-05-04 — sf-content
+
+**Added:**
+- New master content lifecycle contract for content map, editorial corpus, owner content skills, audits, docs, validation, and ship routing
+- Explicit routing boundaries so `sf-content` orchestrates `sf-repurpose`, `sf-redact`, `sf-enrich`, `sf-audit-copy`, `sf-audit-copywriting`, `sf-audit-seo`, `sf-docs`, `sf-veille`, and `sf-market-study` without duplicating them
+- Stop conditions for missing declared blog/article surfaces, unsupported sensitive claims, runtime content schema violations, validation failures, and unrelated dirty ship scope
+- Public skill page and internal discoverability updates for content-management work
+
+**Updated:**
+- None (new skill created)
+
+**New phases:**
+- None
+
+**Sources:** 0 URLs consulted (local content governance, editorial corpus, and existing content skill contracts)
+
 ## 2026-05-03 — sf-maintain
 
 **Added:**

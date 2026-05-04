@@ -1,7 +1,7 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "1.8.2"
+artifact_version: "1.9.0"
 project: ShipFlow
 created: "2026-05-01"
 updated: "2026-05-04"
@@ -19,6 +19,7 @@ linked_systems:
   - skills/sf-build/SKILL.md
   - skills/sf-deploy/SKILL.md
   - skills/sf-maintain/SKILL.md
+  - skills/sf-content/SKILL.md
   - skills/sf-skill-build/SKILL.md
   - skills/sf-browser/SKILL.md
   - skills/sf-init/SKILL.md
@@ -32,7 +33,7 @@ linked_systems:
   - docs/editorial/
 depends_on:
   - artifact: "shipflow-spec-driven-workflow.md"
-    artifact_version: "0.13.2"
+    artifact_version: "0.14.0"
     required_status: draft
   - artifact: "skills/references/technical-docs-corpus.md"
     artifact_version: "1.1.0"
@@ -53,6 +54,7 @@ evidence:
   - "Reporting contract clarified: user-mode ship reports should match the user's active language, use outcome/evidence/limits ordering, and allow a few sober status emojis."
   - "Skill launch cheatsheet added for master and supporting modes."
   - "sf-skill-build exploration gate added before sf-spec for fuzzy skill ideas or placement decisions."
+  - "sf-content added as the master content lifecycle for strategy, repurposing, drafting, enrichment, audits, docs, validation, and ship routing."
 next_review: "2026-06-01"
 next_step: "/sf-docs technical audit skills"
 ---
@@ -89,6 +91,7 @@ This doc covers ShipFlow skills, lifecycle flow, references, templates, model/to
 - `sf-browser`: generic non-auth browser verification through Playwright MCP for URLs, page-level assertions, screenshots, console summaries, and network summaries.
 - `sf-build`: user-facing orchestrator that consumes the governance corpus gate before implementation, closure, and ship.
 - `sf-deploy`: release confidence orchestrator (`sf-check -> sf-ship -> sf-prod -> sf-browser/sf-auth-debug/sf-test -> sf-verify -> sf-changelog`).
+- `sf-content`: master content lifecycle (`CONTENT_MAP + editorial corpus -> owner content skills -> audits/docs -> validation -> sf-verify -> sf-ship`).
 - `sf-skill-build`: dedicated orchestrator for ShipFlow skill maintenance (`sf-explore when needed -> sf-spec -> SKILL.md -> runtime skill links -> sf-skills-refresh -> budget audit -> sf-verify -> sf-docs/help -> sf-ship`).
 - `tools/shipflow_sync_skills.sh --check|--repair`: reusable local helper for current-user Claude/Codex skill visibility and install-time selected-user linking.
 - `sf-ship` and `sf-prod`: shipping and deployed verification.
@@ -149,6 +152,21 @@ sf-maintain
   -> sf-deploy or sf-ship
 ```
 
+Content lifecycle flow:
+
+```text
+sf-content
+  -> CONTENT_MAP and editorial corpus
+  -> surface, source, claim, and schema gates
+  -> sf-veille / sf-research / sf-market-study when source or market evidence is missing
+  -> sf-repurpose / sf-redact / sf-enrich
+  -> sf-audit-copy / sf-audit-copywriting / sf-audit-seo
+  -> sf-docs for docs or editorial governance updates
+  -> npm --prefix site run build and sf-browser when public site proof is needed
+  -> sf-verify
+  -> sf-ship only when dirty scope is bounded
+```
+
 ## Invariants
 
 - Lifecycle skills trace into exactly one chantier spec when one is identified.
@@ -170,6 +188,7 @@ sf-maintain
 - `sf-deploy` owns release orchestration only; `sf-ship` owns commit/push, `sf-prod` owns deployed truth, and proof skills own observed behavior.
 - `sf-bug` owns bug lifecycle orchestration only; phase skills still own bug record mutation, diagnosis, retest evidence, verification, and shipping.
 - `sf-maintain` owns the maintenance lifecycle; bugs, dependencies, docs, checks, audits, migrations, tasks, security review, repair, verification, and ship still run through their specialist owner skills and gates.
+- `sf-content` owns content-management orchestration; repurposing, drafting, enrichment, copy audit, copywriting audit, SEO audit, docs, veille, market study, browser proof, verification, and ship still run through their specialist owner skills and gates.
 - `sf-skill-build` owns skill-maintenance orchestration and must route to `sf-explore` before `sf-spec` when skill intent, placement, public promise, or governance policy is too fuzzy for one targeted question to settle.
 - A release is not considered verified from push success, provider success, or a bare `200 OK` alone.
 - User-facing final reports default to `report=user`: concise, outcome-first, matched to the user's active language, compact chantier block, and no empty `Reste a faire` / `Prochaine etape` boilerplate. Ship reports should read as outcome, evidence, then limits, with a few sober status emojis allowed for scanning. Detailed `report=agent` handoff must be explicit; skills do not infer caller identity.
@@ -205,7 +224,7 @@ bash -n tools/shipflow_sync_skills.sh test_skill_runtime_sync.sh
 bash test_skill_runtime_sync.sh
 tools/shipflow_sync_skills.sh --check --all
 python3 tools/shipflow_metadata_lint.py skills/references/technical-docs-corpus.md skills/references/editorial-content-corpus.md skills/references/subagent-roles/editorial-reader.md shipflow-spec-driven-workflow.md AGENT.md
-rg -n "Governance Corpus Gate|sf-init.*bootstrap|sf-docs.*maintain|sf-build.*consume|sf-deploy|sf-maintain|reporting-contract|report=user|docs/technical|docs/editorial" skills/sf-init/SKILL.md skills/sf-docs/SKILL.md skills/sf-deploy/SKILL.md skills/sf-maintain/SKILL.md specs/sf-build-autonomous-master-skill.md shipflow-spec-driven-workflow.md README.md skills/references/reporting-contract.md
+rg -n "Governance Corpus Gate|sf-init.*bootstrap|sf-docs.*maintain|sf-build.*consume|sf-deploy|sf-maintain|sf-content|reporting-contract|report=user|docs/technical|docs/editorial" skills/sf-init/SKILL.md skills/sf-docs/SKILL.md skills/sf-deploy/SKILL.md skills/sf-maintain/SKILL.md skills/sf-content/SKILL.md specs/sf-build-autonomous-master-skill.md shipflow-spec-driven-workflow.md README.md skills/references/reporting-contract.md
 ```
 
 Run focused `rg` checks for the affected skill contract and linked references.
@@ -219,6 +238,7 @@ Run focused `rg` checks for the affected skill contract and linked references.
 - Public-content skill changed -> check `editorial-content-corpus.md`, `docs/editorial/`, and workflow docs.
 - Governance corpus bootstrap or adoption changed -> check `skills/sf-init/SKILL.md`, `skills/sf-docs/SKILL.md`, `technical-docs-corpus.md`, `editorial-content-corpus.md`, `README.md`, and workflow docs.
 - A lifecycle rule changed -> update `shipflow-spec-driven-workflow.md`.
+- Content lifecycle changed -> check `CONTENT_MAP.md`, `docs/editorial/`, public skill content, `README.md`, `docs/skill-launch-cheatsheet.md`, and workflow docs.
 - Report mode or final-report doctrine changed -> update `skills/references/reporting-contract.md`, `skills/references/chantier-tracking.md`, and affected master/audit skills.
 - A docs gate changed -> update `skills/sf-docs/SKILL.md`, `technical-docs-corpus.md`, and `code-docs-map.md`.
 - An editorial gate changed -> update `skills/sf-docs/SKILL.md`, `editorial-content-corpus.md`, `docs/editorial/`, and workflow docs.

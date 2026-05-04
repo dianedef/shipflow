@@ -1,7 +1,7 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "0.7.4"
+artifact_version: "0.8.0"
 project: "shipflow"
 created: "2026-04-25"
 updated: "2026-05-04"
@@ -21,6 +21,7 @@ linked_systems:
   - skills
   - skills/sf-deploy/SKILL.md
   - skills/sf-maintain/SKILL.md
+  - skills/sf-content/SKILL.md
   - skills/sf-browser/SKILL.md
   - docs/technical
   - docs/editorial
@@ -34,6 +35,7 @@ evidence:
   - "Added a public and repo-level skill launch cheatsheet for master skill modes."
   - "Added docs/skill-launch-cheatsheet.md as the standalone Markdown reference."
   - "Clarified that sf-skill-build routes fuzzy skill-maintenance ideas through sf-explore before sf-spec."
+  - "Added sf-content as the master content lifecycle entrypoint."
 next_step: "/sf-docs audit README.md"
 ---
 
@@ -266,6 +268,7 @@ Skill launch cheatsheet:
 | Recurring project upkeep | `sf-maintain [mode]` | `full`/no argument, `quick`, `security`, `deps`, `docs`, `audits`, `no-ship`, `global`. |
 | Release confidence after implementation | `sf-deploy [target or mode]` | no argument, `skip-check`, `--preview`, `--prod`, `no-changelog`. |
 | Bug-loop routing | `sf-bug [BUG-ID, summary, or mode]` | no argument, `BUG-ID`, `--fix`, `--retest`, `--verify`, `--ship`, `--close`. |
+| Content management | `sf-content [goal, source, file, or mode]` | `plan`, `repurpose`, `draft`, `enrich`, `audit`, `seo`, `editorial`, `apply`, `ship`. |
 | Skill creation or maintenance | `sf-skill-build <idea or path>` | new skill idea, existing skill path, optional `sf-explore` for fuzzy placement, public page/docs/runtime validation gates. |
 | Manual expert lifecycle | `sf-spec -> sf-ready -> sf-start -> sf-verify -> sf-end` | Use when you intentionally want to drive each gate instead of using `sf-build`. |
 | Commit and push ready work | `sf-ship [mode]` | no special argument, `skip-check`, `end la tache`/`end`/`fin`/`close task`, `all-dirty`/`ship-all`/`tout-dirty`. |
@@ -344,6 +347,14 @@ sf-skill-build -> sf-explore when needed -> sf-spec -> skill contract edit/creat
 ```
 
 `sf-skill-build` is scoped to creating or modifying `skills/*/SKILL.md` with explicit ambiguity-reduction, public-surface, documentation, and validation gates. If the skill idea or placement is too fuzzy for one targeted question to settle, it routes to `sf-explore` before creating the durable `sf-spec` contract.
+
+For content management, use the dedicated lifecycle entrypoint:
+
+```text
+sf-content -> CONTENT_MAP + editorial corpus -> owner content skills -> audits/docs -> validation -> sf-verify -> sf-ship
+```
+
+`sf-content` routes content work through the right owner skill: `sf-repurpose` for source-faithful reuse, `sf-redact` for long-form drafting, `sf-enrich` for existing content upgrades, `sf-audit-copy` / `sf-audit-copywriting` / `sf-audit-seo` for review, and `sf-docs` for docs and editorial governance. It blocks undeclared blog/article surfaces with `surface missing: blog` instead of inventing paths.
 
 If the bug is local and clear, `sf-fix` fixes it directly, then verifies.
 That fast path should still attach the bug to durable project memory with a compact `BUGS.md` entry and a `bugs/BUG-ID.md` dossier, unless the issue is an explicitly justified minor exception such as a copy-only or purely cosmetic fix.

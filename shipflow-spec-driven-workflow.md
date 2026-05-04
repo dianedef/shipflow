@@ -1,7 +1,7 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "0.13.2"
+artifact_version: "0.14.0"
 project: ShipFlow
 created: "2026-04-22"
 updated: "2026-05-04"
@@ -17,6 +17,7 @@ linked_systems:
   - skills/
   - skills/sf-deploy/SKILL.md
   - skills/sf-maintain/SKILL.md
+  - skills/sf-content/SKILL.md
   - skills/sf-browser/SKILL.md
   - templates/artifacts/
   - tools/shipflow_metadata_lint.py
@@ -44,6 +45,7 @@ evidence:
   - "Updated on 2026-05-04 to require business-context decision questions for sf-build planning."
   - "Updated on 2026-05-04 to add a skill launch cheatsheet for master and supporting modes."
   - "Updated on 2026-05-04 to route fuzzy skill-maintenance ideas through sf-explore before sf-spec."
+  - "Updated on 2026-05-04 to add sf-content as the master content lifecycle entrypoint."
 next_review: "unknown"
 next_step: "/sf-docs audit shipflow-spec-driven-workflow.md"
 ---
@@ -83,6 +85,7 @@ Skill launch cheatsheet:
 | Recurring project upkeep | `sf-maintain [mode]` | `full`/no argument, `quick`, `security`, `deps`, `docs`, `audits`, `no-ship`, `global`. |
 | Release confidence after implementation | `sf-deploy [target or mode]` | no argument, `skip-check`, `--preview`, `--prod`, `no-changelog`. |
 | Bug-loop routing | `sf-bug [BUG-ID, summary, or mode]` | no argument, `BUG-ID`, `--fix`, `--retest`, `--verify`, `--ship`, `--close`. |
+| Content management | `sf-content [goal, source, file, or mode]` | `plan`, `repurpose`, `draft`, `enrich`, `audit`, `seo`, `editorial`, `apply`, `ship`. |
 | Skill creation or maintenance | `sf-skill-build <idea or path>` | new skill idea, existing skill path, optional `sf-explore` for fuzzy placement, public page/docs/runtime validation gates. |
 | Manual expert lifecycle | `sf-spec -> sf-ready -> sf-start -> sf-verify -> sf-end` | Use when you intentionally want to drive each gate instead of using `sf-build`. |
 | Commit and push ready work | `sf-ship [mode]` | no special argument, `skip-check`, `end la tache`/`end`/`fin`/`close task`, `all-dirty`/`ship-all`/`tout-dirty`. |
@@ -147,6 +150,14 @@ sf-skill-build -> sf-explore when needed -> sf-spec -> skill contract edit/creat
 ```
 
 `sf-skill-build` is scoped to skill lifecycle work and enforces ambiguity reduction, public-surface, docs/help, and validation gates before ship routing. When the skill idea or placement is too fuzzy for one targeted question to settle, it routes to `sf-explore` before creating the durable `sf-spec` contract.
+
+Recommended content lifecycle entrypoint:
+
+```text
+sf-content -> CONTENT_MAP + editorial corpus -> owner content skills -> audits/docs -> validation -> sf-verify -> sf-ship
+```
+
+`sf-content` is the master content-management orchestrator. It does not replace `sf-repurpose`, `sf-redact`, `sf-enrich`, `sf-audit-copy`, `sf-audit-copywriting`, `sf-audit-seo`, `sf-docs`, `sf-veille`, or `sf-market-study`; it chooses and sequences them while enforcing public-surface, claim, runtime schema, validation, and missing-surface gates.
 
 For expert manual control, the default non-trivial flow remains:
 
@@ -234,6 +245,7 @@ Technical governance applies to code projects by default. Editorial governance a
 - `sf-build` is the master orchestrator for end users and should prefer bounded delegated sequential execution over manual command chaining.
 - `sf-build` planning questions should be decision briefs for business operators: explain the root problem, business stakes, practical options, and the best-practice recommendation before asking for the decision.
 - `sf-maintain` is the master orchestrator for recurring project maintenance and should prefer bounded delegated sequential execution over command recommendations.
+- `sf-content` is the master orchestrator for content management and should route to specialist content, docs, audit, research, validation, and ship skills rather than duplicating their internals.
 - `sf-skill-build` is the master orchestrator for ShipFlow skill maintenance and should route fuzzy ideas through `sf-explore` before `sf-spec`, then keep skill contract, refresh, budget, docs/help, and public skill surfaces coherent.
 - `sf-start` begins execution from a ready contract instead of rediscovering intent, and now decides both model routing and execution topology before coding.
 - `sf-verify` checks against the spec first, then quality and risks, and can now remediate limited gaps.
@@ -919,6 +931,7 @@ Use this rule of thumb:
 
 - bug lifecycle orchestration -> `sf-bug`
 - recurring project maintenance -> `sf-maintain`
+- content management -> `sf-content`
 - bug repair intake -> `sf-fix`
 - unclear problem -> `sf-explore`
 - non-trivial scoped work -> `sf-spec`

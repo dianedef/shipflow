@@ -32,6 +32,7 @@ Quick reference for the skill system, modes, and workflows.
 | `/sf-build` | Master user-facing orchestrator from story to spec, implementation, verification, closure, and ship | `<story, bug, or goal>` |
 | `/sf-skill-build` | Master skill-maintenance orchestrator for creating or modifying ShipFlow skills with optional exploration and lifecycle gates | `<new skill idea | existing skill path>` |
 | `/sf-maintain` | Master maintenance lifecycle from triage through delegated fixes, verification, and ship | `quick`, `full`, `security`, `global`, `no-ship` |
+| `/sf-content` | Master content lifecycle for strategy, repurposing, drafting, enrichment, audits, docs, validation, and ship routing | `plan`, `repurpose`, `draft`, `enrich`, `audit`, `seo`, `editorial`, `apply`, `ship` |
 | `/sf-bug` | Professional bug loop orchestrator for intake, dossiers, fixes, retests, verification, and ship risk | `BUG-ID`, `--retest BUG-ID`, `--ship BUG-ID` |
 | `/sf-fix` | Bug-first intake and routing (direct fix vs spec-first) | `<bug description>` |
 | `/sf-auth-debug` | Browser-auth diagnosis for Clerk, Supabase Auth, OAuth, Google/YouTube, Convex, sessions, callbacks | `<bug/URL/flow>` |
@@ -77,6 +78,7 @@ Note: `/sf-spec` → `/sf-ready` → `/sf-start` → `/sf-verify` now share a `U
 Note: `/sf-build` is the recommended end-user entrypoint for non-trivial work; invocation authorizes bounded delegated sequential execution for the current chantier, while parallel execution requires ready non-overlapping `Execution Batches`.
 Note: `/sf-deploy` is the recommended release entrypoint when the operator wants the whole confidence loop after implementation: checks, bounded ship, deployment truth, post-deploy evidence routing, verification, and optional changelog.
 Note: `/sf-maintain` is the recommended recurring maintenance entrypoint for existing projects; by default it carries maintenance through spec/readiness when needed, bounded delegated execution, verification, and ship/deploy routing. Use `/sf-maintain quick` for read-only triage.
+Note: `/sf-content` is the recommended entrypoint for content management (`CONTENT_MAP + editorial corpus -> owner content skills -> audits/docs -> validation -> sf-verify -> sf-ship`).
 Note: `/sf-skill-build` is the recommended entrypoint for ShipFlow skill maintenance (`sf-explore when needed -> sf-spec -> SKILL.md -> sf-skills-refresh -> budget audit -> sf-verify -> sf-docs/help update -> sf-ship`).
 
 ### Professional Bug Loop (concise)
@@ -131,6 +133,7 @@ Internal role matrix:
 | `skills/sf-enrich/SKILL.md` | conditionnel | support-de-chantier | Supports content upgrades; route only when follow-up needs a spec. |
 | `skills/sf-explore/SKILL.md` | non-applicable | helper | Exploration can recommend `/sf-spec` and may write durable `exploration_report` artifacts, but does not write chantier history. |
 | `skills/sf-bug/SKILL.md` | conditionnel | source-de-chantier | Bug lifecycle orchestration becomes a chantier when status, severity, reproduction, closure, or ship risk needs a durable spec. |
+| `skills/sf-content/SKILL.md` | obligatoire | lifecycle | Master content lifecycle: content map, editorial corpus, owner content skills, audits, docs, validation, and ship routing. |
 | `skills/sf-fix/SKILL.md` | conditionnel | source-de-chantier | Bug triage becomes a chantier when the fix is non-local, risky, or spec-first. |
 | `skills/sf-help/SKILL.md` | non-applicable | helper | Help is doctrine/read-only; never writes to specs. |
 | `skills/sf-init/SKILL.md` | conditionnel | support-de-chantier | Supports project bootstrap; route to spec only when setup policy must be formalized. |
@@ -447,6 +450,13 @@ Provide explicit arguments and prompts don't appear:
 /sf-maintain security        # Security maintenance lifecycle through remediation gates
 ```
 
+### Content lifecycle
+```bash
+/sf-content                  # Route content work through map, editorial gates, owner skills, validation
+/sf-content repurpose        # Turn source material into faithful docs/site/FAQ/content outputs
+/sf-content audit seo        # Route public content through copy, copywriting, and SEO audits as needed
+```
+
 ### Cross-project overview
 ```bash
 /sf-status                   # Git status dashboard for all projects
@@ -502,6 +512,8 @@ Provide explicit arguments and prompts don't appear:
 **Before deploy?** → `/sf-deploy` (runs check + ship + prod + proof routing + verify)
 
 **Regular maintenance?** → `/sf-maintain` (triage + spec if needed + delegated fixes + verify + ship/deploy)
+
+**Content work?** → `/sf-content` (content map + editorial gates + owner skills + validation)
 
 **Bug has a BUG-ID?** → `/sf-bug BUG-ID` (routes fix, retest, verify, or ship risk from dossier state)
 
