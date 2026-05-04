@@ -142,6 +142,7 @@ echo ""
 echo -e "${BLUE}Testing parse_blacksmith_oauth_port_from_text()${NC}"
 echo ""
 
+run_test "Parse Blacksmith callback_port query" "pass" test "$(parse_blacksmith_oauth_port_from_text 'https://app.blacksmith.sh/cli/auth?callback_port=45007')" = "45007"
 run_test "Parse Blacksmith encoded localhost callback port" "pass" test "$(parse_blacksmith_oauth_port_from_text 'https://example.com/oauth?redirect_uri=http%3A%2F%2Flocalhost%3A48321%2Fcallback')" = "48321"
 run_test "Parse Blacksmith decoded 127 callback port" "pass" test "$(parse_blacksmith_oauth_port_from_text 'Open this URL: http://127.0.0.1:38765/callback')" = "38765"
 run_test "Reject missing Blacksmith callback port" "fail" parse_blacksmith_oauth_port_from_text "https://example.com/no-callback"

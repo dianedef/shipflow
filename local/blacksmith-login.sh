@@ -113,6 +113,12 @@ parse_blacksmith_oauth_port_from_text() {
     local text="$1"
     local port=""
 
+    port="$(printf "%s\n" "$text" | sed -nE 's/.*[?&]callback_port=([0-9]{2,5})([^0-9].*)?$/\1/p' | tail -1)"
+    if [ -n "$port" ]; then
+        echo "$port"
+        return 0
+    fi
+
     port="$(printf "%s\n" "$text" | sed -nE 's/.*redirect_uri=http%3A%2F%2F(127\.0\.0\.1|localhost)%3A([0-9]{2,5})%2Fcallback.*/\2/p' | tail -1)"
     if [ -n "$port" ]; then
         echo "$port"
@@ -228,12 +234,14 @@ run_blacksmith_login() {
     TUNNEL_PID=""
 
     run_remote_ssh "bash -lc '$remote_blacksmith_path_prefix BROWSER=echo blacksmith auth login & pid=\$!; wait \$pid'" \
-        > >(tee -a "$OAUTH_OUTPUT_FILE") \
-        2> >(tee -a "$OAUTH_OUTPUT_FILE" >&2) &
+        > "$OAUTH_OUTPUT_FILE" \
+        2>&1 &
     REMOTE_SSH_PID="$!"
 
     if ! wait_for_output_or_timeout; then
         echo -e "${RED}✗ Impossible d'extraire URL OAuth + port callback depuis la sortie Blacksmith.${NC}"
+        echo -e "${YELLOW}Sortie Blacksmith capturée:${NC}"
+        sed 's/^/  /' "$OAUTH_OUTPUT_FILE" | tail -20
         echo -e "${YELLOW}  Si une URL a été affichée sans port callback, colle-la ici pour qu'on adapte le parseur.${NC}"
         return 1
     fi
