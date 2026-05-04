@@ -36,6 +36,7 @@ next_step: "/sf-docs audit CHANGELOG.md"
 
 ### Changed
 - Lifecycle, bug, deploy, skill-build, and audit skills now load the shared reporting contract and use compact chantier/report guidance by default.
+- `sf-ship` user reports now present outcome, evidence, and limits in order, match the operator's active language, and use sober status emojis for faster scanning.
 - Selected OpenAI skill metadata now uses exact invocation keys as display names so the skill picker matches typed skill commands.
 - `sf-build` Plan Mode questions now frame the root problem, business stakes, options, and best-practice recommendation before asking a business decision.
 - `sf-skill-build` now routes fuzzy skill ideas or placement uncertainty through `sf-explore` before creating a durable `sf-spec` contract.

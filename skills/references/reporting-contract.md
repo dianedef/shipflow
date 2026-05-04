@@ -1,10 +1,10 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: ShipFlow
 created: "2026-05-03"
-updated: "2026-05-03"
+updated: "2026-05-04"
 status: active
 source_skill: sf-build
 scope: skill-reporting-contract
@@ -19,12 +19,13 @@ linked_systems:
   - specs/
 depends_on:
   - artifact: "specs/skill-reporting-modes-and-compact-reports.md"
-    artifact_version: "1.0.0"
+    artifact_version: "1.1.0"
     required_status: ready
 supersedes: []
 evidence:
   - "User decision 2026-05-03: concise user reports by default, detailed agent reports by explicit mode."
-next_review: "2026-06-03"
+  - "User decision 2026-05-04: user reports should organize ship status as outcome, evidence, then limits, match the user's active language, and allow a few sober status emojis."
+next_review: "2026-06-04"
 next_step: "/sf-verify skill reporting modes"
 ---
 
@@ -58,15 +59,33 @@ Do not infer caller identity from runtime state. If a master skill wants a detai
 
 Keep the final report compact and outcome-first.
 
+Match the user's active language for user-facing labels and explanatory
+sentences. Stable commands, file paths, status values, and machine-readable
+contract labels may stay in English when translation would weaken traceability.
+
+Use a few status emojis when they improve scanning, not as decoration. Good
+defaults are `🚀` for pushed/shipped, `✅` for passed checks, `⚠️` for limits or
+risk, `📝` for docs/bookkeeping, and `🎯` for final lifecycle completion. Do
+not decorate every line, and keep agent/handoff reports mostly plain except for
+status markers.
+
+For ship reports, organize user-mode text as:
+
+1. outcome: commit, branch, push, and repo state
+2. evidence: checks, build proof, browser/prod/manual proof, or docs evidence
+3. limits: partial validation, missing bug gate, unknown development mode, or
+   remaining action
+
 For successful ship/close flows, combine push, repo state, checks, and bookkeeping into one line when possible:
 
 ```text
-Pushed to origin/main. Repo clean. All checks passed ✅. Tasks/Changelog updated.
+🚀 Pushed to origin/main. Repo clean. ✅ Checks passed. 📝 Tasks/Changelog updated.
 ```
 
 Use these check summaries:
 
 - `All checks passed ✅` when all attempted or required checks passed.
+- `✅ Checks passed: <short list>` when naming the checks is clearer than a generic success line.
 - `All checks passed except: <check>, <check>` only when the run legitimately continues despite accepted or non-blocking gaps.
 - `Checks skipped: <reason>` when checks were intentionally skipped.
 - `Checks failed: <check>` when the run is blocked or not shipped.
@@ -79,6 +98,10 @@ Only include sections that change the user's next decision:
 - documentation/public-content gap when relevant
 - next step only when it is real
 - chantier block only when a chantier is in scope or explicitly non-traced
+
+Translate internal gate names into their user consequence when possible. Prefer
+`⚠️ Limites: pas de BUGS.md, donc risque bug non evalue` over a bare
+`Bug risk gate: not assessed` when the active user language is French.
 
 Omit empty or redundant lines such as `Reste a faire: none`, `Prochaine etape: none`, `Trace spec: ecrite`, and `Verdict <skill>` when the heading or status already says the same thing.
 

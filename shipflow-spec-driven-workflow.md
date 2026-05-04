@@ -1,7 +1,7 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "0.13.1"
+artifact_version: "0.13.2"
 project: ShipFlow
 created: "2026-04-22"
 updated: "2026-05-04"
@@ -40,6 +40,7 @@ evidence:
   - "Updated on 2026-05-03 to add sf-deploy as the release confidence orchestrator."
   - "Updated on 2026-05-03 to add sf-maintain as the recurring project maintenance orchestrator."
   - "Updated on 2026-05-03 to add shared report modes: concise user reports by default and explicit detailed agent handoff reports."
+  - "Updated on 2026-05-04 to clarify user-mode report polish: active-language labels, outcome/evidence/limits ordering, and sober status emojis."
   - "Updated on 2026-05-04 to require business-context decision questions for sf-build planning."
   - "Updated on 2026-05-04 to add a skill launch cheatsheet for master and supporting modes."
   - "Updated on 2026-05-04 to route fuzzy skill-maintenance ideas through sf-explore before sf-spec."
@@ -243,7 +244,7 @@ Technical governance applies to code projects by default. Editorial governance a
 
 ## Report Modes
 
-ShipFlow skills default to concise user-facing final reports. The default mode is `report=user`: outcome first, compact check summary, compact chantier flow, no empty `Reste a faire` or `Prochaine etape`, and no redundant verdict lines when the heading already carries the result.
+ShipFlow skills default to concise user-facing final reports. The default mode is `report=user`: outcome first, active user language for labels and explanations, compact check summary, compact chantier flow, no empty `Reste a faire` or `Prochaine etape`, and no redundant verdict lines when the heading already carries the result. Ship reports should read as outcome, evidence, then limits. A few sober status emojis are allowed when they improve scanning; do not decorate every line.
 
 Detailed reports are explicit. Use `report=agent`, `handoff`, `verbose`, or `full-report` when an orchestrator or downstream agent needs file lists, validation matrices, evidence trails, phase details, or handoff context. Skills must not infer caller identity from runtime state; master skills pass a handoff flag when they need detailed downstream evidence.
 

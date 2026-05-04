@@ -1,7 +1,7 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "1.8.1"
+artifact_version: "1.8.2"
 project: ShipFlow
 created: "2026-05-01"
 updated: "2026-05-04"
@@ -32,7 +32,7 @@ linked_systems:
   - docs/editorial/
 depends_on:
   - artifact: "shipflow-spec-driven-workflow.md"
-    artifact_version: "0.13.1"
+    artifact_version: "0.13.2"
     required_status: draft
   - artifact: "skills/references/technical-docs-corpus.md"
     artifact_version: "1.1.0"
@@ -50,6 +50,7 @@ evidence:
   - "sf-deploy added as the dedicated release confidence orchestrator."
   - "sf-maintain promoted to a master maintenance lifecycle from triage through delegated execution, verification, and ship/deploy routing."
   - "Shared reporting contract added: concise user reports by default, explicit agent handoff reports when requested."
+  - "Reporting contract clarified: user-mode ship reports should match the user's active language, use outcome/evidence/limits ordering, and allow a few sober status emojis."
   - "Skill launch cheatsheet added for master and supporting modes."
   - "sf-skill-build exploration gate added before sf-spec for fuzzy skill ideas or placement decisions."
 next_review: "2026-06-01"
@@ -171,7 +172,7 @@ sf-maintain
 - `sf-maintain` owns the maintenance lifecycle; bugs, dependencies, docs, checks, audits, migrations, tasks, security review, repair, verification, and ship still run through their specialist owner skills and gates.
 - `sf-skill-build` owns skill-maintenance orchestration and must route to `sf-explore` before `sf-spec` when skill intent, placement, public promise, or governance policy is too fuzzy for one targeted question to settle.
 - A release is not considered verified from push success, provider success, or a bare `200 OK` alone.
-- User-facing final reports default to `report=user`: concise, outcome-first, compact chantier block, and no empty `Reste a faire` / `Prochaine etape` boilerplate. Detailed `report=agent` handoff must be explicit; skills do not infer caller identity.
+- User-facing final reports default to `report=user`: concise, outcome-first, matched to the user's active language, compact chantier block, and no empty `Reste a faire` / `Prochaine etape` boilerplate. Ship reports should read as outcome, evidence, then limits, with a few sober status emojis allowed for scanning. Detailed `report=agent` handoff must be explicit; skills do not infer caller identity.
 - `sf-build` planning questions are business decision briefs, not bare technical prompts: they name the problem root, business stakes, practical options, and recommended best-practice answer before asking for a decision.
 - Audit skills still report findings first, but default user reports should summarize top findings, proof gaps, chantier potential, and next action; full matrices and domain checklists belong in `report=agent`.
 

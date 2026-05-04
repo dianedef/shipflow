@@ -223,11 +223,16 @@ Do not tell the user to run manual/browser tests before `sf-prod` has confirmed 
 ## Step 8 — One report
 
 Report formatting rules:
-- Combine push, repo state, checks, and full-mode bookkeeping into one concise status line when possible: `Pushed to origin/main. Repo clean. All checks passed ✅. Tasks/Changelog updated.`
+- Match the user's active language for report labels and explanations. Keep commands, file paths, commit hashes, branch names, and stable status values literal.
+- Use a few status emojis in user reports when they help scanning: `🚀` for pushed/shipped, `✅` for passed checks, `⚠️` for limits or risk, `📝` for docs/bookkeeping, and `🎯` for final lifecycle completion. Do not decorate every line.
+- Structure user-mode ship reports as outcome first, evidence second, limits last.
+- Combine push, repo state, checks, and full-mode bookkeeping into one concise status line when possible: `🚀 Pushed to origin/main. Repo clean. ✅ Checks passed. 📝 Tasks/Changelog updated.`
 - Use `All checks passed ✅` when every required or attempted check passed.
+- Use `✅ Checks passed: [short list]` when naming the actual checks is clearer than a generic success line.
 - Use `All checks passed except: [check], [check]` only when shipping continues despite explicitly accepted or non-blocking check gaps.
 - Use `Checks skipped: [reason]` when checks are intentionally skipped.
 - If push fails, replace the status line with `Push failed: [reason]. Repo [state]. [check summary].`
+- Prefer a compact `Limits:` / `Limites:` line for partial proof, missing bug gate, unknown development mode, or remaining validation instead of scattering raw internal gate labels through the report.
 - In the `Chantier` block, put the spec path directly under the heading; do not prefix it with `Chantier:`.
 - Use one compact `Flux:` line with status markers, for example `Flux: sf-spec ✅ -> sf-ready ✅ -> sf-start ✅ -> sf-verify ✅ -> sf-end ✅ -> sf-ship ✅🎯`.
 - Omit `Trace spec`, `Verdict sf-ship`, `Reste a faire`, and `Prochaine etape` when they are redundant or empty.
@@ -236,18 +241,17 @@ Report formatting rules:
 
 Quick mode report:
 ```text
-## Shipped (Quick) — [date]
+## Ship quick — [date] 🚀
 
-[SHORT_SHA] — "[commit message]" -> [branch]
+`[SHORT_SHA]` — [commit message] -> `[branch]`
 
-Pushed to [remote]/[branch]. Repo [clean | dirty: reason]. [check summary].
-Mode: quick (commit + push only)
-Scope: [current task/session changes / all dirty repo files]
-Bug risk gate: [blocked / partial-risk / not assessed / clear]
-Development mode: [only when preview validation is required or status is unknown]
-User story / product status: [only when partial, not assessed, or important to avoid overclaiming]
-Documentation coherence: [only when changed, not assessed, or gap remains]
-Security / risk note: [only when non-empty]
+🚀 Pushed to [remote]/[branch]. Repo [clean | dirty: reason].
+✅ Checks passed: [short list]. [Build/prod/browser proof: only if real]
+
+Mode quick: commit + push only; no TASKS/CHANGELOG closeout and no final product-complete verdict.
+Scope: [concrete changed area]
+⚠️ Limits: [bug risk not assessed / development mode unknown / partial proof / security note], only if non-empty.
+📝 Docs: [updated / not impacted / gap remains], only if useful.
 
 ## Chantier
 
@@ -260,18 +264,18 @@ Flux: sf-spec [status marker] -> sf-ready [status marker] -> sf-start [status ma
 
 Full mode report:
 ```text
-## Shipped (Full) — [date]
+## Ship full — [date] 🚀
 
-[SHORT_SHA] — "[commit message]" -> [branch]
+`[SHORT_SHA]` — [commit message] -> `[branch]`
 
-Pushed to [remote]/[branch]. Repo [clean | dirty: reason]. [check summary]. Tasks/Changelog updated.
+🚀 Pushed to [remote]/[branch]. Repo [clean | dirty: reason].
+✅ Checks passed: [short list]. 📝 Tasks/Changelog updated.
 Scope: [only when all-dirty or otherwise worth clarifying]
 Development mode: [only when preview validation is required or status is unknown]
-Bug risk gate: [blocked / partial-risk / not assessed / clear]
+⚠️ Limits: [bug risk / partial proof / development mode gap / security note], only if non-empty.
 Session closed: [only when useful beyond the shipped title]
 User story closure: [only when partial, assumed, or important]
-Documentation coherence: [only when changed, not impacted in a non-obvious way, or gap remains]
-Evidence limits / remaining risks: [only when non-empty]
+📝 Docs: [updated / not impacted in a non-obvious way / gap remains], only if useful.
 
 ## Chantier
 

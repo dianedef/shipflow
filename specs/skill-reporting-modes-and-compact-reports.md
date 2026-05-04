@@ -1,12 +1,12 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: ShipFlow
 created: "2026-05-03"
 created_at: "2026-05-03 00:00:00 UTC"
 updated: "2026-05-04"
-updated_at: "2026-05-04 04:45:00 UTC"
+updated_at: "2026-05-04 06:05:33 UTC"
 status: ready
 source_skill: sf-build
 source_model: "GPT-5 Codex"
@@ -38,7 +38,7 @@ depends_on:
     artifact_version: "1.0.0"
     required_status: reviewed
   - artifact: "docs/technical/skill-runtime-and-lifecycle.md"
-    artifact_version: "1.5.0"
+    artifact_version: "1.9.0"
     required_status: reviewed
   - artifact: "skills/references/chantier-tracking.md"
     artifact_version: "0.4.0"
@@ -48,7 +48,8 @@ evidence:
   - "User decision 2026-05-03: sf-ship successful reports should collapse push, repo state, checks, and bookkeeping into one line."
   - "User decision 2026-05-03: default user reports should be concise; detailed reports should remain available for agent handoff."
   - "User decision 2026-05-03: audit skills should follow the same mechanism, with concise findings by default and fuller detail for handoff."
-next_step: "/sf-verify specs/skill-reporting-modes-and-compact-reports.md"
+  - "User decision 2026-05-04: sf-ship user reports should be clearer, ordered as outcome, evidence, then limits, and include a few sober status emojis."
+next_step: "none"
 ---
 
 # Spec: Skill Reporting Modes And Compact Reports
@@ -63,11 +64,14 @@ As a ShipFlow operator, I want skills to default to concise human reports while 
 
 ## Minimal Behavior Contract
 
-ShipFlow skills that produce final reports must use a shared reporting contract. Default mode is `report=user`: concise, outcome-first, and quiet on successful checks. Detailed mode is explicit through `report=agent`, `handoff`, `verbose`, or `full-report`; it is for internal orchestration, debugging, or delegated agent handoff. Skills must not try to magically infer the caller. Master skills that need detailed downstream evidence should pass the explicit handoff flag. Blocked, failed, or partial outcomes must still include enough detail to be actionable.
+ShipFlow skills that produce final reports must use a shared reporting contract. Default mode is `report=user`: concise, outcome-first, ordered as outcome/evidence/limits, matched to the user's active language, and quiet on successful checks. A few sober status emojis are allowed when they improve scanning. Detailed mode is explicit through `report=agent`, `handoff`, `verbose`, or `full-report`; it is for internal orchestration, debugging, or delegated agent handoff. Skills must not try to magically infer the caller. Master skills that need detailed downstream evidence should pass the explicit handoff flag. Blocked, failed, or partial outcomes must still include enough detail to be actionable.
 
 ## Success Behavior
 
 - Successful ship reports collapse push, repo state, checks, and bookkeeping into one status line.
+- User-mode ship reports order information as outcome first, evidence second, limits last.
+- User-mode labels and explanations follow the user's active language; commands, paths, hashes, and stable status values remain literal.
+- User-mode reports may use a few status emojis such as `🚀`, `✅`, `⚠️`, `📝`, and `🎯` when they improve scanning, but they must not decorate every line.
 - Lifecycle reports use a compact chantier block: path first, then one `Flux:` line.
 - Empty `Reste a faire`, `Prochaine etape`, `Trace spec`, and verdict boilerplate are omitted in user mode.
 - Audit reports remain findings-first but default to top issues, proof gaps, and next step instead of full matrices.
@@ -114,3 +118,5 @@ ShipFlow skills that produce final reports must use a shared reporting contract.
 | 2026-05-04 04:45:00 UTC | sf-verify | GPT-5 Codex | Verified shared reporting contract, lifecycle and audit skill wiring, technical/workflow docs coherence, metadata, language doctrine, and bug gate scope. | verified | /sf-end specs/skill-reporting-modes-and-compact-reports.md |
 | 2026-05-04 04:45:00 UTC | sf-end | GPT-5 Codex | Closed tracker and changelog bookkeeping for compact skill reporting modes. | closed | /sf-ship "Add compact skill reporting modes" |
 | 2026-05-04 04:45:00 UTC | sf-ship | GPT-5 Codex | Ran scoped checks, committed, and pushed compact skill reporting modes. | shipped | none |
+| 2026-05-04 06:05:33 UTC | sf-build | GPT-5 Codex | Applied and targeted-validated a follow-up amendment for clearer user-mode ship reports with active-language labels, outcome/evidence/limits ordering, and sober status emojis. | implemented | /sf-ship "Polish sf-ship user report" |
+| 2026-05-04 06:17:29 UTC | sf-ship | GPT-5 Codex | Closed and shipped the sf-ship user-report polish with scoped changelog and spec trace updates. | shipped | none |
