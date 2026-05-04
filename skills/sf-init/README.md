@@ -32,7 +32,7 @@ For a solo founder, this is the setup step that makes future work faster and mor
 - a generated `CLAUDE.md`
 - a populated `TASKS.md` tracker and project registration
 - initial context documents such as `BUSINESS.md` and `BRANDING.md`
-- a clearer foundation for the rest of the ShipFlow skills
+- a stronger operating base for the rest of the ShipFlow skills
 
 ## Typical Examples
 

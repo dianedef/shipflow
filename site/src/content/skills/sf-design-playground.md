@@ -27,8 +27,9 @@ example_prompts:
   - "/sf-design-playground for app theme"
 limits:
   - "It generates tooling around the design system; it does not solve token strategy by itself"
-  - "Projects with no meaningful token layer will get less leverage from it"
+  - "Projects with no meaningful token layer should start with sf-design-from-scratch"
 related_skills:
+  - "sf-design-from-scratch"
   - "sf-audit-design-tokens"
   - "sf-audit-design"
   - "sf-scaffold"

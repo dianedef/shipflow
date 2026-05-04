@@ -51,11 +51,11 @@ Naming mixte dans le même projet = violation. Pick one and stick to it.
 
 ## Sévérité adaptative
 
-- **Small project** (< 10 composants) → violations cappées à 🟡 medium
-- **Mid project** (10-30 composants) → violations cappées à 🟠 high
+- **Small project** (< 10 composants) → findings généralement priorisés 🟡 medium, sauf impact utilisateur ou confiance de marque
+- **Mid project** (10-30 composants) → findings généralement priorisés 🟠 high
 - **Large project** (> 30 composants) → violations → 🔴 critical
 
-La logique : à petite échelle, le drift n'a pas de coût réel. À grande échelle, il compound. L'audit calibre sa rigueur en conséquence.
+La logique : à petite échelle, le drift a moins de blast radius. À grande échelle, il compound. L'audit garde un niveau d'exigence professionnel et calibre la priorité en conséquence.
 
 ## Format du sub-report
 
@@ -81,7 +81,7 @@ Universal Palette Socle [A/B/C/D]
 ─────────────────────────────────────
 OVERALL                [A/B/C/D]
 
-QUICK WINS
+PRIORITY IMPROVEMENTS
   ⚡ [file:line] description — Why: [principle]
 ```
 
@@ -94,7 +94,7 @@ QUICK WINS
 ## Dépendances
 
 - **Appelée par** : `sf-audit-design` en deep mode (Agent tool, en parallèle avec `sf-audit-components` et `sf-audit-a11y`).
-- **Recommande** : `sf-design-playground` en quick-win si aucune page de preview des design tokens n'est détectée.
+- **Recommande** : `sf-design-playground` comme amélioration prioritaire si aucune page de preview des design tokens n'est détectée.
 
 ## Exemple
 

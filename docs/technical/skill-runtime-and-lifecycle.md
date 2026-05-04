@@ -88,7 +88,7 @@ This doc covers ShipFlow skills, lifecycle flow, references, templates, model/to
 
 - `sf-explore -> sf-spec -> sf-ready -> sf-start -> sf-verify -> sf-end`: normal non-trivial flow.
 - `sf-fix`: bug-first entrypoint that may route direct or spec-first.
-- `sf-init`: project bootstrap that reports or creates minimal technical and editorial governance corpus state.
+- `sf-init`: project bootstrap that reports or creates baseline technical and editorial governance corpus state.
 - `sf-docs`: documentation generation, audit, metadata, and technical-docs mode.
 - `sf-docs technical`: technical governance bootstrap, code-docs map creation, and audit.
 - `sf-docs editorial`: editorial governance scaffolding and audit for public-content drift, claim register, page intent, and runtime content schema preservation.
@@ -98,6 +98,7 @@ This doc covers ShipFlow skills, lifecycle flow, references, templates, model/to
 - `sf-build`: user-facing orchestrator that consumes the governance corpus gate before implementation, closure, and ship.
 - `sf-deploy`: release confidence orchestrator (`sf-check -> sf-ship -> sf-prod -> sf-browser/sf-auth-debug/sf-test -> sf-verify -> sf-changelog`).
 - `sf-content`: master content lifecycle (`CONTENT_MAP + editorial corpus -> owner content skills -> audits/docs -> validation -> sf-verify -> sf-ship`).
+- `sf-design-from-scratch`: design-system creation skill for extracting an existing UI into a complete professional token system before playground or token audit work.
 - `sf-skill-build`: dedicated orchestrator for ShipFlow skill maintenance (`sf-explore when needed -> sf-spec -> SKILL.md -> runtime skill links -> sf-skills-refresh -> budget audit -> sf-verify -> sf-docs/help -> sf-ship`).
 - `tools/shipflow_sync_skills.sh --check|--repair`: reusable local helper for current-user Claude/Codex skill visibility and install-time selected-user linking.
 - `sf-ship` and `sf-prod`: shipping and deployed verification.
@@ -215,6 +216,7 @@ sf-content
 - `sf-bug` owns bug lifecycle orchestration only; phase skills still own bug record mutation, diagnosis, retest evidence, verification, and shipping.
 - `sf-maintain` owns the maintenance lifecycle; bugs, dependencies, docs, checks, audits, migrations, tasks, security review, repair, verification, and ship still run through their specialist owner skills and gates.
 - `sf-content` owns content-management orchestration; repurposing, drafting, enrichment, copy audit, copywriting audit, SEO audit, docs, veille, market study, browser proof, verification, and ship still run through their specialist owner skills and gates.
+- `sf-design-from-scratch` owns design-system creation from existing UI values; playground tooling, token audits, component audits, accessibility audits, and future design routing stay with their specialist skills.
 - `sf-skill-build` owns skill-maintenance orchestration and must route to `sf-explore` before `sf-spec` when skill intent, placement, public promise, or governance policy is too fuzzy for one targeted question to settle.
 - A release is not considered verified from push success, provider success, or a bare `200 OK` alone.
 - User-facing final reports default to `report=user`: concise, outcome-first, matched to the user's active language, compact chantier block, and no empty `Reste a faire` / `Prochaine etape` boilerplate. Ship reports should read as outcome, evidence, then limits, with a few sober status emojis allowed for scanning. Detailed `report=agent` handoff must be explicit; skills do not infer caller identity.

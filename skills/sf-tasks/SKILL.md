@@ -182,7 +182,7 @@ If the current directory has no project markers (not inside a specific project) 
    - Recommend the highest priority item based on:
      - Blockers (tasks that unblock other work)
      - Dependencies (what needs to happen first)
-     - Quick wins (high impact, low effort)
+     - High-ROI bounded-effort opportunities
      - User's argument/focus area if provided
    - Explain why this task should be next (1-2 sentences)
 

@@ -40,7 +40,7 @@ Quick reference for the skill system, modes, and workflows.
 | `/sf-test` | Guided manual QA: prompts the user through real flow tests, logs evidence, and opens bug records | `[feature]`, `--retest BUG-ID`, `--prod` |
 | `/sf-model` | Choose model, reasoning level, and fast/cheap fallback before execution | `<task description>` or `<spec path>` |
 | `/sf-tasks` | Track work, check off items, suggest next | `[focus area]` |
-| `/sf-priorities` | Re-rank by impact/effort matrix | `impact`, `effort`, `blockers`, `quick-wins` |
+| `/sf-priorities` | Re-rank by impact/effort matrix | `impact`, `effort`, `blockers`, `high-roi` / `quick-wins` |
 | `/sf-backlog` | Capture ideas, defer non-urgent | `add "idea"`, `defer`, `review`, `clean` |
 | `/sf-review` | Session summary, update docs | `daily`, `weekly`, `sprint`, `release` |
 | `/sf-resume` | Ultra-fast current-thread recap and close/keep-open verdict | `court`, `ultra-court` |
@@ -52,6 +52,7 @@ Quick reference for the skill system, modes, and workflows.
 | `/sf-audit` | Master orchestrator (all 8 domains) | `@file`, `global`, or nothing |
 | `/sf-audit-code` | Architecture, security, reliability, system fit (anti-duplication) | `@file`, `global`, or nothing |
 | `/sf-audit-design` | UI/UX, a11y, responsiveness | `@file`, `global`, or nothing |
+| `/sf-design-from-scratch` | Build a professional tokenized design system from an existing UI | `tokens-only`, `with-playground`, `@file`, or nothing |
 | `/sf-audit-copy` | Copywriting, tone, CTAs | `@file`, `global`, or nothing |
 | `/sf-audit-seo` | Meta tags, structured data, links | `@file`, `global`, or nothing |
 | `/sf-audit-gtm` | Go-to-market, conversion, trust | `@file`, `global`, or nothing |
@@ -126,6 +127,7 @@ Internal role matrix:
 | `skills/sf-check/SKILL.md` | conditionnel | source-de-chantier | Failed checks become a chantier when failures span domains, block release, or need staged remediation. |
 | `skills/sf-context/SKILL.md` | non-applicable | helper | Context discovery is read-only; not a chantier source. |
 | `skills/sf-deps/SKILL.md` | conditionnel | source-de-chantier | Dependency findings become a chantier for critical/high risk, supply-chain trust, migration, or automation gaps. |
+| `skills/sf-design-from-scratch/SKILL.md` | conditionnel | source-de-chantier | Design-system creation becomes a chantier when tokenization or migration spans multiple surfaces. |
 | `skills/sf-design-playground/SKILL.md` | conditionnel | support-de-chantier | Supports design-token work; route only on explicit formalization request. |
 | `skills/sf-docs/SKILL.md` | conditionnel | support-de-chantier | Supports docs coherence; not a source unless the user asks to frame a spec. |
 | `skills/sf-end/SKILL.md` | obligatoire | lifecycle | Closes an existing chantier; not a source. |
@@ -468,7 +470,7 @@ Provide explicit arguments and prompts don't appear:
 
 | Level | Label | When to use |
 |-------|-------|-------------|
-| P0 | Critical | Blockers, security, high-ROI + low-effort |
+| P0 | Critical | Blockers, security, high-ROI + bounded effort |
 | P1 | High | Important features, medium effort |
 | P2 | Medium | Standard work, nice improvements |
 | P3 | Low | Nice-to-have, can wait |

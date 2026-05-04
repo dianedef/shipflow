@@ -23,7 +23,7 @@ The point is not to create a perfect roadmap. The point is to stop a founder fro
 ## What You Give It
 
 - a ShipFlow workspace or project with tracked tasks
-- optionally, a prioritization angle such as `impact`, `effort`, `blockers`, or `quick-wins`
+- optionally, a prioritization angle such as `impact`, `effort`, `blockers`, or `high-roi` / `quick-wins`
 - optionally, a project name when you do not want a workspace-wide pass
 
 ## What You Get Back
@@ -37,7 +37,7 @@ The point is not to create a perfect roadmap. The point is to stop a founder fro
 
 ```bash
 /sf-priorities
-/sf-priorities quick-wins
+/sf-priorities high-roi
 /sf-priorities blockers
 ```
 

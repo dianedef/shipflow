@@ -72,7 +72,7 @@ Motion System      [A/B/C/D]
 ─────────────────────────────────────
 OVERALL            [A/B/C/D]
 
-QUICK WINS (high impact, low effort)
+PRIORITY IMPROVEMENTS (high impact, bounded effort)
   ⚡ [file:line] description — Why: [principle]
 ```
 
@@ -81,13 +81,13 @@ En **deep mode**, le report est étendu avec les 3 sous-scores globaux (Design T
 ## Principes de l'audit
 
 - **Read-only par défaut** : l'audit liste les manquements dans `TASKS.md`, il ne refactore pas automatiquement. L'utilisateur garde le contrôle.
-- **Sévérité adaptative à la taille du projet** : small projects → max 🟡, mid → 🟠, large → 🔴. Un site de contenu ne doit pas se retrouver noyé sous des red flags.
+- **Sévérité adaptative à la taille du projet** : small projects → findings généralement priorisés 🟡 sauf impact utilisateur ou confiance de marque, mid → 🟠, large → 🔴. Le niveau d'exigence reste professionnel; seule la priorité suit le blast radius.
 - **Tracking systématique** : chaque audit logué dans `AUDIT_LOG.md` (local + global) et `TASKS.md` (sous-section `### Audit: Design`).
 - **Sources citées** : chaque finding inclut une ligne « Why it matters » avec le principe (WCAG 2.5.8, NN/g #1, Fitts's law, etc.).
 
 ## Dépendances
 
-- **En amont** : `sf-audit` (top-level) peut appeler `sf-audit-design` en mode light sur plusieurs projets en parallèle.
+- **En amont** : `sf-audit` (top-level) peut appeler `sf-audit-design` en mode standard sur plusieurs projets en parallèle.
 - **En aval (deep mode)** : spawn 3 agents via Agent tool sur `sf-audit-design-tokens`, `sf-audit-components`, `sf-audit-a11y`.
 - **Associée (non appelée)** : `sf-design-playground` — générateur de page de preview des design tokens. L'audit recommande de la lancer si aucune playground n'est détectée.
 

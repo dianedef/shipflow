@@ -57,7 +57,7 @@ Si les fichiers existent mais semblent incomplets (< 5 lignes de contenu hors ti
 
 Les livrables `docs/copywriting/persona.md`, `docs/copywriting/parcours-client.md` et `docs/copywriting/strategie.md` sont des artefacts business ShipFlow. Ils doivent porter un frontmatter YAML ShipFlow et référencer les versions des contrats business/brand utilisés.
 
-Frontmatter minimal :
+Frontmatter requis :
 
 ```yaml
 ---
@@ -359,7 +359,7 @@ STRATÉGIE DE CONVERSION
 OVERALL                       [A/B/C/D]
 
 Recommandations : X (🔴 Y critical, 🟠 Z high, 🟡 W medium)
-Top 3 quick wins conversion :
+Top 3 améliorations prioritaires conversion :
   1. [action] → [impact]
   2. [action] → [impact]
   3. [action] → [impact]
@@ -544,7 +544,7 @@ next_review: "[date]"
 | 🟠 | [action] | [pages] | [impact] |
 | 🟡 | [action] | [pages] | [impact] |
 
-## Quick wins
+## Améliorations prioritaires
 1. [action] → [impact attendu]
 2. [action] → [impact attendu]
 3. [action] → [impact attendu]

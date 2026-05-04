@@ -30,7 +30,7 @@ For a solo founder, that means fewer vague “the app feels slow” complaints a
 
 - a graded performance audit
 - specific findings tied to code or architecture
-- quick wins and higher-effort fixes
+- priority fixes and deeper remediation paths
 - cross-project comparison when used in global mode
 
 ## Typical Examples

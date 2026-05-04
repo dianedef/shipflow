@@ -1,8 +1,8 @@
 ---
 name: sf-priorities
-description: "Priority analysis and task reordering with impact, effort, blockers, and quick wins."
+description: "Priority analysis and task reordering with impact, effort, blockers, and high-ROI opportunities."
 disable-model-invocation: false
-argument-hint: [optional priority criteria: impact, effort, blockers, quick-wins]
+argument-hint: [optional priority criteria: impact, effort, blockers, high-roi/quick-wins]
 ---
 
 ## Canonical Paths
@@ -73,16 +73,16 @@ If the current directory has no project markers (no `package.json`, no `src/` di
    - **Risk**: What happens if we delay this?
 
 3. **Apply prioritization logic**:
-   - P0 (Critical): Blockers, high impact + low effort, security/bugs
+   - P0 (Critical): Blockers, security/bugs, high impact + bounded effort
    - P1 (High): High impact + medium effort, important features
    - P2 (Medium): Medium impact, or high effort without clear blocker
    - P3 (Low): Nice to have, low impact, can wait
 
 4. **Consider user's criteria** (`$ARGUMENTS`):
    - `impact`: Prioritize by business/user value
-   - `effort`: Show quick wins first (low effort, high impact)
+   - `effort`: Show high-impact bounded-effort tasks first
    - `blockers`: Prioritize tasks that unblock others
-   - `quick-wins`: Focus on high-impact, low-effort tasks
+   - `quick-wins` / `high-roi`: Focus on high-impact, bounded-effort tasks
    - If no argument, use balanced approach
 
 5. **Update TASKS.md** with priority sections:
@@ -113,7 +113,7 @@ If the current directory has no project markers (no `package.json`, no `src/` di
    - List P0 tasks with why they're critical
    - Suggest which P0 task to start immediately
    - Note any dependencies or prerequisites
-   - Highlight quick wins if present
+   - Highlight high-ROI bounded-effort opportunities if present
 
 ### Important
 
@@ -123,6 +123,6 @@ If the current directory has no project markers (no `package.json`, no `src/` di
 - Consider technical debt alongside features
 - Flag tasks with missing context as needing refinement
 - Explain your prioritization reasoning clearly
-- If tasks seem equally important, break ties by effort (prefer low effort)
+- If tasks seem equally important, break ties by effort without letting ease of execution outrank strategic value
 - Update "Priority last updated" timestamp
 - Update the master Dashboard table's "Top Priority" column to reflect the new highest-priority task per project

@@ -1,6 +1,6 @@
 ---
 name: sf-design-playground
-description: "Design system playground scaffolding for live token inspection, editing, and export."
+description: "Live design-token playground scaffolding."
 disable-model-invocation: true
 argument-hint: '[route-path] (default: /design-system)'
 ---
@@ -56,11 +56,13 @@ Before scaffolding:
    ```
    ⚠ No design token system detected.
 
-   The playground reads from your token files. Run /sf-audit-design first
-   to identify what to centralize, then re-run /sf-design-playground.
+   The playground reads from your token files. Run /sf-design-from-scratch
+   to create a professional token system, then re-run /sf-design-playground.
    ```
 
-   Exception: if the user explicitly wants to scaffold "from scratch" with seed tokens, ask using **AskUserQuestion**.
+   If the user explicitly asks to scaffold "from scratch" with seed tokens,
+   route to `/sf-design-from-scratch` instead of creating ad hoc seed tokens
+   inside the playground workflow.
 
 2. **Verify framework is supported**. Currently supported:
    - Next.js (App Router 13+ and Pages Router)

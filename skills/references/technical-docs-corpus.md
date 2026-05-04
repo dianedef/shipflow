@@ -49,7 +49,7 @@ This reference tells ShipFlow skills how to use the internal `docs/technical/` l
 `sf-docs technical` or `sf-docs technical audit` should:
 
 - treat a missing `docs/technical/code-docs-map.md` as a first-run bootstrap trigger, not as an immediate read failure
-- create minimal `docs/technical/README.md` and `docs/technical/code-docs-map.md` scaffolding for code projects when safe
+- create baseline `docs/technical/README.md` and `docs/technical/code-docs-map.md` governance scaffolding for code projects when safe
 - record an explicit `non-coverage` reason when no major code area can be mapped
 - verify that every major code area in `code-docs-map.md` has a primary technical doc or explicit non-coverage reason
 - scaffold missing subsystem docs from `templates/artifacts/technical_module_context.md`

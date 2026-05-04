@@ -6,7 +6,7 @@
 
 `sf-scaffold` creates new pages, components, layouts, API routes, content entries, hooks, or utilities by reading the current codebase first and copying its conventions.
 
-The goal is not speed alone. The scaffold should fit the project’s naming, imports, file placement, UX quality bar, and security posture. If the request is ambiguous in a way that affects permissions, product flow, or public behavior, the skill asks targeted questions or stops with a safe minimal path.
+The goal is not speed alone. The scaffold should fit the project’s naming, imports, file placement, UX quality bar, and security posture. If the request is ambiguous in a way that affects permissions, product flow, or public behavior, the skill asks targeted questions or stops with a professional safe path.
 
 ## Who It's For
 
@@ -18,7 +18,7 @@ The goal is not speed alone. The scaffold should fit the project’s naming, imp
 
 - when you need a new page, component, hook, util, or API route
 - when the repo already has patterns worth following
-- when you want a safe starting point instead of a fake-complete artifact
+- when you want a professional safe path instead of a fake-complete artifact
 
 ## What You Give It
 
@@ -43,7 +43,7 @@ The goal is not speed alone. The scaffold should fit the project’s naming, imp
 
 ## Limits
 
-`sf-scaffold` does not invent project conventions. If there are no reliable examples, or if the request would require guessing auth, tenant boundaries, destructive behavior, or public promises, it should stop or generate only a minimal safe shell.
+`sf-scaffold` does not invent project conventions. If there are no reliable examples, or if the request would require guessing auth, tenant boundaries, destructive behavior, or public promises, it should stop or generate only a professional safe shell with explicit pending decisions.
 
 ## Related Skills
 

@@ -1,6 +1,6 @@
 ---
 name: sf-audit-design-tokens
-description: "Design token audit for theme, typography, spacing, motion, drift, coverage, and DTCG fit."
+description: "Deep design-token system audit."
 disable-model-invocation: true
 argument-hint: '[file-path | "global"] (omit for full project)'
 ---
@@ -58,9 +58,10 @@ This skill audits EXISTING design token systems. The project appears to use
 literal values throughout (hardcoded hex, font-sizes, spacings).
 
 Next steps:
-  1. Run /sf-audit-design (light mode) to get the first-pass recommendations
-  2. Run /sf-design-playground once a minimal system exists
-  3. Re-run /sf-audit-design-tokens for the deep audit
+  1. Run /sf-audit-design (standard mode) if the visual direction is unclear
+  2. Run /sf-design-from-scratch to create the professional token system
+  3. Run /sf-design-playground once the token system exists
+  4. Re-run /sf-audit-design-tokens for the deep audit
 ```
 
 ---
@@ -224,13 +225,13 @@ Deep version of the `sf-audit-design #11 Theme System Architecture` checklist, w
 
 Based on the component files count from the context block:
 
-| Project size | Threshold | Max severity for token violations |
+| Project size | Threshold | Default priority for token findings |
 |---|---|---|
-| Small | < 10 | 🟡 medium (quick-wins) |
+| Small | < 10 | 🟡 medium unless user impact or brand trust is directly harmed |
 | Mid | 10-30 | 🟠 high |
 | Large | > 30 | 🔴 critical |
 
-Apply this to all findings. A missing semantic socle in a 5-file demo project = quick-win, not critical. Same missing socle in a 50-file SaaS = critical.
+Apply this to all findings. A missing semantic socle in a 5-file demo project is still a professional finding, but usually medium priority. The same missing socle in a 50-file SaaS is critical because drift compounds fast.
 
 ### Final report
 
@@ -261,7 +262,7 @@ CRITICAL ISSUES (🔴)
 HIGH SEVERITY (🟠)
   file:line — description — Why: [principle]
 
-QUICK WINS (⚡)
+PRIORITY IMPROVEMENTS (⚡)
   file:line — description — Why: [principle]
   ⚡ (if no playground detected) Run /sf-design-playground to scaffold a live token preview page.
 

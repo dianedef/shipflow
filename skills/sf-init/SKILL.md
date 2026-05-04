@@ -627,7 +627,7 @@ Editorial governance is applicable when public pages, README public promises, do
 
 If public surfaces are detected and `docs/editorial/` can be written:
 - create `docs/editorial/README.md` when missing
-- create minimal project-specific editorial governance files when evidence exists: `public-surface-map.md`, `page-intent-map.md`, `claim-register.md`, `editorial-update-gate.md`, `astro-content-schema-policy.md`, and `blog-and-article-surface-policy.md`
+- create baseline project-specific editorial governance files when evidence exists: `public-surface-map.md`, `page-intent-map.md`, `claim-register.md`, `editorial-update-gate.md`, `astro-content-schema-policy.md`, and `blog-and-article-surface-policy.md`
 - keep entries evidence-based; do not copy ShipFlow's own repository-specific conclusions into the target project
 - preserve runtime content schema boundaries. Do not add ShipFlow metadata to `src/content/**`, Astro collections, MDX consumed by the app, CMS entries, or other runtime content unless the local schema explicitly accepts it
 - if a blog or article output is requested but no blog route is declared, record `surface missing: blog` instead of inventing a route
@@ -645,7 +645,7 @@ If public surfaces are detected but `docs/editorial/` cannot be created safely:
 
 `AGENT.md` is the canonical agent routing entrypoint.
 
-- If `AGENT.md` is missing, create a minimal project-specific entrypoint that points to `CLAUDE.md`, `CONTEXT.md` when present, `docs/technical/code-docs-map.md`, `CONTENT_MAP.md`, and `README.md`.
+- If `AGENT.md` is missing, create a baseline project-specific entrypoint that points to `CLAUDE.md`, `CONTEXT.md` when present, `docs/technical/code-docs-map.md`, `CONTENT_MAP.md`, and `README.md`.
 - If `AGENTS.md` is missing and symlinks are supported, create `AGENTS.md -> AGENT.md` as compatibility only.
 - If `AGENTS.md` exists as a symlink to `AGENT.md`, report it as OK.
 - If `AGENTS.md` exists as a real file or points elsewhere, report `AGENTS.md: compatibility conflict` and ask before converting or preserving it as external-tool-specific guidance.

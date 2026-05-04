@@ -102,7 +102,7 @@ API Hygiene                [A/B/C/D]
 ─────────────────────────────────────
 OVERALL                    [A/B/C/D]
 
-QUICK WINS
+PRIORITY IMPROVEMENTS
   ⚡ [file:line] description — Why: [principle]
 ```
 

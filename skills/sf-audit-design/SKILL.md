@@ -1,8 +1,8 @@
 ---
 name: sf-audit-design
-description: "UI/UX audit for hierarchy, accessibility, interaction, and quality."
+description: "UI/UX design audit."
 disable-model-invocation: true
-argument-hint: '[file-path | "global" | "deep"] (omit for full project light audit)'
+argument-hint: '[file-path | "global" | "deep"] (omit for full project standard audit)'
 ---
 
 ## Canonical Paths
@@ -98,11 +98,11 @@ Signaler les écarts de `product coherence`, `docs mismatch`, `misleading UI sta
 ## Mode detection
 
 - **`$ARGUMENTS` is "deep"** → DEEP MODE: orchestrate 3 specialist agents in parallel (design tokens, components, a11y) for a pro-grade audit on a large project.
-- **`$ARGUMENTS` is "global"** → GLOBAL MODE: audit ALL projects in the workspace (light audit per project).
+- **`$ARGUMENTS` is "global"** → GLOBAL MODE: audit ALL projects in the workspace (standard audit per project).
 - **`$ARGUMENTS` is a file path** → PAGE MODE: review that single page.
-- **`$ARGUMENTS` is empty** → PROJECT MODE (light): full design audit of the entire project using the checklist below.
+- **`$ARGUMENTS` is empty** → PROJECT MODE (standard): full design audit of the entire project using the checklist below.
 
-**Light vs Deep**: light mode (default) is self-sufficient — one skill, one report, surface-level checklist covering the 13 categories below. Deep mode spawns dedicated specialist skills via the Agent tool, each one focusing exclusively on its domain (no attention dilution). Use deep when the project is large (> ~30 component files) or when you need audit-grade rigor on each design token / component architecture / WCAG 2.2 concern.
+**Standard vs Deep**: standard mode (default) is self-sufficient — one skill, one report, professional checklist covering the 13 categories below. Deep mode spawns dedicated specialist skills via the Agent tool, each one focusing exclusively on its domain (no attention dilution). Use deep when the project is large (> ~30 component files) or when you need audit-grade proof on each design token / component architecture / WCAG 2.2 concern.
 
 ---
 
@@ -116,7 +116,7 @@ In **one single message**, use the **Agent tool** three times (one call per spec
 
 - The current working directory (project path)
 - A prompt that instructs it to **read and execute** the corresponding specialist SKILL.md in read-only mode
-- A reminder to return a **structured sub-report** with subscores, issue counts, and quick-wins — no code fixes
+- A reminder to return a **structured sub-report** with subscores, issue counts, and priority improvements — no code fixes
 
 **The three specialists**:
 
@@ -148,7 +148,7 @@ Run the full skill read-only (no code fixes). Return a structured sub-report wit
 - Global score for this domain (A/B/C/D)
 - Subscores per phase/category
 - Issue counts by severity (🔴 critical / 🟠 high / 🟡 medium)
-- Top 5 quick-wins for this domain (file:line + fix + Why)
+- Top 5 priority improvements for this domain (file:line + fix + Why)
 - Linked systems / consequences to watch
 - Product/docs coherence gaps
 - Business metadata versions
@@ -204,7 +204,7 @@ ACCESSIBILITY (from sf-audit-a11y)
   Issues: X 🔴 | Y 🟠 | Z 🟡
 ─────────────────────────────────────
 
-CONSOLIDATED QUICK WINS (top 10 across all three domains, ordered by impact)
+CONSOLIDATED PRIORITY IMPROVEMENTS (top 10 across all three domains, ordered by impact)
   ⚡ [domain] [file:line] description — Why: [principle]
   ...
 
@@ -216,7 +216,7 @@ Total: X 🔴 critical, Y 🟠 high, Z 🟡 medium across 3 domains
 ═══════════════════════════════════════
 ```
 
-**Overall rule for deep mode**: overall score is the **worst** of the three (pro-grade standard — a project isn't "A" in design if its a11y is "C"). In light mode, overall is an average; in deep mode, it's the worst.
+**Overall rule for deep mode**: overall score is the **worst** of the three (pro-grade standard — a project isn't "A" in design if its a11y is "C"). In standard mode, overall is an average; in deep mode, it's the worst.
 
 ### Step 3: Update tracking files
 
@@ -271,7 +271,7 @@ Audit ALL UI projects in the workspace for design, UX, and accessibility issues.
      🔴 [project] file:line — description — Why: [principle]
      🟠 [project] file:line — description — Why: [principle]
      🟡 [project] file:line — description — Why: [principle]
-   QUICK WINS ACROSS PROJECTS
+   PRIORITY IMPROVEMENTS ACROSS PROJECTS
      ⚡ [project] file:line — description — Why: [principle]
      ... (max 10, ordered by impact)
    Total: X critical, Y high, Z medium across N projects
@@ -486,7 +486,7 @@ Motion System      [A/B/C/D] — tokens, prefers-reduced-motion, perf
 ─────────────────────────────────────
 OVERALL            [A/B/C/D]
 
-QUICK WINS (high impact, low effort)
+PRIORITY IMPROVEMENTS (high impact, bounded effort)
   ⚡ [file:line] description — Why: [principle]
   ⚡ [file:line] description — Why: [principle]
   ...
@@ -494,7 +494,7 @@ QUICK WINS (high impact, low effort)
 Fixed: X issues | Remaining: Y issues
 ```
 
-**Quick Wins criteria**: changes that take < 5 min each, touch 1-2 lines, and fix a B-level or worse issue. Examples: darkening a hex for contrast, adding `alt` text, bumping a target size, adding `prefers-reduced-motion`. List max 5, ordered by impact.
+**Priority improvement criteria**: bounded changes that fix a B-level or worse issue without requiring a full redesign. Examples: darkening a hex for contrast, adding `alt` text, bumping a target size, adding `prefers-reduced-motion`. List max 5, ordered by impact.
 
 ---
 
@@ -625,7 +625,7 @@ If the project was built with v0, bolt, lovable, Figma Make, or heavy LLM assist
 
 ### Phase 2.7: Design Token System Audit
 
-Consolidated audit of the **four design token systems** (theme, typography, spacing, motion). They share the same logic — centralization, semantic naming, single source of truth — so they're audited together. Strictness is **adaptive to project size** (5c rule): small projects get quick-wins, larger projects get harder findings.
+Consolidated audit of the **four design token systems** (theme, typography, spacing, motion). They share the same logic — centralization, semantic naming, single source of truth — so they're audited together. Strictness is **adaptive to project size** (5c rule): small projects still receive professional findings, but the severity reflects blast radius; larger projects get harder blocking findings.
 
 #### Theme System
 - [ ] Three modes (`light`, `dark`, `system`) declared and reachable from settings UI. Single-mode requires `BRANDING.md` justification.
@@ -659,12 +659,12 @@ Consolidated audit of the **four design token systems** (theme, typography, spac
 - [ ] Each animation has an intent (feedback, guidance, confirmation). Decorative motion without intent = noise.
 
 #### Severity rules (adaptive to project size — 5c)
-- **Small project** (< ~10 component files, content site, single product) → max severity for token violations is 🟡 medium (quick-wins). Don't drown a small site in red flags.
-- **Mid project** (~10-30 component files) → token violations cap at 🟠 high. The system is starting to leak; centralize before it grows.
+- **Small project** (< ~10 component files, content site, single product) → token findings are generally prioritized as 🟡 medium unless user impact or brand trust is directly harmed. Keep the quality bar, adjust priority to blast radius.
+- **Mid project** (~10-30 component files) → token findings are generally prioritized as 🟠 high. The system is starting to leak; centralize before it grows.
 - **Large project** (> ~30 component files, SaaS, multi-product) → token violations are 🔴 critical. At this scale, drift compounds fast.
 
-#### Quick-win recommendation
-If the project has any design token system worth auditing **and** no design playground page detected (see context block "Design playground page"), append this to Quick Wins:
+#### Priority recommendation
+If the project has any design token system worth auditing **and** no design playground page detected (see context block "Design playground page"), append this to priority improvements:
 ```
 ⚡ No design system playground detected — run /sf-design-playground to scaffold a live design token preview page.
    Why: visualizing all tokens in one place + live editing is the fastest way to iterate on the design system without opening 30 files.
@@ -791,7 +791,7 @@ MOTION TOKENS             [A/B/C/D]
 ═══════════════════════════════════════
 OVERALL                   [A/B/C/D]
 
-QUICK WINS (high impact, low effort)
+PRIORITY IMPROVEMENTS (high impact, bounded effort)
   ⚡ [file:line] description — Why: [principle]
   ⚡ [file:line] description — Why: [principle]
   ... (max 5, ordered by impact)

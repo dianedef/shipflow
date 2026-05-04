@@ -1,6 +1,6 @@
 ---
 name: sf-audit-components
-description: "Component audit for reuse, variants, composition, and API hygiene."
+description: "Component system audit."
 disable-model-invocation: true
 argument-hint: '[file-path | "global"] (omit for full project)'
 ---
@@ -246,11 +246,13 @@ For **Flutter** projects, map the above phases:
 
 Same matrix as `sf-audit-design-tokens`:
 
-| Project size | Threshold | Max severity |
+| Project size | Threshold | Default priority for component findings |
 |---|---|---|
-| Small | < 10 components | 🟡 medium |
+| Small | < 10 components | 🟡 medium unless user impact, design-system trust, or reuse risk is directly harmed |
 | Mid | 10-30 components | 🟠 high |
 | Large | > 30 components | 🔴 critical |
+
+Small projects still receive professional findings; severity reflects blast radius, not a lower quality bar.
 
 ### Final report
 
@@ -294,7 +296,7 @@ CRITICAL ISSUES (🔴)
 HIGH (🟠)
   ...
 
-QUICK WINS (⚡)
+PRIORITY IMPROVEMENTS (⚡)
   ...
 
 Tasks created: X in TASKS.md

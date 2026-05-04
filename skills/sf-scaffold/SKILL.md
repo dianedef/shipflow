@@ -55,7 +55,7 @@ If `$ARGUMENTS` is empty, use **AskUserQuestion**:
   - Options: page, component, layout, api, content, hook, util
 - Q2: "What name?" (free text — user types via "Other")
 
-Then capture the minimum product intent before generating anything:
+Then capture the required product intent before generating anything:
 - what user-facing outcome this file serves
 - who the actor is
 - whether the artifact is public-facing, internal, admin-only, or system-only
@@ -155,9 +155,9 @@ Additional generation rules:
 - Never scaffold public artifacts with placeholder claims that could misrepresent pricing, security, compliance, availability, or product capabilities.
 - If no safe and coherent version can be inferred, refuse to generate and list the blocking questions.
 
-For ambiguous requests, prefer a minimal safe shell over a fake-complete artifact:
-- `page`: route shell with explicit TODO markers for approved copy and behavior, plus safe empty/error structure
-- `component`: presentational shell with typed props and no invented business logic
+For ambiguous requests, produce a professional safe shell only when it is still useful and honest; never fake completeness:
+- `page`: route shell with explicit pending-decision markers for approved copy and behavior, plus safe empty/error structure
+- `component`: production-shaped presentational shell with typed props and no invented business logic
 - `api`: read-only or stubbed handler returning `501 Not Implemented` until auth/authz/validation decisions are confirmed
 - `content`: draft entry clearly marked as draft, following schema without invented promises
 
@@ -181,7 +181,7 @@ Questions:
 - [targeted decision needed]
 - [targeted decision needed]
 Safe path:
-- [minimal next step or file shell that would be acceptable]
+- [professional next step or safe shell that would be acceptable]
 ```
 
 ---

@@ -66,7 +66,7 @@ En mode `update` ou `audit`, prioriser les docs qui peuvent faire échouer un ut
 
 `sf-docs` is the official owner for project-local governance corpus creation, adoption, update, and audit.
 
-- `sf-init` may create minimal first-run scaffolding and report status.
+- `sf-init` may create first-run baseline governance scaffolding and report status.
 - `sf-docs technical` bootstraps or audits `docs/technical/` and `docs/technical/code-docs-map.md`.
 - `sf-docs editorial` bootstraps or audits `docs/editorial/` when public/content surfaces exist.
 - `sf-docs update` detects missing `docs/technical/`, missing `docs/editorial/`, stale `CONTENT_MAP.md`, invalid `AGENT.md` / `AGENTS.md` compatibility, and routes each layer to creation, audit, skip, or blocked status.
@@ -214,7 +214,7 @@ Create, scaffold, or audit ShipFlow's internal code-proximate technical document
 1. Load `$SHIPFLOW_ROOT/skills/references/technical-docs-corpus.md`, then load project-local `docs/technical/code-docs-map.md` when present. If `docs/technical/code-docs-map.md` is missing, treat it as a first-run bootstrap trigger, not an immediate read failure.
 2. Classify the request:
    - `technical` or `docs/technical` with missing docs -> scaffold from `templates/artifacts/technical_module_context.md`.
-   - missing `docs/technical/README.md` or missing `docs/technical/code-docs-map.md` -> bootstrap the minimal technical governance layer, then audit it.
+   - missing `docs/technical/README.md` or missing `docs/technical/code-docs-map.md` -> bootstrap the baseline technical governance layer, then audit it.
    - `technical audit` -> audit existing docs without rewriting unrelated content.
    - a changed-path list or diff context -> produce a `Documentation Update Plan`.
 3. For first-run bootstrap, create or update only the shared technical governance files needed to make the layer usable:
@@ -291,7 +291,7 @@ This mode treats public content drift as a documentation risk when README, publi
 1. Load `$SHIPFLOW_ROOT/skills/references/editorial-content-corpus.md`, `CONTENT_MAP.md` when present, and `docs/editorial/README.md` when present. If `docs/editorial/README.md` is missing, treat it as a first-run bootstrap trigger, not an immediate read failure.
 2. Classify the request:
    - `editorial` or `docs/editorial` with missing docs -> scaffold from `templates/artifacts/editorial_content_context.md`.
-   - missing `docs/editorial/README.md` with public surfaces -> bootstrap the minimal editorial governance layer, then audit it.
+   - missing `docs/editorial/README.md` with public surfaces -> bootstrap the baseline editorial governance layer, then audit it.
    - no detected public/content surfaces -> report `no editorial surfaces detected` and name `/sf-docs editorial` as the future adoption command.
    - `editorial audit` -> audit existing governance docs without rewriting unrelated content.
    - a changed public surface, claim, README, FAQ, pricing, public docs, or skill-page diff -> produce an `Editorial Update Plan`.

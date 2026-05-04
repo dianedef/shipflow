@@ -48,7 +48,7 @@ Continuer dans tous les cas — une étude de marché peut aussi servir à const
 
 Une étude de marché est un artefact business ShipFlow. Le rapport généré doit donc inclure un frontmatter YAML ShipFlow, sauf si le fichier cible est explicitement du contenu applicatif consommé par le runtime du projet.
 
-Frontmatter minimal pour `MARKET-STUDY.md` :
+Frontmatter requis pour `MARKET-STUDY.md` :
 
 ```yaml
 ---
@@ -355,7 +355,7 @@ If verdict is GO or GO CONDITIONNEL, provide:
 1. **Domain strategy**: Which domains to buy immediately
 2. **Content strategy**: First 20 pages to create, organized by priority
 3. **Product strategy**: MVP feature set
-4. **SEO strategy**: Quick wins vs long-term plays
+4. **SEO strategy**: near-term opportunities vs long-term plays
 5. **Launch timeline**: Pre-launch → Launch → Growth → Scale (4 phases)
 6. **Revenue projections**: Conservative monthly estimates
 7. **Competitive moat**: What makes this defensible

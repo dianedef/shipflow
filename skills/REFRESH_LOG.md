@@ -4,6 +4,231 @@ Chronological log of skill refreshes via `/sf-skills-refresh`. Most recent first
 
 ---
 
+## 2026-05-04 — sf-scaffold
+
+**Added:**
+- Professional safe-shell doctrine for ambiguous scaffolding requests
+
+**Updated:**
+- Replaced low-ambition shell language with professional safe path language
+- Public skill page now promises a project-shaped professional first implementation
+
+**New phases:**
+- None
+
+**Sources:** 0 URLs consulted (local skill-language audit)
+
+---
+
+## 2026-05-04 — sf-docs
+
+**Added:**
+- None
+
+**Updated:**
+- Reframed first-run technical and editorial governance as baseline governance layers
+- Reframed technical-doc first-run scaffolding as baseline governance scaffolding
+
+**New phases:**
+- None
+
+**Sources:** 0 URLs consulted (local skill-language audit)
+
+---
+
+## 2026-05-04 — sf-init
+
+**Added:**
+- None
+
+**Updated:**
+- Reframed project initialization artifacts around baseline governance and operating structure
+- README now describes the output as a stronger operating base for later ShipFlow skills
+
+**New phases:**
+- None
+
+**Sources:** 0 URLs consulted (local skill-language audit)
+
+---
+
+## 2026-05-04 — sf-audit-design
+
+**Added:**
+- Professional standard-mode wording for default audits
+
+**Updated:**
+- Replaced low-ambition audit framing with standard professional audit framing
+- Clarified adaptive severity: small projects still receive professional findings; only priority follows blast radius
+- Report wording now frames priority improvements as bounded professional changes instead of shortcut opportunities
+
+**New phases:**
+- None
+
+**Sources:** 0 URLs consulted (local skill-language audit)
+
+---
+
+## 2026-05-04 — sf-audit-design-tokens
+
+**Added:**
+- None
+
+**Updated:**
+- Replaced low-priority minimisation in severity guidance with professional finding / priority language
+- No-token route now points to standard design audit and professional token-system creation
+- Report and README wording now use priority improvements instead of shortcut framing
+- README severity language now frames findings by priority, not reduced ambition
+
+**New phases:**
+- None
+
+**Sources:** 0 URLs consulted (local skill-language audit)
+
+---
+
+## 2026-05-04 — sf-audit-components
+
+**Added:**
+- None
+
+**Updated:**
+- Report and README wording now use priority improvements instead of shortcut framing
+- Clarified adaptive severity: small component systems still receive professional findings; only severity follows blast radius
+
+**New phases:**
+- None
+
+**Sources:** 0 URLs consulted (local skill-language audit)
+
+---
+
+## 2026-05-04 — sf-audit-a11y
+
+**Added:**
+- None
+
+**Updated:**
+- Report and README wording now use priority improvements instead of shortcut framing
+
+**New phases:**
+- None
+
+**Sources:** 0 URLs consulted (local skill-language audit)
+
+---
+
+## 2026-05-04 — sf-audit-copywriting
+
+**Added:**
+- None
+
+**Updated:**
+- Reframed copywriting artifact frontmatter from weak requirement language to required
+- Report wording now uses priority improvements instead of shortcut framing
+
+**New phases:**
+- None
+
+**Sources:** 0 URLs consulted (local skill-language audit)
+
+---
+
+## 2026-05-04 — sf-market-study
+
+**Added:**
+- None
+
+**Updated:**
+- Reframed market-study artifact frontmatter as required ShipFlow metadata
+- Reframed SEO action planning around near-term opportunities instead of shortcut framing
+
+**New phases:**
+- None
+
+**Sources:** 0 URLs consulted (local skill-language audit)
+
+---
+
+## 2026-05-04 — sf-perf
+
+**Added:**
+- None
+
+**Updated:**
+- README now frames output as priority fixes and deeper remediation paths
+
+**New phases:**
+- None
+
+**Sources:** 0 URLs consulted (local skill-language audit)
+
+---
+
+## 2026-05-04 — sf-priorities
+
+**Added:**
+- `high-roi` wording as the preferred name for bounded-effort priority opportunities
+
+**Updated:**
+- Kept `quick-wins` as a supported alias but reframed the doctrine so effort never outranks strategic value
+
+**New phases:**
+- None
+
+**Sources:** 0 URLs consulted (local skill-language audit)
+
+---
+
+## 2026-05-04 — sf-tasks
+
+**Added:**
+- None
+
+**Updated:**
+- Next-step recommendations now use high-ROI bounded-effort language instead of shortcut framing
+
+**New phases:**
+- None
+
+**Sources:** 0 URLs consulted (local skill-language audit)
+
+---
+
+## 2026-05-04 — sf-help
+
+**Added:**
+- None
+
+**Updated:**
+- Priority help text now presents `high-roi` as the professional framing while preserving `quick-wins` compatibility
+
+**New phases:**
+- None
+
+**Sources:** 0 URLs consulted (local skill-language audit)
+
+---
+
+## 2026-05-04 — sf-design-from-scratch
+
+**Added:**
+- New design-system creation skill for extracting scattered UI values into a complete professional design-system source of truth
+- Explicit default limits: max 5 font roles/families, max 3 chromatic color families plus neutrals/surfaces/text, and max 5 font-size tokens
+- Unblock rules requiring a targeted question, owner-skill route, or next command instead of silent stop conditions
+- Public skill page and internal discoverability updates
+
+**Updated:**
+- `sf-design-playground` now routes no-token from-scratch requests to `sf-design-from-scratch`
+- `sf-audit-design-tokens` now points no-token projects to `sf-design-from-scratch` before playground and deep token audit
+
+**New phases:**
+- Inventory -> token plan -> token source -> bounded migration -> playground/token-audit follow-up
+
+**Sources:** 0 URLs consulted (local user feedback and existing design skill contracts)
+
+---
+
 ## 2026-05-04 — sf-repurpose
 
 **Added:**

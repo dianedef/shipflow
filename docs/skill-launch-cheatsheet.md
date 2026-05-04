@@ -67,6 +67,7 @@ Use a focused skill directly when you intentionally want one owner lane: checks,
 | Technical checks | `sf-check` | Target typecheck, lint, build, tests, dependency checks, or shell validation. |
 | Documentation work | `sf-docs [mode or target]` | `readme`, `api`, `components`, `audit`, `update`, `metadata`, `technical`, `editorial`, or a file path. |
 | Audit lane | `sf-audit*` | Choose the audit owner: code, design, copy, SEO, GTM, deps, perf, a11y, translation, components, or design tokens. |
+| Design system creation | `sf-design-from-scratch [target or mode]` | Use when no coherent professional token system exists; modes include `tokens-only` and `with-playground`. |
 | Dependency posture | `sf-deps` | Target dependency drift, vulnerabilities, licenses, or config. |
 | Framework migration | `sf-migrate [package[@version]]` | Use a structured package target such as `astro@5`, a package name, or no argument for discovery. |
 | Orientation and routing | `sf-status`, `sf-help`, `sf-model`, `sf-resume` | Use for git dashboard, workflow help, model choice, or concise context transfer. |
@@ -81,6 +82,7 @@ Use a focused skill directly when you intentionally want one owner lane: checks,
 | `sf-bug` | no argument; `BUG-ID`; free-text summary; `--fix`; `--retest`; `--verify`; `--ship`; `--close` |
 | `sf-content` | no argument or content goal; `plan`; `repurpose`; `draft`; `article`; `blog`; `guide`; `enrich`; `audit`; `copy`; `copywriting`; `seo`; `editorial`; `apply`; `publish`; `ship` |
 | `sf-skill-build` | new skill idea; existing skill path; `sf-explore` reroute when placement or public promise is too fuzzy |
+| `sf-design-from-scratch` | no argument; target page/path; `tokens-only`; `with-playground`; detailed report modes |
 | `sf-ship` | no special argument; `skip-check`; `end la tache`; `end`; `fin`; `close task`; `all-dirty`; `ship-all`; `tout-dirty` |
 | `sf-audit-translate` | no special argument; file path or scope; `global`; `sync`; `apply`; `sync [path]`; `apply [path]` |
 

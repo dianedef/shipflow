@@ -1,6 +1,6 @@
 ---
 name: sf-audit-a11y
-description: "Accessibility audit for WCAG, ARIA, keyboard flow, focus, live regions, and semantics."
+description: "Accessibility audit."
 disable-model-invocation: true
 argument-hint: '[file-path | "global"] (omit for full project)'
 ---
@@ -316,7 +316,7 @@ CRITICAL BLOCKERS (🔴)
 HIGH (🟠)
   ...
 
-QUICK WINS (⚡)
+PRIORITY IMPROVEMENTS (⚡)
   ...
 
 Tasks created: X in TASKS.md
