@@ -79,10 +79,25 @@ Before creating any spec:
 
 Ask only when the answer changes behavior, security, data, permissions, money movement, destructive side effects, staging scope, or ship risk.
 
+### Decision Question Framing
+
+When a material question is needed, especially during Plan Mode or before committing to an implementation plan, never ask a bare question. Frame it for a business decision maker, not a technical operator.
+
+Before the actual question, include:
+
+- Problem root: what ambiguity, constraint, or conflict exists and why it appears now.
+- Business stakes: what the decision changes for revenue, trust, speed, cost, risk, data/security, positioning, or future optionality.
+- Practical options: 2-3 plain-language options with concrete consequences and tradeoffs.
+- Honorable recommendation: the best-practice answer, marked as recommended, with the reason and the condition that would make another option better.
+- Decision request: one precise question the user can answer without understanding implementation details.
+
+If the best-practice answer is clear, low-risk, reversible, and inside the existing contract, choose it and continue instead of asking. If the question is still necessary, make the recommended option first and explain why it is the most responsible default. Avoid jargon; translate technical details into business consequences.
+
 Preferred path:
 
 - use integrated prompt tooling (for example `AskUserQuestion`) when available
 - otherwise use short plain-text questions with 2-3 prepared options and allow free-form answers
+- when integrated prompt tooling has limited room, send the decision framing as a short user-facing paragraph before the prompt, then use concise option labels and descriptions
 
 Questions and status updates must use the active user language.
 Internal contracts, section anchors, and stable machine-readable labels stay in English.

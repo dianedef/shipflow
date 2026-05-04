@@ -1,10 +1,10 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "1.6.0"
+artifact_version: "1.7.0"
 project: ShipFlow
 created: "2026-05-01"
-updated: "2026-05-03"
+updated: "2026-05-04"
 status: reviewed
 source_skill: sf-start
 scope: skill-runtime-and-lifecycle
@@ -31,7 +31,7 @@ linked_systems:
   - docs/editorial/
 depends_on:
   - artifact: "shipflow-spec-driven-workflow.md"
-    artifact_version: "0.11.0"
+    artifact_version: "0.12.0"
     required_status: draft
   - artifact: "skills/references/technical-docs-corpus.md"
     artifact_version: "1.1.0"
@@ -168,6 +168,7 @@ sf-maintain
 - `sf-maintain` owns the maintenance lifecycle; bugs, dependencies, docs, checks, audits, migrations, tasks, security review, repair, verification, and ship still run through their specialist owner skills and gates.
 - A release is not considered verified from push success, provider success, or a bare `200 OK` alone.
 - User-facing final reports default to `report=user`: concise, outcome-first, compact chantier block, and no empty `Reste a faire` / `Prochaine etape` boilerplate. Detailed `report=agent` handoff must be explicit; skills do not infer caller identity.
+- `sf-build` planning questions are business decision briefs, not bare technical prompts: they name the problem root, business stakes, practical options, and recommended best-practice answer before asking for a decision.
 - Audit skills still report findings first, but default user reports should summarize top findings, proof gaps, chantier potential, and next action; full matrices and domain checklists belong in `report=agent`.
 
 ## Failure Modes

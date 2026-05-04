@@ -1,12 +1,12 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.2.0"
+artifact_version: "1.3.0"
 project: ShipFlow
 created: "2026-04-29"
 created_at: "2026-04-29 09:02:11 UTC"
-updated: "2026-05-02"
-updated_at: "2026-05-02 11:01:15 UTC"
+updated: "2026-05-04"
+updated_at: "2026-05-04 04:58:00 UTC"
 status: ready
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
@@ -63,13 +63,13 @@ depends_on:
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "README.md"
-    artifact_version: "0.5.0"
+    artifact_version: "0.7.1"
     required_status: "draft"
   - artifact: "shipflow-spec-driven-workflow.md"
-    artifact_version: "0.8.0"
+    artifact_version: "0.12.0"
     required_status: "draft"
   - artifact: "skills/references/chantier-tracking.md"
-    artifact_version: "0.1.0"
+    artifact_version: "0.4.0"
     required_status: "draft"
   - artifact: "skills/references/technical-docs-corpus.md"
     artifact_version: "1.1.0"
@@ -108,9 +108,10 @@ evidence:
   - "sf-ship 2026-05-02: governance corpus integration shipped; sf-init bootstraps project corpus layers, sf-docs owns technical/editorial corpus creation and audit, and sf-build consumes those layers through gates and readers."
   - "sf-ready 2026-05-02: revalidated and blocked on dependency metadata drift after README.md and shipflow-spec-driven-workflow.md version updates."
   - "sf-spec 2026-05-02: refreshed sf-build dependency metadata after README.md 0.5.0 and shipflow-spec-driven-workflow.md 0.8.0 became the active artifacts."
-  - "README.md 0.5.0 and shipflow-spec-driven-workflow.md 0.8.0 add sf-browser as the generic non-auth browser evidence path, distinct from sf-auth-debug for auth/session issues, sf-prod for deployment/runtime evidence, and sf-test for durable manual QA."
+  - "README.md 0.7.1 and shipflow-spec-driven-workflow.md 0.12.0 keep sf-build aligned on browser evidence routing, governance corpus ownership, report modes, and business-context decision questions."
   - "sf-ready 2026-05-02: validated the reconciled spec after dependency metadata, governance corpus ownership, and browser evidence routing updates."
   - "sf-ready 2026-05-02: revalidated official OpenAI Codex docs freshness, behavior contract, language doctrine, adversarial risk, and security gates before sf-start."
+  - "User decision 2026-05-04: sf-build Plan Mode questions must include precise context, the root problem, business stakes, a best-practice recommendation, and decision options suitable for a business owner rather than a technical operator."
 next_step: "None"
 ---
 
@@ -136,7 +137,7 @@ When the user runs `sf-build` with an intent, the skill becomes the single user-
 
 - Preconditions: the user provides a story, task, bug, or goal; the current repository is identifiable; lifecycle skills are available; and the user can answer material decision questions.
 - Trigger: the user runs `/sf-build <story>` or `$sf-build <story>`.
-- User/operator result: the master conversation stays focused on product decisions, short status, and final outcome; routine file reading, edits, validation, and technical reports are delegated to bounded subagents by default; `sf-build` does not ask again before every sequential subagent while the action remains inside the current chantier scope.
+- User/operator result: the master conversation stays focused on product decisions, short status, and final outcome; routine file reading, edits, validation, and technical reports are delegated to bounded subagents by default; `sf-build` does not ask again before every sequential subagent while the action remains inside the current chantier scope. When a material decision is required, especially in Plan Mode, the user receives a decision brief with the root problem, business stakes, practical options, and an honorable best-practice recommendation before the actual question.
 - System effect: `sf-build` performs an `Existing Chantier Check`, attaches to a matching active spec when possible, creates a new spec only for a new promise or result, traces its run when one spec is in scope, loops `sf-spec` and `sf-ready` until ready or blocked, applies a `Governance Corpus Gate`, applies a `Model Routing Gate` before `sf-start` for high-risk or costly work, runs one bounded write-capable subagent at a time by default, uses the Technical Reader for code-docs impact, uses the Editorial Reader for public-surface and claim impact, applies technical docs and editorial updates through a write-capable executor or integrator, verifies the user story, routes browser evidence to `sf-browser`, `sf-auth-debug`, `sf-prod`, or `sf-test` according to proof type, runs `sf-end`, then calls `sf-ship` only when verification, closure, bug-risk, secret, and staging gates pass.
 - Success proof: the chantier spec includes `Skill Run History` and `Current Chantier Flow`; the final user-facing report names the result, validations, browser/manual proof route when relevant, execution mode (`main-only`, `delegated sequential`, or `spec-gated parallel`), commit/push when `sf-ship` succeeds, files excluded from ship if any, and remaining proof limits if any.
 - Silent success: not allowed. The user must see material decisions, high-level phase status, selected execution mode, any parallel batches, and final verdict.
@@ -144,7 +145,7 @@ When the user runs `sf-build` with an intent, the skill becomes the single user-
 ## Error Behavior
 
 - Expected failures: vague story, multiple matching specs, unavailable subagents, unavailable integrated prompt tool, rejected single-agent degradation, requested parallelism without `Execution Batches`, overlapping ownership, invalid batch dependency order, missing or stale governance corpus state, public/content surfaces without editorial governance, code areas without a technical map or explicit non-coverage reason, out-of-scope file need, uncertain permission to touch existing behavior or design, failed readiness, blocked subagent, incompatible subagent outputs, failed checks or verification, misrouted browser/manual evidence, partial changes, secrets or unrelated dirty files, blocking bug risk, and failed push.
-- User/operator response: if a user answer can unblock the chantier, `sf-build` asks one concise question with 2 or 3 prepared options plus free-form answer support; otherwise it reports the blocking condition and the next safe action, without claiming the work is delivered.
+- User/operator response: if a user answer can unblock the chantier, `sf-build` asks one framed decision question with 2 or 3 prepared options plus free-form answer support; the frame explains the root problem, the business stakes, the practical tradeoffs, and the recommended best-practice answer in non-technical language. Otherwise it reports the blocking condition and the next safe action, without claiming the work is delivered.
 - System effect: no subagent is launched outside the current authorized scope; no write-capable subagents run in parallel without ready `Execution Batches`; no next wave starts while impacted technical docs or public-content updates from the current wave remain unresolved, unless every remaining item is marked `pending final integration` or `pending final copy` with reason and resolution condition; no `sf-start` runs before the spec is ready and the Governance Corpus Gate has passed, routed to `sf-docs`, or recorded explicit no-impact/no-surface status; no full `sf-end` runs before the user story is sufficiently verified; no `sf-ship` runs if checks, bug gate, secret check, staging scope, or central validation fail without explicit user approval.
 - Must never happen: implement outside validated scope, create a duplicate spec for an existing chantier, modify sensitive existing behavior without a decision, do routine file edits in the master conversation when sequential delegation is available, let executors change code without Technical Reader docs impact review or Editorial Reader public-content impact review, bypass missing project-local governance corpus state, rerun ShipFlow's shipped governance specs as project bootstrap work, run concurrent write-capable subagents without ready non-overlapping batches, ask for delegation consent before every bounded sequential subagent, ignore a readiness failure, use `sf-test`, `sf-auth-debug`, or `sf-prod` as a generic substitute for non-auth browser evidence that belongs to `sf-browser`, ship a half-coded feature, hide a regression, commit unrelated dirty files, use `all-dirty` without explicit request, overwrite user changes, or produce a long technical final report for an end user.
 - Silent failure: not allowed. Each blocked step must be visible as a user decision, missing proof, failed validation, or runtime constraint.
@@ -512,6 +513,7 @@ Create a new lifecycle skill, `sf-build`, as the user-facing orchestrator for en
 - [ ] AC 4b: Given the chantier is long, high-risk, parallel, multi-domain, ambiguous, token-costly, or high-cost-of-error, when `sf-build` has a ready spec and is about to run `sf-start`, then it runs or applies `sf-model` before implementation.
 - [ ] AC 4c: Given the chantier is small, clear, and local, when `sf-build` evaluates the model gate, then it may record that `sf-model` is not needed and continue with the current model.
 - [ ] AC 5: Given a product, design, scope, data, security, existing-behavior, staging, or ship decision remains ambiguous, when `sf-build` reaches that point, then it asks a user-facing question with prepared options instead of inventing the answer.
+- [ ] AC 5a: Given `sf-build` needs a material Plan Mode decision, when it asks the user, then the prompt includes the root problem, business stakes, 2-3 practical options, the recommended best-practice answer, and one precise decision request written for a business owner rather than a technical operator.
 - [ ] AC 5b: Given the user interacts in French, when `sf-build` asks a question, gives status, or reports final results, then user-facing text is natural accented French while internal skill instructions remain English.
 - [ ] AC 6: Given integrated question tooling is unavailable, when a material decision is required, then `sf-build` asks a short plain-text question with options and waits for the answer.
 - [ ] AC 7: Given `sf-ready` returns `not ready`, when gaps are repairable without a user decision, then `sf-build` runs a spec correction pass and another readiness review within the iteration limit.
@@ -613,14 +615,18 @@ Readiness note: ready after full reconciliation. The behavior contract, language
 | 2026-05-02 14:27:27 UTC | sf-verify | GPT-5 Codex | Verified sf-build implementation against the ready spec, checked static contract coverage, metadata, role files, chantier doctrine, docs/workflow alignment, bug gate, risk scan, and official Codex subagent docs freshness. | verified | /sf-end sf-build Autonomous Master Skill |
 | 2026-05-02 14:29:15 UTC | sf-end | GPT-5 Codex | Closed the sf-build chantier after verification, updated local and master task trackers, prepared changelog entries, and left shipping to sf-ship. | closed | /sf-ship sf-build Autonomous Master Skill |
 | 2026-05-02 14:33:49 UTC | sf-ship | GPT-5 Codex | Quick-shipped the sf-build master skill and related role contracts, workflow/help/README/changelog updates, and chantier trace after lightweight validation. | shipped | None |
+| 2026-05-04 04:58:00 UTC | sf-build | GPT-5 Codex | Extended the existing sf-build chantier with business-context decision question framing for Plan Mode. | implemented | /sf-verify sf-build decision question framing |
+| 2026-05-04 04:58:00 UTC | sf-verify | GPT-5 Codex | Verified the question framing contract against sf-build, workflow doctrine, technical lifecycle docs, and user language doctrine. | verified | /sf-end sf-build decision question framing |
+| 2026-05-04 04:58:00 UTC | sf-end | GPT-5 Codex | Updated tracker and changelog bookkeeping for sf-build decision question framing. | closed | /sf-ship "Add business-context sf-build questions" |
+| 2026-05-04 04:58:00 UTC | sf-ship | GPT-5 Codex | Ran scoped checks, committed, and pushed the sf-build decision question framing update. | shipped | None |
 
 ## Current Chantier Flow
 
-- `sf-spec`: done; dependency metadata refreshed against current README.md 0.5.0 and shipflow-spec-driven-workflow.md 0.8.0, governance corpus ownership aligned to `sf-init`/`sf-docs`, and browser evidence routing aligned to `sf-browser`, `sf-auth-debug`, `sf-prod`, and `sf-test`.
+- `sf-spec`: done; dependency metadata refreshed against current README.md 0.7.1 and shipflow-spec-driven-workflow.md 0.12.0, governance corpus ownership aligned to `sf-init`/`sf-docs`, browser evidence routing aligned to `sf-browser`, `sf-auth-debug`, `sf-prod`, and `sf-test`, and decision questions reframed for business operators.
 - `sf-ready`: ready after full reconciliation and 2026-05-02 revalidation of dependency metadata, governance/browser evidence gates, language doctrine, adversarial/security risks, and official OpenAI Codex docs freshness.
-- `sf-start`: implemented; created `skills/sf-build/SKILL.md`, added `technical-reader.md`, `sequential-executor.md`, `wave-executor.md`, and `integrator.md`, updated `skills/references/chantier-tracking.md`, and aligned `skills/sf-help/SKILL.md`, `shipflow-spec-driven-workflow.md`, `README.md`, and `TASKS.md`.
-- `sf-verify`: verified; static contract checks, metadata lint, role contract checks, skill budget audit, bug gate review, risk scan, and official Codex subagent docs freshness passed for the implemented skill/docs scope.
+- `sf-start`: implemented; created `skills/sf-build/SKILL.md`, added role contracts, aligned workflow/help/docs, and later added business-context decision framing for Plan Mode questions.
+- `sf-verify`: verified; static contract checks, metadata lint, role contract checks, skill budget audit, bug gate review, risk scan, and focused question-framing checks passed for the implemented skill/docs scope.
 - `sf-end`: closed; task trackers and changelog prepared after verification.
-- `sf-ship`: shipped; quick ship after lightweight validation and bounded staging.
+- `sf-ship`: shipped; quick ship after lightweight validation and bounded staging, then reshipped the Plan Mode decision-framing refinement.
 
 Next step: None

@@ -1,7 +1,7 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "0.3.3"
+artifact_version: "0.3.4"
 project: "shipflow"
 created: "2026-04-25"
 updated: "2026-05-04"
@@ -34,6 +34,7 @@ next_step: "/sf-docs audit CHANGELOG.md"
 ### Changed
 - Lifecycle, bug, deploy, skill-build, and audit skills now load the shared reporting contract and use compact chantier/report guidance by default.
 - Selected OpenAI skill metadata now uses exact invocation keys as display names so the skill picker matches typed skill commands.
+- `sf-build` Plan Mode questions now frame the root problem, business stakes, options, and best-practice recommendation before asking a business decision.
 
 ### Fixed
 - Installer alias refresh now removes stale standalone ShipFlow aliases before writing the managed alias block.

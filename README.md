@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "0.7.0"
+artifact_version: "0.7.1"
 project: "shipflow"
 created: "2026-04-25"
-updated: "2026-05-03"
+updated: "2026-05-04"
 status: draft
 source_skill: sf-docs
 scope: readme
@@ -30,6 +30,7 @@ evidence:
   - "Added sf-browser as the generic non-auth browser verification path."
   - "Added sf-deploy as the release confidence orchestrator."
   - "Added sf-maintain as the recurring project maintenance orchestrator."
+  - "Clarified sf-build business-context decision questions."
 next_step: "/sf-docs audit README.md"
 ---
 
@@ -301,7 +302,7 @@ Recommended end-user entrypoint for non-trivial work:
 sf-build -> existing chantier check -> sf-spec/sf-ready loop -> sf-start -> sf-verify -> sf-end -> sf-ship
 ```
 
-`sf-build` invocation authorizes bounded delegated sequential execution for the current chantier. It keeps user interaction focused on decisions and progress, asks useful risk questions when needed, and only allows parallel agent execution when a ready spec defines non-overlapping `Execution Batches`.
+`sf-build` invocation authorizes bounded delegated sequential execution for the current chantier. It keeps user interaction focused on decisions and progress, frames material questions with the root problem, business stakes, options, and a recommended best-practice answer, and only allows parallel agent execution when a ready spec defines non-overlapping `Execution Batches`.
 
 Recommended release entrypoint after implementation:
 

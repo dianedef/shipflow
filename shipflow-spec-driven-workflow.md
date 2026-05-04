@@ -1,10 +1,10 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "0.11.0"
+artifact_version: "0.12.0"
 project: ShipFlow
 created: "2026-04-22"
-updated: "2026-05-03"
+updated: "2026-05-04"
 status: draft
 source_skill: sf-docs
 scope: spec-driven-workflow
@@ -40,6 +40,7 @@ evidence:
   - "Updated on 2026-05-03 to add sf-deploy as the release confidence orchestrator."
   - "Updated on 2026-05-03 to add sf-maintain as the recurring project maintenance orchestrator."
   - "Updated on 2026-05-03 to add shared report modes: concise user reports by default and explicit detailed agent handoff reports."
+  - "Updated on 2026-05-04 to require business-context decision questions for sf-build planning."
 next_review: "unknown"
 next_step: "/sf-docs audit shipflow-spec-driven-workflow.md"
 ---
@@ -215,6 +216,7 @@ Technical governance applies to code projects by default. Editorial governance a
 - `sf-spec` produces an implementation contract, not loose notes.
 - `sf-ready` enforces a real Definition of Ready before non-trivial execution.
 - `sf-build` is the master orchestrator for end users and should prefer bounded delegated sequential execution over manual command chaining.
+- `sf-build` planning questions should be decision briefs for business operators: explain the root problem, business stakes, practical options, and the best-practice recommendation before asking for the decision.
 - `sf-maintain` is the master orchestrator for recurring project maintenance and should prefer bounded delegated sequential execution over command recommendations.
 - `sf-skill-build` is the master orchestrator for ShipFlow skill maintenance and should keep skill contract, refresh, budget, docs/help, and public skill surfaces coherent.
 - `sf-start` begins execution from a ready contract instead of rediscovering intent, and now decides both model routing and execution topology before coding.
