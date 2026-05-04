@@ -13,7 +13,13 @@ Before resolving any ShipFlow-owned file, load `$SHIPFLOW_ROOT/skills/references
 Trace category: `obligatoire`.
 Process role: `lifecycle`.
 
-Before shipping a spec-first chantier, load `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`, then read the spec's `Skill Run History` and `Current Chantier Flow` when a unique spec exists. Append a current `sf-ship` row with result `shipped`, `not shipped`, `blocked`, or `skipped checks`, update `Current Chantier Flow`, and end the report with a `Chantier` block plus `Verdict sf-ship: ...`. If quick ship is not attached to one unique chantier spec, do not write to a spec; report `Chantier: non applicable` or `Chantier: non trace` with the reason.
+Before shipping a spec-first chantier, load `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`, then read the spec's `Skill Run History` and `Current Chantier Flow` when a unique spec exists. Append a current `sf-ship` row with result `shipped`, `not shipped`, `blocked`, or `skipped checks`, update `Current Chantier Flow`, and end the report with a compact `Chantier` block. If quick ship is not attached to one unique chantier spec, do not write to a spec; report `Chantier: non applicable` or `Chantier: non trace` with the reason.
+
+## Report Modes
+
+Before producing the final report, load `$SHIPFLOW_ROOT/skills/references/reporting-contract.md`.
+
+Default to `report=user`: concise, outcome-first, and using the compact chantier block. Use `report=agent`, `handoff`, `verbose`, or `full-report` only when explicitly requested or when another agent needs detailed ship evidence.
 
 ## Context
 
@@ -216,42 +222,40 @@ Do not tell the user to run manual/browser tests before `sf-prod` has confirmed 
 
 ## Step 8 — One report
 
+Report formatting rules:
+- Combine push, repo state, checks, and full-mode bookkeeping into one concise status line when possible: `Pushed to origin/main. Repo clean. All checks passed ✅. Tasks/Changelog updated.`
+- Use `All checks passed ✅` when every required or attempted check passed.
+- Use `All checks passed except: [check], [check]` only when shipping continues despite explicitly accepted or non-blocking check gaps.
+- Use `Checks skipped: [reason]` when checks are intentionally skipped.
+- If push fails, replace the status line with `Push failed: [reason]. Repo [state]. [check summary].`
+- In the `Chantier` block, put the spec path directly under the heading; do not prefix it with `Chantier:`.
+- Use one compact `Flux:` line with status markers, for example `Flux: sf-spec ✅ -> sf-ready ✅ -> sf-start ✅ -> sf-verify ✅ -> sf-end ✅ -> sf-ship ✅🎯`.
+- Omit `Trace spec`, `Verdict sf-ship`, `Reste a faire`, and `Prochaine etape` when they are redundant or empty.
+- Include `Reste a faire:` only when a concrete remaining item exists.
+- Include `Prochaine etape:` only when a real next command/action exists, especially required `/sf-prod` preview validation.
+
 Quick mode report:
 ```text
 ## Shipped (Quick) — [date]
 
 [SHORT_SHA] — "[commit message]" -> [branch]
-Checks: [passed / skipped / failed]
+
+Pushed to [remote]/[branch]. Repo [clean | dirty: reason]. [check summary].
 Mode: quick (commit + push only)
 Scope: [current task/session changes / all dirty repo files]
-Development mode: [local / vercel-preview-push / hybrid / unknown]
 Bug risk gate: [blocked / partial-risk / not assessed / clear]
-User story / product status: [not assessed / partially validated / validated enough for this iteration]
-Documentation coherence: [updated / not impacted / gap remains / not assessed]
-Security / risk note: [none / partial validation / specific remaining risk]
-[✓ Pushed] or [push failure]
+Development mode: [only when preview validation is required or status is unknown]
+User story / product status: [only when partial, not assessed, or important to avoid overclaiming]
+Documentation coherence: [only when changed, not assessed, or gap remains]
+Security / risk note: [only when non-empty]
 
 ## Chantier
 
-Skill courante: sf-ship
-Chantier: [spec path | non applicable | non trace]
-Trace spec: [ecrite | non ecrite | non applicable]
-Flux:
-- sf-spec: [status]
-- sf-ready: [status]
-- sf-start: [status]
-- sf-verify: [status]
-- sf-end: [status]
-- sf-ship: [shipped | not shipped | blocked | skipped checks]
+[spec path | non applicable: reason | non trace: reason]
 
-Reste a faire:
-- [item or None]
-
-Prochaine etape:
-- [/sf-prod [project or URL] if preview-push validation is required | explicit action | None]
-
-Verdict sf-ship:
-- [shipped | not shipped | blocked | skipped checks]
+Flux: sf-spec [status marker] -> sf-ready [status marker] -> sf-start [status marker] -> sf-verify [status marker] -> sf-end [status marker] -> sf-ship [status marker]
+[Reste a faire: item, only if non-empty]
+[Prochaine etape: /sf-prod [project or URL] if preview-push validation is required, only if non-empty]
 ```
 
 Full mode report:
@@ -259,38 +263,23 @@ Full mode report:
 ## Shipped (Full) — [date]
 
 [SHORT_SHA] — "[commit message]" -> [branch]
-Checks: [passed / skipped / failed]
-Scope: [current task/session changes / all dirty repo files]
-Development mode: [local / vercel-preview-push / hybrid / unknown]
-Tasks/Changelog: updated
+
+Pushed to [remote]/[branch]. Repo [clean | dirty: reason]. [check summary]. Tasks/Changelog updated.
+Scope: [only when all-dirty or otherwise worth clarifying]
+Development mode: [only when preview validation is required or status is unknown]
 Bug risk gate: [blocked / partial-risk / not assessed / clear]
-Session closed: [completed/in-progress summary]
-User story closure: [what outcome is actually complete, partially complete, or still assumed]
-Documentation coherence: [updated / not impacted / gap remains]
-Evidence limits / remaining risks: [brief, explicit]
-[✓ Pushed] or [push failure]
+Session closed: [only when useful beyond the shipped title]
+User story closure: [only when partial, assumed, or important]
+Documentation coherence: [only when changed, not impacted in a non-obvious way, or gap remains]
+Evidence limits / remaining risks: [only when non-empty]
 
 ## Chantier
 
-Skill courante: sf-ship
-Chantier: [spec path | non applicable | non trace]
-Trace spec: [ecrite | non ecrite | non applicable]
-Flux:
-- sf-spec: [status]
-- sf-ready: [status]
-- sf-start: [status]
-- sf-verify: [status]
-- sf-end: [status]
-- sf-ship: [shipped | not shipped | blocked | skipped checks]
+[spec path | non applicable: reason | non trace: reason]
 
-Reste a faire:
-- [item or None]
-
-Prochaine etape:
-- [/sf-prod [project or URL] if preview-push validation is required | explicit action | None]
-
-Verdict sf-ship:
-- [shipped | not shipped | blocked | skipped checks]
+Flux: sf-spec [status marker] -> sf-ready [status marker] -> sf-start [status marker] -> sf-verify [status marker] -> sf-end [status marker] -> sf-ship [status marker]
+[Reste a faire: item, only if non-empty]
+[Prochaine etape: /sf-prod [project or URL] if preview-push validation is required, only if non-empty]
 ```
 
 ## Rules

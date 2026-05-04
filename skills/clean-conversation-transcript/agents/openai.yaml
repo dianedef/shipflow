@@ -1,4 +1,4 @@
 interface:
-  display_name: "Clean Conversation Transcript"
+  display_name: "clean-conversation-transcript"
   short_description: "Make tmux transcripts readable and reusable"
   default_prompt: "Use $clean-conversation-transcript to clean this exported tmux conversation Markdown file in place."

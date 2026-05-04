@@ -4,6 +4,22 @@ Chronological log of skill refreshes via `/sf-skills-refresh`. Most recent first
 
 ---
 
+## 2026-05-03 — sf-maintain
+
+**Added:**
+- New project maintenance orchestrator for bugs, dependency posture, docs drift, checks, audits, migrations, tasks, and security posture
+- Explicit ownership boundaries so `sf-maintain` routes to `sf-bug`, `sf-deps`, `sf-docs`, `sf-check`, `sf-audit-code`, `sf-audit`, `sf-migrate`, and `sf-tasks` without duplicating them
+- `security` mode that composes `sf-deps` and `sf-audit-code` instead of introducing a separate security audit skill
+- Public skill page and internal discoverability updates for recurring maintenance work
+
+**Updated:**
+- Workflow/help docs now position `sf-maintain` as the recurring maintenance entrypoint for existing projects
+
+**New phases:**
+- None
+
+**Sources:** 0 URLs consulted (local ShipFlow doctrine and existing maintenance/audit skill contracts)
+
 ## 2026-05-03 — sf-bug
 
 **Added:**

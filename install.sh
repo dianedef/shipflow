@@ -1386,6 +1386,7 @@ configure_aliases() {
     local bashrc="$1/.bashrc"
     [ -f "$bashrc" ] || touch "$bashrc"
     sed -i '/^# >>> ShipFlow AI aliases >>>$/,/^# <<< ShipFlow AI aliases <<<$/{d}' "$bashrc"
+    sed -i '/^alias \(shipflow\|sf\|c\|co\|cask\|coask\)=/d' "$bashrc"
     cat >> "$bashrc" << ALIASES
 
 # >>> ShipFlow AI aliases >>>
@@ -1772,7 +1773,7 @@ generate_install_report() {
 ## Observations
 
 - Avertissements:
-- Sur hôte ARM64, éviter `flutter build apk --release` local; router Android release vers Blacksmith ou une CI Linux x64.
+- Sur hôte ARM64, éviter \`flutter build apk --release\` local; router Android release vers Blacksmith ou une CI Linux x64.
 - Erreurs bloquantes:
 - Recommandations:
 REPORT

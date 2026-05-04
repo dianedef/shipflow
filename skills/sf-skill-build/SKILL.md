@@ -13,9 +13,15 @@ Before resolving any ShipFlow-owned file, load `$SHIPFLOW_ROOT/skills/references
 Trace category: `obligatoire`.
 Process role: `lifecycle`.
 
-Before executing from a spec-first chantier, load `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`, read the spec's `Skill Run History` and `Current Chantier Flow`, append a current `sf-skill-build` row with result `implemented`, `partial`, `blocked`, or `rerouted`, update `Current Chantier Flow`, and end with the standard `Chantier` block plus `Verdict sf-skill-build: ...`.
+Before executing from a spec-first chantier, load `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`, read the spec's `Skill Run History` and `Current Chantier Flow`, append a current `sf-skill-build` row with result `implemented`, `partial`, `blocked`, or `rerouted`, update `Current Chantier Flow`, and end with the compact `Chantier` block from `$SHIPFLOW_ROOT/skills/references/reporting-contract.md`.
 
 If no unique spec is identified, do not write to any spec and route to `/sf-spec`.
+
+## Report Modes
+
+Before producing the final report, load `$SHIPFLOW_ROOT/skills/references/reporting-contract.md`.
+
+Default to `report=user`: concise, outcome-first, and using the compact chantier block. The detailed report template below is for `report=agent`, blocked runs, or explicit handoff.
 
 ## Context
 
@@ -57,6 +63,27 @@ If the target overlaps existing skill responsibilities, stop and ask for explici
 3. Search existing skills for overlap (`sf-build`, `sf-skills-refresh`, `skill-creator`, and close neighbors).
 4. If overlap is material, ask one targeted question before proceeding.
 
+## Skill Placement Gate
+
+Before creating a new skill, decide whether the requested behavior belongs in an existing skill, a new domain skill, or a new master skill.
+
+Prefer extending an existing skill when:
+
+- the request is a new mode, report shape, validation gate, provider branch, or wording improvement for an existing workflow
+- the same user trigger, lifecycle phase, artifact, or public promise is already owned by a skill
+- the change would create a second entrypoint for the same operator intent
+
+Create a new domain skill only when it has:
+
+- a distinct user trigger and outcome
+- a bounded owner domain not already covered by an existing skill
+- its own durable artifacts, validations, evidence routing, or stop conditions
+- a public skill page/use case that would not be clearer as an existing skill mode
+
+Create a new master skill only when it orchestrates multiple existing skills or lifecycle phases, owns a durable sequence of gates, and should become a recommended entrypoint. A master skill must route to atomic skills instead of duplicating their internals.
+
+If placement remains ambiguous, stop and ask one targeted question before writing files. Recommend integration into an existing skill first unless the evidence clearly justifies a new entrypoint. Record the placement decision in the chantier spec.
+
 ## Spec-First Contract
 
 For non-trivial work, spec-first is mandatory.
@@ -74,6 +101,7 @@ For non-trivial work, spec-first is mandatory.
 - Keep internal contracts in English.
 - Keep `description` to one concise sentence and keep arguments in `argument-hint`.
 - Encode explicit lifecycle gates, stop conditions, and validation commands.
+- For any skill that produces a final report, load `$SHIPFLOW_ROOT/skills/references/reporting-contract.md` and support concise `report=user` by default plus explicit `report=agent`/`handoff` detail mode.
 - Do not duplicate full internals of `sf-spec`, `sf-skills-refresh`, `sf-verify`, `sf-docs`, `sf-help`, or `sf-ship`; orchestrate them.
 
 ### Step 2 — Enforce lifecycle gates in the skill body
@@ -90,6 +118,7 @@ The skill body must enforce:
 
 After creating a new skill or changing a skill invocation directory, make the current operator runtimes discover it.
 
+- If `agents/openai.yaml` exists, set `interface.display_name` to the exact skill invocation key, for example `sf-maintain`, not a title-cased label such as `SF Maintain`. The `$` skill picker should expose the same name the operator can type.
 - Source: `${SHIPFLOW_ROOT:-$HOME/shipflow}/skills/<name>`
 - Targets: `$HOME/.claude/skills/<name>` and `$HOME/.codex/skills/<name>`
 - If a target is missing or is a stale symlink, create or repair it through the shared helper.

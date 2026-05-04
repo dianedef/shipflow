@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "0.3.2"
+artifact_version: "0.3.3"
 project: "shipflow"
 created: "2026-04-25"
-updated: "2026-05-03"
+updated: "2026-05-04"
 status: draft
 source_skill: sf-docs
 scope: documentation
@@ -25,6 +25,19 @@ evidence: []
 next_step: "/sf-docs audit CHANGELOG.md"
 ---
 # ShipFlow Changelog
+
+## [2026-05-04]
+
+### Added
+- Shared skill reporting contract for concise default user reports (`report=user`) and explicit detailed handoff reports (`report=agent`).
+
+### Changed
+- Lifecycle, bug, deploy, skill-build, and audit skills now load the shared reporting contract and use compact chantier/report guidance by default.
+- Selected OpenAI skill metadata now uses exact invocation keys as display names so the skill picker matches typed skill commands.
+
+### Fixed
+- Installer alias refresh now removes stale standalone ShipFlow aliases before writing the managed alias block.
+- Install report markdown now escapes the ARM64 Flutter release command example correctly.
 
 ## [2026-05-03]
 

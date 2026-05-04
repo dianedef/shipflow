@@ -13,7 +13,13 @@ Before resolving any ShipFlow-owned file, load `$SHIPFLOW_ROOT/skills/references
 Trace category: `obligatoire`.
 Process role: `lifecycle`.
 
-Before verifying a spec-first chantier, load `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`, then read the spec's `Skill Run History` and `Current Chantier Flow` when a unique spec exists. Append a current `sf-verify` row with result `verified`, `not verified`, `partial`, or `blocked`, update `Current Chantier Flow`, and end the report with a `Chantier` block plus `Verdict sf-verify: ...`. If no unique spec is available, do not write to a spec; report `Chantier: non applicable` or `Chantier: non trace` with the reason.
+Before verifying a spec-first chantier, load `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`, then read the spec's `Skill Run History` and `Current Chantier Flow` when a unique spec exists. Append a current `sf-verify` row with result `verified`, `not verified`, `partial`, or `blocked`, update `Current Chantier Flow`, and end the report with the compact `Chantier` block from `$SHIPFLOW_ROOT/skills/references/reporting-contract.md`. If no unique spec is available, do not write to a spec; report `Chantier: non applicable` or `Chantier: non trace` with the reason.
+
+## Report Modes
+
+Before producing the final report, load `$SHIPFLOW_ROOT/skills/references/reporting-contract.md`.
+
+Default to `report=user`: concise, findings-first when verification fails, and using the compact chantier block. The detailed report template below is for `report=agent`, blocked runs, or explicit handoff.
 
 When the verified work changes ShipFlow skill instructions, include a coherence check against `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`: every modified `skills/*/SKILL.md` must expose a `Trace category` and `Process role`; every modified `source-de-chantier` skill must contain `Chantier potentiel` instructions; helper skills must not present themselves as chantier sources.
 

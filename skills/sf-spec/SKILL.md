@@ -13,9 +13,15 @@ Before resolving any ShipFlow-owned file, load `$SHIPFLOW_ROOT/skills/references
 Trace category: `obligatoire`.
 Process role: `lifecycle`.
 
-Before creating or updating a spec-first chantier, load `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`. `sf-spec` must initialize the chantier registry entry inside the spec itself: frontmatter includes `created_at`, `updated_at`, and `source_model`, the body includes `Skill Run History` and `Current Chantier Flow`, and the first history row records the current `sf-spec` run. End the report with a `Chantier` block and `Verdict sf-spec: ...`. If no chantier spec is created or updated, report `Chantier: non applicable` or `Chantier: non trace` with the reason.
+Before creating or updating a spec-first chantier, load `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`. `sf-spec` must initialize the chantier registry entry inside the spec itself: frontmatter includes `created_at`, `updated_at`, and `source_model`, the body includes `Skill Run History` and `Current Chantier Flow`, and the first history row records the current `sf-spec` run. End the report with the compact `Chantier` block from `$SHIPFLOW_ROOT/skills/references/reporting-contract.md`. If no chantier spec is created or updated, report `Chantier: non applicable` or `Chantier: non trace` with the reason.
 
 If the user input or source report contains a `Chantier potentiel` block, treat it as primary intake context. Preserve its `Titre propose`, `Raison`, `Severite`, `Scope`, `Evidence`, `Spec recommandee`, and `Prochaine etape` in the new or updated spec instead of flattening it into a vague task description. `sf-spec` remains the only step that creates the durable chantier spec; source skills only recommend this transition.
+
+## Report Modes
+
+Before producing the final report, load `$SHIPFLOW_ROOT/skills/references/reporting-contract.md`.
+
+Default to `report=user`: concise, spec-path first, next-step oriented, and using the compact chantier block. The detailed report template below is for `report=agent`, blocked runs, or explicit handoff.
 
 ## Context
 

@@ -1,4 +1,4 @@
 interface:
-  display_name: "SF Deploy"
+  display_name: "sf-deploy"
   short_description: "Deploy and verify a release"
   default_prompt: "Use $sf-deploy to check, ship, wait for deployment, and route post-deploy verification."

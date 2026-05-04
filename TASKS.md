@@ -54,6 +54,7 @@
 | ✅ | Créer `sf-deploy` comme skill maître de release (`sf-check -> sf-ship -> sf-prod -> preuve -> sf-verify -> sf-changelog`) et aligner docs/help/site | ✅ done |
 | ✅ | Promouvoir `sf-maintain` en skill maître de maintenance projet (`triage -> spec/ready -> délégation bornée -> verify -> ship/deploy`) et aligner docs/help/site | ✅ done |
 | ✅ | Ajouter un helper partagé de synchronisation des skills Claude/Codex (`tools/shipflow_sync_skills.sh`) et l'intégrer à l'installateur, `sf-skill-build`, `sf-check`, `sf-verify` et `sf-ship` | ✅ done |
+| ✅ | Ajouter un contrat partagé de rapports compacts pour les skills (`report=user` par défaut, `report=agent` explicite) et le propager aux skills lifecycle, bug et audit | ✅ done |
 
 ---
 

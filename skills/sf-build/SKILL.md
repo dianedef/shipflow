@@ -13,9 +13,15 @@ Before resolving any ShipFlow-owned file, load `$SHIPFLOW_ROOT/skills/references
 Trace category: `obligatoire`.
 Process role: `lifecycle`.
 
-Before executing, load `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`. If exactly one chantier spec is in scope, read `Skill Run History` and `Current Chantier Flow`, then append a current `sf-build` row with result `implemented`, `partial`, `blocked`, or `rerouted`, update `Current Chantier Flow`, and end with the standard `Chantier` block plus `Verdict sf-build: ...`.
+Before executing, load `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`. If exactly one chantier spec is in scope, read `Skill Run History` and `Current Chantier Flow`, then append a current `sf-build` row with result `implemented`, `partial`, `blocked`, or `rerouted`, update `Current Chantier Flow`, and end with the compact `Chantier` block from `$SHIPFLOW_ROOT/skills/references/reporting-contract.md`.
 
 If no unique spec exists, do not write to a spec and report `Chantier: non applicable` or `Chantier: non trace` with the reason.
+
+## Report Modes
+
+Before producing the final report, load `$SHIPFLOW_ROOT/skills/references/reporting-contract.md`.
+
+Default to `report=user`: concise, outcome-first, and using the compact chantier block. Use `report=agent` only when explicitly requested or when `sf-build` is preparing an internal handoff for another agent. When invoking downstream skills for internal evidence, pass `report=agent` or `handoff` only when detailed evidence is needed; otherwise keep their default concise output.
 
 ## Context
 
@@ -202,6 +208,30 @@ Load these role contracts from `$SHIPFLOW_ROOT/skills/references/subagent-roles/
 Do not expose these role files as user-facing commands.
 
 ## Final Report
+
+Apply `$SHIPFLOW_ROOT/skills/references/reporting-contract.md`. The default user-facing report is concise; the detailed phase report is reserved for `report=agent`, blocked runs, or explicit handoff.
+
+User-mode report:
+
+```text
+## Built: [task]
+
+Result: [implemented / partial / blocked]
+[All checks passed ✅ | Checks failed: ... | Checks skipped: ...]
+Evidence: [browser/prod/manual route or not needed]
+Risk: [only if non-empty]
+Next step: [only if real]
+
+## Chantier
+
+[spec path | non applicable: reason | non trace: reason]
+
+Flux: sf-spec [marker] -> sf-ready [marker] -> sf-start [marker] -> sf-verify [marker] -> sf-end [marker] -> sf-ship [marker]
+[Reste a faire: only if non-empty]
+[Prochaine etape: only if non-empty]
+```
+
+Agent-mode report:
 
 ```text
 ## Built: [task]

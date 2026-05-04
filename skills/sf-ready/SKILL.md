@@ -13,7 +13,13 @@ Before resolving any ShipFlow-owned file, load `$SHIPFLOW_ROOT/skills/references
 Trace category: `obligatoire`.
 Process role: `lifecycle`.
 
-Before evaluating a spec-first chantier, load `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`, then read the spec's `Skill Run History` and `Current Chantier Flow` when present. When a unique spec is evaluated, append a current `sf-ready` row with result `ready`, `not ready`, or `blocked`, add `Skill Run History` if missing without removing contract sections, update `Current Chantier Flow`, and end the report with a `Chantier` block plus `Verdict sf-ready: ...`. If no unique spec can be identified, do not write a trace; report `Chantier: non trace` and route to `/sf-spec` or explicit spec selection.
+Before evaluating a spec-first chantier, load `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`, then read the spec's `Skill Run History` and `Current Chantier Flow` when present. When a unique spec is evaluated, append a current `sf-ready` row with result `ready`, `not ready`, or `blocked`, add `Skill Run History` if missing without removing contract sections, update `Current Chantier Flow`, and end the report with the compact `Chantier` block from `$SHIPFLOW_ROOT/skills/references/reporting-contract.md`. If no unique spec can be identified, do not write a trace; report `Chantier: non trace` and route to `/sf-spec` or explicit spec selection.
+
+## Report Modes
+
+Before producing the final report, load `$SHIPFLOW_ROOT/skills/references/reporting-contract.md`.
+
+Default to `report=user`: concise, readiness verdict first, blockers only when present, and using the compact chantier block. The detailed checklist report below is for `report=agent`, `not ready`, blocked runs, or explicit handoff.
 
 ## Context
 

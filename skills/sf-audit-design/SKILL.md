@@ -20,13 +20,20 @@ Before producing the final report, load `$SHIPFLOW_ROOT/skills/references/chanti
 
 Because this skill has process role `source-de-chantier`, evaluate the standard threshold from `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md` before the final report. If the findings reveal non-trivial future work and no unique chantier owns it, do not write to an existing spec; add a `Chantier potentiel` block with `oui`, `non`, or `incertain`, a proposed title, reason, severity, scope, evidence, recommended `/sf-spec ...` command, and next step. If the work is only a direct local fix or already belongs to the current chantier, state `Chantier potentiel: non` with the concrete reason.
 
+## Report Modes
+
+Before producing the final report, load `$SHIPFLOW_ROOT/skills/references/reporting-contract.md`.
+
+Default to `report=user`: concise, findings-first, and focused on top issues, proof gaps, chantier potential, and the next real action. Use `report=agent`, `handoff`, `verbose`, or `full-report` for the detailed audit matrix, domain checklist output, command evidence, assumptions, confidence limits, and handoff notes.
+
 
 ## Context
 
 - Current directory: !`pwd`
 - Project CLAUDE.md: !`head -100 CLAUDE.md 2>/dev/null || echo "no CLAUDE.md"`
 - Brand voice: !`head -60 BRANDING.md 2>/dev/null || echo "no BRANDING.md — run /sf-init to generate"`
-- Business metadata: !`for f in BUSINESS.md BRANDING.md GUIDELINES.md; do if [ -f "$f" ]; then printf '%s: ' "$f"; sed -n '1,40p' "$f" | grep -E '^(metadata_schema_version|artifact_version|status|updated|confidence|next_review):' | tr '\n' ' '; printf '\n'; else echo "$f: missing"; fi; done`
+- Business metadata files present: !`ls BUSINESS.md BRANDING.md GUIDELINES.md 2>/dev/null || echo "none found"`
+- Business metadata fields: !`grep -HE '^(metadata_schema_version|artifact_version|status|updated|confidence|next_review):' BUSINESS.md BRANDING.md GUIDELINES.md 2>/dev/null || echo "no metadata fields found"`
 - Tailwind/CSS config: !`cat tailwind.config.* 2>/dev/null | head -80 || echo "no tailwind config"`
 - Global styles: !`cat src/styles/global.css 2>/dev/null || cat src/assets/styles/*.css 2>/dev/null | head -100 || echo "no global styles found"`
 - All pages: !`find src/pages src/app -name "*.astro" -o -name "*.tsx" -o -name "*.vue" 2>/dev/null | grep -v node_modules | sort`

@@ -13,7 +13,13 @@ Before resolving any ShipFlow-owned file, load `$SHIPFLOW_ROOT/skills/references
 Trace category: `obligatoire`.
 Process role: `lifecycle`.
 
-Before executing from a ready spec, load `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`, read the spec's `Skill Run History` and `Current Chantier Flow`, and preserve that flow in the execution contract. When a unique spec is used, append a current `sf-start` row with result `implemented`, `partial`, `blocked`, or `rerouted`, update `Current Chantier Flow`, and end the report with a `Chantier` block plus `Verdict sf-start: ...`. If the task is direct or no unique chantier spec is identified, do not write to a spec; report `Chantier: non applicable` or `Chantier: non trace` with the reason.
+Before executing from a ready spec, load `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md`, read the spec's `Skill Run History` and `Current Chantier Flow`, and preserve that flow in the execution contract. When a unique spec is used, append a current `sf-start` row with result `implemented`, `partial`, `blocked`, or `rerouted`, update `Current Chantier Flow`, and end the report with the compact `Chantier` block from `$SHIPFLOW_ROOT/skills/references/reporting-contract.md`. If the task is direct or no unique chantier spec is identified, do not write to a spec; report `Chantier: non applicable` or `Chantier: non trace` with the reason.
+
+## Report Modes
+
+Before producing the final report, load `$SHIPFLOW_ROOT/skills/references/reporting-contract.md`.
+
+Default to `report=user`: concise, outcome-first, and using the compact chantier block. The detailed report template below is for `report=agent`, blocked runs, or explicit handoff.
 
 ## Context
 
