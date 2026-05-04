@@ -58,6 +58,7 @@ cd $env:USERPROFILE\shipflow\local
 Le script installe automatiquement :
 - ✅ Connexion distante ShipFlow si `SHIPFLOW_SSH_REMOTE_HOST` est fourni
 - ✅ Alias shell : `urls`, `tunnel`
+- ✅ Helpers OAuth distants : `shipflow-mcp-login`, `shipflow-blacksmith-login`
 - ✅ Menu interactif pour gérer les tunnels (Linux/macOS/WSL)
 - ✅ Script de tunnel pour Windows PowerShell
 - ✅ Permissions exécutables
@@ -82,6 +83,7 @@ tunnel            # Alias identique à urls
 shipflow-mcp-login vercel   # Login OAuth MCP distant (Vercel)
 shipflow-mcp-login supabase # Login OAuth MCP distant (Supabase)
 shipflow-mcp-login all      # Enchaîne vercel puis supabase
+shipflow-blacksmith-login   # Login Blacksmith distant via tunnel OAuth
 ```
 
 ### Menu interactif
@@ -93,6 +95,12 @@ Le menu offre :
 - 📊 **Statut** - Vérifie l'état des tunnels actifs
 - 🔄 **Redémarrer** - Redémarre tous les tunnels
 - 🔐 **Login OAuth MCP (distant)** - Lance `codex mcp login` sur le serveur et crée un tunnel OAuth éphémère local
+- 🔨 **Login Blacksmith (distant)** - Lance `blacksmith auth login` sur le serveur et crée le tunnel OAuth éphémère local
+
+Blacksmith n'est pas un MCP. Le menu l'affiche donc comme une option séparée.
+Si vous tapez quand même `blacksmith` dans le sous-menu MCP custom par erreur,
+ShipFlow bascule vers le tunnel Blacksmith dédié au lieu de chercher un MCP
+Codex nommé `blacksmith`.
 
 Au démarrage, le menu affiche un scan animé pendant la recherche d'identité de session distante. Pour le désactiver dans un terminal lent ou automatisé :
 
@@ -103,6 +111,12 @@ SHIPFLOW_NO_ANIMATION=1 urls
 ### Pourquoi le tunnel OAuth existe
 
 Quand Codex tourne sur un serveur distant, le process `codex mcp login <provider>` écoute son callback OAuth sur le serveur. Le navigateur, lui, s'ouvre sur votre machine locale et essaie de joindre `127.0.0.1:<port>/callback`. Sans tunnel, `127.0.0.1` désigne votre machine locale, pas le serveur distant.
+
+Blacksmith a le même problème avec `blacksmith auth login`: son callback
+localhost tourne sur le serveur, tandis que le navigateur est local. Utilisez
+donc `urls` puis `Login Blacksmith (distant)`, ou la commande locale
+`shipflow-blacksmith-login`, au lieu de lancer `blacksmith auth login`
+directement dans une session SSH distante.
 
 Le problème n'est pas OAuth lui-même. Le problème est le routage: le navigateur local doit pouvoir rejoindre le listener de callback qui tourne sur le serveur distant.
 
@@ -116,6 +130,11 @@ Navigateur local
 ```
 
 Le port change a chaque tentative OAuth. `shipflow-mcp-login` extrait donc le port frais depuis la sortie de Codex, crée le tunnel après extraction, ouvre ou affiche l'URL OAuth, puis ferme le tunnel quand le flow se termine. Les tokens OAuth restent gérés par Codex et le provider sur le serveur distant; ShipFlow ne lit pas et ne stocke pas ces tokens.
+
+`shipflow-blacksmith-login` n'utilise pas Codex MCP. Il réutilise seulement le
+même mécanisme réseau de tunnel callback. Il vérifie que le CLI Blacksmith
+existe sur le serveur, détecte seulement la présence de
+`~/.blacksmith/credentials`, et ne lit jamais le token.
 
 Résumé mental:
 - Codex distant lance le login.
@@ -174,6 +193,14 @@ Ce message arrive quand le callback OAuth `127.0.0.1:<port>` n'est pas routé ve
 Utilisez la commande locale `shipflow-mcp-login <provider>`: elle extrait automatiquement le port OAuth courant, crée le tunnel local temporaire, puis le ferme en fin de flow.
 
 Ne réutilisez pas un port d'une tentative précédente: l'URL OAuth est périssable et le port peut changer à chaque relance. Si le script indique que SSH est inaccessible, retournez dans `urls`, choisissez `c) Configurer nouveau serveur`, vérifiez l'IP, l'utilisateur SSH et, si nécessaire, le chemin de la clé.
+
+### Blacksmith: callback localhost `connection refused`
+
+N'utilisez pas `blacksmith auth login` directement dans une session SSH distante.
+Depuis votre machine locale, lancez `urls`, puis choisissez `b) Login
+Blacksmith (distant)`. Le menu lance Blacksmith sur le serveur, extrait le port
+callback courant, ouvre le tunnel SSH temporaire, puis ouvre ou affiche l'URL
+officielle Blacksmith dans votre navigateur local.
 
 ### Le script ne trouve pas de ports
 

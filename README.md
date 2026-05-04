@@ -179,11 +179,34 @@ For remote Codex usage, ShipFlow local tooling also supports OAuth login flows f
 shipflow-mcp-login vercel
 shipflow-mcp-login supabase
 shipflow-mcp-login all
+shipflow-blacksmith-login
 ```
 
-The reason is specific to remote agent work: Codex runs on the server, but the OAuth provider redirects the browser to `127.0.0.1:<port>/callback` on the local machine. ShipFlow opens a temporary SSH `-L` tunnel for the fresh callback port so the local browser can reach the remote Codex login process.
+The reason is specific to remote agent work: Codex or the provider CLI runs on
+the server, but the OAuth provider redirects the browser to
+`127.0.0.1:<port>/callback` on the local machine. ShipFlow opens a temporary
+SSH `-L` tunnel for the fresh callback port so the local browser can reach the
+remote login process. This applies to hosted MCP provider logins and to
+Blacksmith CLI auth.
 
-The local menu stores the remote host, SSH user, and optional SSH key path used by `urls`, `tunnel`, and `shipflow-mcp-login`. Leaving the key path blank means ShipFlow uses the normal SSH config or agent. ShipFlow does not store OAuth tokens; Codex and the provider own the token exchange. See [local/README.md](./local/README.md) for the guided setup and troubleshooting flow.
+The local menu stores the remote host, SSH user, and optional SSH key path used
+by `urls`, `tunnel`, `shipflow-mcp-login`, and
+`shipflow-blacksmith-login`. Leaving the key path blank means ShipFlow uses the
+normal SSH config or agent. ShipFlow does not store OAuth tokens; Codex,
+Blacksmith, and the provider own the token exchange. See
+[local/README.md](./local/README.md) for the guided setup and troubleshooting
+flow.
+
+The server-side `sf` menu also includes `Blacksmith - CI runners and Testbox
+setup`. This is a guided official-first helper for Blacksmith: it checks whether
+the `blacksmith` CLI is installed, detects a local credentials file without
+reading its contents, shows `T'inquiète, c'est bon, t'es connecté.` when the
+local setup is ready, and prints the exact official command to run only when an
+interactive install or Testbox init step is still required. For auth on a remote
+server, it routes the operator to the local `urls` menu's Blacksmith login
+tunnel instead of suggesting `blacksmith auth login` directly over SSH.
+ShipFlow does not install the unofficial Blacksmith MCP by default and does not
+patch project workflows automatically from this menu.
 
 Notes:
 - `dataforseo` is configured but disabled by default in Codex unless
@@ -260,6 +283,7 @@ Typical CLI actions:
 - deploy, restart, stop, remove environments
 - Flutter Web tmux sessions with hot reload/hot restart
 - publish apps with public HTTPS URLs
+- guided Blacksmith runner/Testbox setup for project CI
 - health checks and crash loop detection
 
 ## Skill Workflow

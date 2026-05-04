@@ -6523,6 +6523,222 @@ action_mcp_auth_setup() {
     echo -e "${BLUE}ShipFlow does not read or store OAuth tokens; Codex and the provider own the token exchange.${NC}"
 }
 
+blacksmith_cli_path() {
+    command -v blacksmith 2>/dev/null || true
+}
+
+blacksmith_credentials_file() {
+    printf '%s/.blacksmith/credentials\n' "$HOME"
+}
+
+blacksmith_is_connected() {
+    local credentials_file
+    credentials_file=$(blacksmith_credentials_file)
+    [ -s "$credentials_file" ]
+}
+
+blacksmith_print_status() {
+    local cli_path
+    cli_path=$(blacksmith_cli_path)
+
+    echo -e "${BLUE}Statut local Blacksmith${NC}"
+    if [ -n "$cli_path" ]; then
+        local version
+        version=$(blacksmith --version 2>/dev/null | head -1 || true)
+        echo -e "  ${GREEN}✓${NC} CLI installé: ${CYAN}$cli_path${NC}"
+        [ -n "$version" ] && echo -e "  ${BLUE}Version:${NC} $version"
+    else
+        echo -e "  ${YELLOW}⚠${NC} CLI non installé"
+    fi
+
+    if [ -n "$cli_path" ] && blacksmith_is_connected; then
+        echo -e "  ${GREEN}✓${NC} T'inquiète, c'est bon, t'es connecté."
+    elif [ -n "$cli_path" ]; then
+        echo -e "  ${YELLOW}⚠${NC} Connexion non détectée"
+        echo -e "  ${BLUE}À faire depuis ta machine locale:${NC}"
+        echo -e "     ${GREEN}urls${NC} ${YELLOW}→${NC} ${GREEN}Login Blacksmith (distant)${NC}"
+        echo -e "  ${YELLOW}Blacksmith utilise un callback localhost; en remote il faut le tunnel SSH local.${NC}"
+    else
+        echo -e "  ${BLUE}À lancer dans un terminal pour installer l'outil officiel:${NC}"
+        echo -e "     ${GREEN}curl -fsSL https://get.blacksmith.sh | sh${NC}"
+    fi
+
+    echo ""
+    echo -e "${BLUE}GitHub App:${NC} se configure dans le navigateur sur ${CYAN}https://app.blacksmith.sh${NC}"
+    echo -e "${YELLOW}ShipFlow ne lit pas et ne stocke pas le token Blacksmith.${NC}"
+}
+
+blacksmith_show_setup_checklist() {
+    ui_box_header "Blacksmith Setup" "$CYAN" "$YELLOW"
+    echo ""
+    blacksmith_print_status
+    echo ""
+    echo -e "${CYAN}Checklist officielle-first${NC}"
+    echo -e "  ${GREEN}1.${NC} Installer le CLI officiel si absent:"
+    echo -e "     ${GREEN}curl -fsSL https://get.blacksmith.sh | sh${NC}"
+    echo -e "  ${GREEN}2.${NC} Connecter le compte GitHub/Blacksmith depuis ta machine locale:"
+    echo -e "     ${GREEN}urls${NC} ${YELLOW}→${NC} ${GREEN}Login Blacksmith (distant)${NC}"
+    echo -e "  ${GREEN}3.${NC} Installer la GitHub App Blacksmith sur les repos concernés:"
+    echo -e "     ${CYAN}https://app.blacksmith.sh${NC}"
+    echo -e "  ${GREEN}4.${NC} Dans chaque repo projet, utiliser le menu Blacksmith > Testbox projet."
+    echo ""
+    echo -e "${BLUE}Note:${NC} le MCP Blacksmith non officiel n'est pas installé par défaut."
+}
+
+blacksmith_select_project_path() {
+    local choice
+    choice=$(printf '%s\n' \
+        "Répertoire courant ($(pwd -P))" \
+        "Environnement ShipFlow déployé" \
+        "Chemin personnalisé" \
+        "Back" | ui_choose "Projet pour Testbox:") || return 1
+
+    if ui_is_back_selection "$choice"; then
+        return 1
+    fi
+
+    local project_dir=""
+    case "$choice" in
+        "Répertoire courant "*)
+            project_dir=$(pwd -P)
+            ;;
+        "Environnement ShipFlow déployé")
+            local env_name
+            env_name=$(select_environment "Sélectionne l'environnement projet") || return 1
+            project_dir=$(resolve_project_path "$env_name" 2>/dev/null || true)
+            ;;
+        "Chemin personnalisé")
+            project_dir=$(ui_input "Chemin projet absolu:" "$PROJECTS_DIR/my-project")
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+
+    [ -n "$project_dir" ] || return 1
+    if ! validate_project_path "$project_dir"; then
+        echo -e "${RED}❌ Chemin projet invalide ou non sûr: $project_dir${NC}" >&2
+        return 1
+    fi
+    printf '%s\n' "$project_dir"
+}
+
+blacksmith_show_testbox_project_guide() {
+    ui_box_header "Blacksmith Testbox" "$CYAN" "$YELLOW"
+    echo ""
+    blacksmith_print_status
+    echo ""
+
+    local project_dir
+    project_dir=$(blacksmith_select_project_path) || {
+        ui_should_skip_next_pause >/dev/null 2>&1 || true
+        echo -e "${BLUE}Retour au menu Blacksmith.${NC}"
+        return 0
+    }
+
+    local quoted_project_dir
+    printf -v quoted_project_dir '%q' "$project_dir"
+
+    echo ""
+    echo -e "${CYAN}Projet sélectionné:${NC} ${GREEN}$project_dir${NC}"
+    if [ ! -d "$project_dir/.git" ]; then
+        echo -e "${YELLOW}⚠ Ce dossier ne semble pas être un repo Git. Testbox s'appuie sur GitHub Actions.${NC}"
+    fi
+    if [ ! -d "$project_dir/.github/workflows" ]; then
+        echo -e "${YELLOW}⚠ Aucun workflow GitHub Actions détecté dans .github/workflows.${NC}"
+        echo -e "${YELLOW}  Crée ou récupère d'abord un workflow CI, puis relance l'init Testbox.${NC}"
+    fi
+
+    echo ""
+    echo -e "${BLUE}À lancer dans un terminal depuis ce serveur quand tu veux initialiser Testbox:${NC}"
+    echo -e "   ${GREEN}cd $quoted_project_dir${NC}"
+    echo -e "   ${GREEN}blacksmith testbox init${NC}"
+    echo ""
+    echo -e "${BLUE}Après init, Blacksmith génère un workflow .github/workflows/blacksmith-testbox.yml et une skill agent côté repo.${NC}"
+    echo -e "${YELLOW}Le menu ne lance pas cette commande automatiquement, car c'est un assistant interactif qui peut écrire dans le repo.${NC}"
+}
+
+blacksmith_show_runner_tags() {
+    ui_box_header "Blacksmith Runners" "$CYAN" "$YELLOW"
+    echo ""
+    blacksmith_print_status
+    echo ""
+    echo -e "${CYAN}Tags courants${NC}"
+    echo -e "  ${GREEN}ubuntu-latest${NC}  → ${GREEN}blacksmith-2vcpu-ubuntu-2404${NC}"
+    echo -e "  ${GREEN}windows-latest${NC} → ${GREEN}blacksmith-2vcpu-windows-2025${NC}"
+    echo -e "  ${GREEN}macos-latest${NC}   → ${GREEN}blacksmith-6vcpu-macos-latest${NC}"
+    echo ""
+    echo -e "${CYAN}Android release depuis un hôte ARM64${NC}"
+    echo -e "  ${YELLOW}Ne lance pas de build APK/AAB release local.${NC}"
+    echo -e "  ${BLUE}Utilise un workflow GitHub Actions sur un runner x64 Blacksmith, par exemple:${NC}"
+    echo -e "     ${GREEN}runs-on: blacksmith-4vcpu-ubuntu-2404${NC}"
+    echo ""
+    echo -e "${BLUE}Pour une migration manuelle, remplace seulement le tag runs-on du job concerné.${NC}"
+    echo -e "${BLUE}ShipFlow guide la décision, mais ne patche pas les workflows automatiquement dans cette version.${NC}"
+}
+
+blacksmith_show_security_note() {
+    ui_box_header "Blacksmith Security" "$CYAN" "$YELLOW"
+    echo ""
+    echo -e "${CYAN}Politique ShipFlow${NC}"
+    echo -e "  ${GREEN}✓${NC} Utiliser l'intégration officielle Blacksmith: GitHub App, runners, CLI Testbox."
+    echo -e "  ${GREEN}✓${NC} Laisser Blacksmith et GitHub gérer l'auth."
+    echo -e "  ${GREEN}✓${NC} Vérifier seulement la présence locale du CLI et du fichier credentials."
+    echo -e "  ${YELLOW}•${NC} Ne pas lire, afficher, copier ou stocker le contenu du token."
+    echo -e "  ${YELLOW}•${NC} Ne pas installer le MCP Blacksmith non officiel par défaut."
+    echo ""
+    echo -e "${BLUE}Le statut connecté repose sur la présence du fichier credentials Blacksmith côté serveur.${NC}"
+    echo -e "${BLUE}Si Blacksmith refuse ensuite une commande, repasse par le menu local et suis le message du CLI.${NC}"
+}
+
+action_blacksmith_setup() {
+    while true; do
+        clear
+        ui_box_header "Blacksmith" "$CYAN" "$YELLOW"
+        echo ""
+        blacksmith_print_status
+        echo ""
+
+        local choice
+        choice=$(printf '%s\n' \
+            "Setup checklist" \
+            "Testbox projet" \
+            "Runner tags / Android release" \
+            "Sécurité / auth" \
+            "Back" | ui_choose "Blacksmith:") || {
+            ui_return_back
+            return 0
+        }
+
+        if ui_is_back_selection "$choice"; then
+            ui_return_back
+            return 0
+        fi
+
+        clear
+        case "$choice" in
+            "Setup checklist")
+                blacksmith_show_setup_checklist
+                ;;
+            "Testbox projet")
+                blacksmith_show_testbox_project_guide
+                ;;
+            "Runner tags / Android release")
+                blacksmith_show_runner_tags
+                ;;
+            "Sécurité / auth")
+                blacksmith_show_security_note
+                ;;
+            *)
+                ui_return_back
+                return 0
+                ;;
+        esac
+
+        ui_pause "Appuie sur une touche pour revenir au menu Blacksmith..."
+    done
+}
+
 action_publish() {
     echo -e "${GREEN}🌐 Publish to Web (HTTPS via Caddy + DuckDNS)${NC}"
     echo ""
@@ -6699,6 +6915,7 @@ MAIN_MENU_ITEMS=(
     "k|Cleanup - Free disk space (light/aggressive)|action_cleanup"
     "f|Install SDK - Flutter, Dart...|action_install_sdk"
     "v|Tools Status - Voir les outils installés|action_tools"
+    "z|Blacksmith - CI runners and Testbox setup|action_blacksmith_setup"
     "j|Session Identity - View or reset session|action_session"
     "c|Local Setup - Show server address for tunnels|action_local_connection_info"
     "q|MCP Auth Setup - Local OAuth login tunnel|action_mcp_auth_setup"

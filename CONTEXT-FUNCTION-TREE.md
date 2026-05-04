@@ -1,7 +1,7 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "0.1.1"
+artifact_version: "0.1.3"
 project: "shipflow"
 created: "2026-04-25"
 updated: "2026-05-04"
@@ -16,7 +16,7 @@ docs_impact: "yes"
 linked_systems: ["shipflow.sh", "lib.sh", "config.sh", "install.sh", "local/local.sh", "local/dev-tunnel.sh"]
 depends_on: []
 supersedes: []
-evidence: ["Function extraction from shipflow.sh, lib.sh, config.sh, install.sh, local/local.sh, local/dev-tunnel.sh"]
+evidence: ["Function extraction from shipflow.sh, lib.sh, config.sh, install.sh, local/local.sh, local/dev-tunnel.sh", "Blacksmith setup menu helpers added to lib.sh", "Blacksmith OAuth callback tunnel added to local tooling"]
 next_step: "/sf-docs update CONTEXT-FUNCTION-TREE.md"
 ---
 
@@ -118,8 +118,14 @@ remote session info
 menu / local UX
   -> print_header
   -> show_menu
+  -> run_mcp_login_menu
+  -> run_blacksmith_login_menu
   -> pause
   -> main
+
+remote OAuth callback tunnels
+  -> local/mcp-login.sh
+  -> local/blacksmith-login.sh
 
 tunnel lifecycle
   -> get_active_ports
@@ -205,6 +211,18 @@ setup / prerequisites
   -> check_prerequisites
   -> show_tools_status
   -> install_sdk_menu
+
+Blacksmith setup guidance
+  -> blacksmith_cli_path
+  -> blacksmith_credentials_file
+  -> blacksmith_is_connected
+  -> blacksmith_print_status
+  -> blacksmith_show_setup_checklist
+  -> blacksmith_select_project_path
+  -> blacksmith_show_testbox_project_guide
+  -> blacksmith_show_runner_tags
+  -> blacksmith_show_security_note
+  -> action_blacksmith_setup
 
 validation
   -> validate_project_path
@@ -329,6 +347,7 @@ CLI action wrappers
   -> action_updates
   -> action_tools
   -> action_install_sdk
+  -> action_blacksmith_setup
 
 menu / docs surfaces
   -> show_shipflow_menu

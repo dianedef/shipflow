@@ -1,7 +1,7 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "1.0.1"
+artifact_version: "1.0.3"
 project: ShipFlow
 created: "2026-05-01"
 updated: "2026-05-04"
@@ -28,6 +28,8 @@ depends_on:
 supersedes: []
 evidence:
   - "Function inventory from shipflow.sh, lib.sh, config.sh, and CONTEXT-FUNCTION-TREE.md."
+  - "Blacksmith setup menu added for official CLI/Testbox guidance without token handling."
+  - "Remote Blacksmith auth now routes to local SSH callback tunnel instead of direct server login."
 next_review: "2026-06-01"
 next_step: "/sf-docs technical audit runtime-cli"
 ---
@@ -70,6 +72,11 @@ This doc covers the server-side CLI runtime: `shipflow.sh`, `lib.sh`, and `confi
 - `lib.sh::env_start`, `env_stop`, `env_restart`, `env_remove`: core environment lifecycle.
 - `lib.sh::action_flutter_web`: interactive Flutter Web preview through `tmux`
   with hot reload/hot restart control.
+- `lib.sh::action_blacksmith_setup`: guided official-first Blacksmith setup
+  screen for CLI presence, local auth status, GitHub App guidance, runner tags,
+  and Testbox init commands. It prints required terminal commands instead of
+  running interactive install/auth/project mutation steps automatically, and
+  routes remote Blacksmith auth through the local tunnel menu.
 - `lib.sh::action_publish`: public exposure through Caddy and DuckDNS.
 
 ## Control Flow
@@ -133,12 +140,17 @@ Flutter Web has two runtime paths:
 - Invalid Dart/Flutter package overrides (paths, shell fragments, option-like tokens) must be rejected before invoking `flox install`.
 - Missing `tmux` should block only the interactive Flutter Web preview path and
   produce an actionable operator message.
+- Missing Blacksmith CLI or auth should be shown as a setup status, not as a
+  runtime failure; the menu must print the official next command when an
+  interactive Blacksmith step is required.
 
 ## Security Notes
 
 - Do not log tokens, DuckDNS secrets, private paths containing credentials, or raw environment values.
 - Public URL publishing is externally visible and needs explicit validation.
 - Destructive actions must stay idempotent and confirmation-gated where the UX expects it.
+- Blacksmith credentials are detected only by local credentials-file presence;
+  the runtime must not read, print, store, or transform token contents.
 
 ## Validation
 

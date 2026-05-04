@@ -2,8 +2,10 @@
 
 # Test script for validation functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/lib.sh"
-source "$SCRIPT_DIR/local/mcp-login.sh"
+SHIPFLOW_TEST_ROOT="$SCRIPT_DIR"
+source "$SHIPFLOW_TEST_ROOT/lib.sh"
+source "$SHIPFLOW_TEST_ROOT/local/mcp-login.sh"
+source "$SHIPFLOW_TEST_ROOT/local/blacksmith-login.sh"
 
 echo -e "${CYAN}╔══════════════════════════════════════════════════╗${NC}"
 echo -e "${CYAN}║${NC}        ${YELLOW}ShipFlow Validation Tests${NC}          ${CYAN}║${NC}"
@@ -19,7 +21,7 @@ run_test() {
     shift 2
     local cmd=("$@")
 
-    ((test_count++))
+    ((test_count += 1))
     echo -n "Test $test_count: $test_name ... "
 
     if "${cmd[@]}" >/dev/null 2>&1; then
@@ -30,7 +32,7 @@ run_test() {
 
     if [ "$result" = "$expected" ]; then
         echo -e "${GREEN}✓${NC}"
-        ((pass_count++))
+        ((pass_count += 1))
     else
         echo -e "${RED}✗${NC} (expected $expected, got $result)"
     fi
@@ -41,7 +43,7 @@ echo ""
 
 # Should pass
 run_test "Valid path /root" "pass" validate_project_path "/root"
-run_test "Valid path checkout" "pass" validate_project_path "$SCRIPT_DIR"
+run_test "Valid path checkout" "pass" validate_project_path "$SHIPFLOW_TEST_ROOT"
 run_test "Valid path /opt" "pass" validate_project_path "/opt"
 
 # Should fail
@@ -135,6 +137,14 @@ echo ""
 run_test "Parse encoded redirect_uri callback port" "pass" test "$(parse_mcp_oauth_port_from_text 'https://example.com/oauth?redirect_uri=http%3A%2F%2F127.0.0.1%3A46319%2Fcallback')" = "46319"
 run_test "Parse decoded callback port" "pass" test "$(parse_mcp_oauth_port_from_text 'Open this URL: http://127.0.0.1:38765/callback')" = "38765"
 run_test "Reject missing callback port" "fail" parse_mcp_oauth_port_from_text "https://example.com/no-callback"
+
+echo ""
+echo -e "${BLUE}Testing parse_blacksmith_oauth_port_from_text()${NC}"
+echo ""
+
+run_test "Parse Blacksmith encoded localhost callback port" "pass" test "$(parse_blacksmith_oauth_port_from_text 'https://example.com/oauth?redirect_uri=http%3A%2F%2Flocalhost%3A48321%2Fcallback')" = "48321"
+run_test "Parse Blacksmith decoded 127 callback port" "pass" test "$(parse_blacksmith_oauth_port_from_text 'Open this URL: http://127.0.0.1:38765/callback')" = "38765"
+run_test "Reject missing Blacksmith callback port" "fail" parse_blacksmith_oauth_port_from_text "https://example.com/no-callback"
 
 echo ""
 echo -e "${CYAN}══════════════════════════════════════════════════${NC}"

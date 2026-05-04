@@ -110,10 +110,15 @@ ALIAS_BLOCK="
 alias urls='$SCRIPT_DIR/local.sh'
 alias tunnel='$SCRIPT_DIR/local.sh'
 alias shipflow-mcp-login='$SCRIPT_DIR/mcp-login.sh'
+alias shipflow-blacksmith-login='$SCRIPT_DIR/blacksmith-login.sh'
 "
 
 if grep -q "# ShipFlow - Alias pour tunnels SSH" "$SHELL_RC" 2>/dev/null; then
     echo -e "${YELLOW}   ⚠ Alias déjà présents dans $SHELL_RC${NC}"
+    if ! grep -q "alias shipflow-blacksmith-login=" "$SHELL_RC" 2>/dev/null; then
+        echo "alias shipflow-blacksmith-login='$SCRIPT_DIR/blacksmith-login.sh'" >> "$SHELL_RC"
+        echo -e "${GREEN}   ✓ Alias shipflow-blacksmith-login ajouté à $SHELL_RC${NC}"
+    fi
 else
     echo "$ALIAS_BLOCK" >> "$SHELL_RC"
     echo -e "${GREEN}   ✓ Alias ajoutés à $SHELL_RC${NC}"
@@ -125,6 +130,7 @@ echo -e "${BLUE}4. Configuration des permissions...${NC}"
 chmod +x "$SCRIPT_DIR/dev-tunnel.sh"
 chmod +x "$SCRIPT_DIR/local.sh"
 chmod +x "$SCRIPT_DIR/mcp-login.sh"
+chmod +x "$SCRIPT_DIR/blacksmith-login.sh"
 echo -e "${GREEN}   ✓ Scripts exécutables${NC}"
 
 # 5. Résumé
@@ -134,6 +140,7 @@ echo ""
 echo -e "${BLUE}📋 Commandes disponibles:${NC}"
 echo -e "   ${GREEN}urls${NC} ou ${GREEN}tunnel${NC}         - Ouvrir le menu de gestion des tunnels"
 echo -e "   ${GREEN}shipflow-mcp-login${NC}   - Login OAuth MCP distant via tunnel éphémère"
+echo -e "   ${GREEN}shipflow-blacksmith-login${NC} - Login Blacksmith distant via tunnel éphémère"
 echo ""
 echo -e "${YELLOW}⚠  Pour activer les alias, rechargez votre shell:${NC}"
 echo -e "   ${BLUE}source $SHELL_RC${NC}"

@@ -180,7 +180,7 @@ save_and_activate_connection() {
         add_saved_connection "$target"
         CACHED_SESSION_INFO=""
         CACHED_SESSION_TIME=0
-        echo -e "${GREEN}✓ Serveur actif enregistré pour urls, tunnel et shipflow-mcp-login${NC}"
+        echo -e "${GREEN}✓ Serveur actif enregistré pour urls, tunnel, shipflow-mcp-login et Blacksmith${NC}"
         return 0
     fi
 
@@ -592,6 +592,7 @@ show_menu() {
     echo -e "  ${CYAN}r)${NC} 🔄 Redémarrer les tunnels"
     echo -e "  ${CYAN}c)${NC} 🌐 Configurer nouveau serveur"
     echo -e "  ${CYAN}m)${NC} 🔐 Login OAuth MCP (distant)"
+    echo -e "  ${CYAN}b)${NC} 🔨 Login Blacksmith (distant)"
     echo ""
     echo -e "  ${CYAN}l)${NC} 🔌 Choisir une connexion enregistrée"
     echo -e "  ${CYAN}x)${NC} ❌ Quitter"
@@ -612,6 +613,8 @@ run_mcp_login_menu() {
     echo -e "  ${CYAN}c)${NC} custom"
     echo -e "  ${CYAN}x)${NC} retour"
     echo ""
+    echo -e "${YELLOW}Blacksmith n'est pas un MCP: retour puis b) Login Blacksmith (distant).${NC}"
+    echo ""
     prompt_inline "${YELLOW}Tape la lettre de ton choix ?${NC} "
     read_menu_choice login_choice
 
@@ -628,8 +631,17 @@ run_mcp_login_menu() {
         *)
             echo -e "${RED}❌ Choix invalide${NC}"
             return 1
-            ;;
+        ;;
     esac
+
+    if [ "$provider" = "blacksmith" ]; then
+        echo ""
+        echo -e "${BLUE}Blacksmith n'est pas un MCP Codex officiel dans ShipFlow.${NC}"
+        echo -e "${BLUE}Je bascule vers le tunnel OAuth Blacksmith dédié.${NC}"
+        echo ""
+        "$SCRIPT_DIR/blacksmith-login.sh"
+        return $?
+    fi
 
     if [ -z "$provider" ]; then
         echo -e "${RED}❌ Provider vide${NC}"
@@ -637,6 +649,18 @@ run_mcp_login_menu() {
     fi
 
     "$SCRIPT_DIR/mcp-login.sh" "$provider"
+}
+
+run_blacksmith_login_menu() {
+    echo -e "${CYAN}══════════════════════════════════════════════════${NC}"
+    echo -e "          ${YELLOW}Login Blacksmith distant${NC}"
+    echo -e "${CYAN}══════════════════════════════════════════════════${NC}"
+    echo -e "${BLUE}Connexion actuelle:${NC} ${GREEN}$REMOTE_HOST${NC}"
+    echo ""
+    echo -e "${BLUE}Ce flow lance Blacksmith sur le serveur et ouvre le callback OAuth via tunnel SSH local.${NC}"
+    echo -e "${YELLOW}Il corrige le cas où Blacksmith affiche une URL localhost qui finit en connection refused.${NC}"
+    echo ""
+    "$SCRIPT_DIR/blacksmith-login.sh"
 }
 
 # Fonction pour obtenir les ports actifs
@@ -957,6 +981,10 @@ main() {
                 ;;
             m)
                 run_mcp_login_menu
+                pause
+                ;;
+            b)
+                run_blacksmith_login_menu
                 pause
                 ;;
             l)
