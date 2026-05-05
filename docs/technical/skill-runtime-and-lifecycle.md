@@ -1,7 +1,7 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "1.10.0"
+artifact_version: "1.11.0"
 project: ShipFlow
 created: "2026-05-01"
 updated: "2026-05-04"
@@ -28,6 +28,7 @@ linked_systems:
   - skills/sf-docs/SKILL.md
   - skills/references/reporting-contract.md
   - skills/references/master-workflow-lifecycle.md
+  - skills/references/question-contract.md
   - specs/sf-build-autonomous-master-skill.md
   - specs/skill-reporting-modes-and-compact-reports.md
   - shipflow-spec-driven-workflow.md
@@ -36,7 +37,7 @@ linked_systems:
   - docs/editorial/
 depends_on:
   - artifact: "shipflow-spec-driven-workflow.md"
-    artifact_version: "0.14.2"
+    artifact_version: "0.14.3"
     required_status: draft
   - artifact: "skills/references/technical-docs-corpus.md"
     artifact_version: "1.1.0"
@@ -62,6 +63,7 @@ evidence:
   - "Master delegation semantics extracted to skills/references/master-delegation-semantics.md and cited by master/orchestrator skills."
   - "Master workflow lifecycle extracted to skills/references/master-workflow-lifecycle.md; bug work items now use bugs/*.md as source of truth and BUGS.md as optional/generated triage."
   - "shipflow <instruction> documented as the primary non-technical router with direct main-thread handoff to selected skills."
+  - "Shared question/default contract added for numbered user-facing decisions and context-safe defaults."
 next_review: "2026-06-01"
 next_step: "/sf-docs technical audit skills"
 ---
@@ -215,7 +217,7 @@ sf-content
 - Shared files are sequential by default.
 - Master/orchestrator skills load `skills/references/master-delegation-semantics.md` before choosing execution topology. Delegated sequential subagents are the default for file, validation, closure, and ship work when subagents are available; parallelism means simultaneous subagents and requires ready `Execution Batches`.
 - Master/orchestrator skills load `skills/references/master-workflow-lifecycle.md` before resolving lifecycle flow. The shared skeleton is intake, work item resolution, readiness, model/topology routing, owner-skill execution, validation/evidence, verification, post-verify closure, and bounded ship/deploy/release routing.
-- Skills should ask user-facing questions only when the answer changes route, scope, risk, validation, closure, or ship posture; otherwise they proceed by the best-practice default and state important assumptions.
+- Skills should load `skills/references/question-contract.md` before user-facing questions. They ask only when the answer changes route, scope, risk, validation, closure, ship posture, public claims, or technical/product/editorial direction; otherwise they proceed by the best-practice default only when it is clear, low-risk, reversible, context-compatible, and verifiable.
 - Bug work uses one Markdown bug file under `bugs/*.md` as the durable source of truth. `BUGS.md`, when present, is an optional compact/generated/triage view and must not override the bug file.
 - Short natural-language confirmations after diagnosis or proposal continue the current chantier in delegated sequential mode by intent rather than exact keyword, not parallel fan-out.
 - Fresh context is preferred for non-trivial spec-first execution when available.

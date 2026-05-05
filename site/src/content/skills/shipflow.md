@@ -9,7 +9,7 @@ audience:
   - "Operators who know the outcome but not the right workflow route"
   - "Teams that want routing decisions kept visible in the main thread"
 problem: "A user can lose momentum before work starts by having to choose between build, bug, maintenance, content, deploy, skill, and audit workflows."
-outcome: "You get one first command that either answers directly or routes the current thread to the right ShipFlow skill with one numbered clarification question when needed."
+outcome: "You get one first command that either answers directly, routes the current thread to the right ShipFlow skill, or asks one numbered clarification question when no context-safe route exists."
 founder_angle: "The router keeps the first move simple. You describe the business or product need, and ShipFlow chooses whether the work is conversation, build, maintenance, bug, release, content, skill maintenance, or audit."
 when_to_use:
   - "When you want the recommended first command and do not know which skill to launch"
@@ -33,6 +33,7 @@ argument_modes:
     consequence: "Routes feature/code/docs to sf-build, maintenance to sf-maintain, bugs to sf-bug, release/deploy/prod proof to sf-deploy, content to sf-content, skill maintenance to sf-skill-build, and obvious specialist audits to sf-audit-*."
 limits:
   - "It does not replace the selected skill's lifecycle gates"
+  - "It uses context-safe defaults only when they are clear, low-risk, reversible, and verifiable"
   - "It asks a numbered question with the reason and recommended route instead of guessing when routing is ambiguous"
   - "It does not run master skills inside hidden subagents"
 related_skills:
@@ -56,3 +57,5 @@ just a question.
 
 The router keeps the handoff visible. If it selects a master skill, that skill
 takes over the main thread and owns its own delegated sequential execution.
+If no route is safely implied by the instruction and project context, the router
+asks one numbered decision question with the reason and recommended route.

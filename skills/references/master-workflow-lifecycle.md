@@ -1,7 +1,7 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: ShipFlow
 created: "2026-05-04"
 updated: "2026-05-04"
@@ -22,6 +22,7 @@ linked_systems:
   - skills/sf-bug/SKILL.md
   - skills/sf-audit/SKILL.md
   - skills/references/master-delegation-semantics.md
+  - skills/references/question-contract.md
   - skills/references/chantier-tracking.md
   - docs/technical/skill-runtime-and-lifecycle.md
   - shipflow-spec-driven-workflow.md
@@ -30,6 +31,9 @@ depends_on:
   - artifact: "skills/references/master-delegation-semantics.md"
     artifact_version: "1.1.0"
     required_status: active
+  - artifact: "skills/references/question-contract.md"
+    artifact_version: "1.0.0"
+    required_status: active
   - artifact: "skills/references/chantier-tracking.md"
     artifact_version: "0.4.1"
     required_status: draft
@@ -37,6 +41,7 @@ supersedes: []
 evidence:
   - "User decision 2026-05-04: master skills should share the same workflow skeleton instead of duplicating lifecycle doctrine."
   - "User decision 2026-05-04: bug work uses one Markdown bug file per bug under bugs/*.md; BUGS.md is optional/generated/triage view, not the source of truth."
+  - "User decision 2026-05-04: user-facing questions should share a numbered, context-aware question/default contract."
 next_review: "2026-06-04"
 next_step: "/sf-verify master workflow lifecycle reference"
 ---
@@ -99,6 +104,8 @@ intake
 Normalize the user request into one current work item. Route to the owning skill when the request clearly names only one specialist phase.
 
 Ask only when the answer changes behavior, scope, security, data, permissions, destructive side effects, public claims, closure, staging, or ship risk.
+
+Before asking a user-facing question, load `skills/references/question-contract.md`. The question contract decides when a default is safe enough to choose without asking and how to format numbered decision questions.
 
 ### 2. Work Item Resolution
 

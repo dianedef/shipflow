@@ -4,6 +4,23 @@ Chronological log of skill refreshes via `/sf-skills-refresh`. Most recent first
 
 ---
 
+## 2026-05-05 — shared question contract
+
+**Added:**
+- Shared `skills/references/question-contract.md` for numbered user-facing questions, responsible recommendations, and context-safe defaults
+
+**Updated:**
+- Master lifecycle and entrypoint routing references now point to the shared question/default contract
+- `sf-build` and `shipflow` local question gates now align with the shared rule
+- README, workflow doctrine, technical docs, launch cheatsheet, help, and public skill pages now describe the same default-vs-question behavior
+
+**New phases:**
+- Question/default gate before user-facing clarification or routing prompts
+
+**Sources:** 0 URLs consulted (local captured conversation and ShipFlow skill doctrine)
+
+---
+
 ## 2026-05-04 — content owner skill governance integration
 
 **Added:**

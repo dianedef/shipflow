@@ -1,7 +1,7 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "1.2.0"
+artifact_version: "1.2.1"
 project: ShipFlow
 created: "2026-05-04"
 updated: "2026-05-04"
@@ -22,7 +22,7 @@ linked_systems:
   - CONTENT_MAP.md
 depends_on:
   - artifact: "shipflow-spec-driven-workflow.md"
-    artifact_version: "0.14.2"
+    artifact_version: "0.14.3"
     required_status: draft
 supersedes: []
 evidence:
@@ -31,6 +31,7 @@ evidence:
   - "sf-skill-build routes fuzzy skill ideas through sf-explore before sf-spec."
   - "sf-content added as the master content lifecycle entrypoint."
   - "shipflow <instruction> documented as the primary non-technical router with direct handoff to selected skills."
+  - "Shared question/default contract added for numbered decisions and context-safe defaults."
 next_step: "/sf-docs audit docs/skill-launch-cheatsheet.md"
 ---
 
@@ -40,7 +41,7 @@ Use this page when you need to choose which ShipFlow skill to launch and which m
 
 ## Default Rule
 
-Start with `shipflow <instruction>` when you want a non-technical first command. It answers pure conversational requests directly and routes real work to the right master or specialist skill.
+Start with `shipflow <instruction>` when you want a non-technical first command. It answers pure conversational requests directly and routes real work to the right master or specialist skill. It uses a default only when the route is clear, low-risk, context-compatible, and verifiable.
 
 Start with `sf-build` directly when you already know the request is a feature, code, site, or docs workstream that needs the build lifecycle.
 
@@ -50,7 +51,7 @@ Use a focused skill directly when you intentionally want one owner lane: checks,
 
 | Need | Launch | Useful modes |
 | --- | --- | --- |
-| Non-technical first command | `shipflow <instruction>` | Routes pure conversation directly; routes feature/code/docs to `sf-build`, maintenance to `sf-maintain`, bugs to `sf-bug`, release/deploy/prod proof to `sf-deploy`, content to `sf-content`, skill maintenance to `sf-skill-build`, and obvious specialist audits to `sf-audit-*`. Asks one numbered question when ambiguous. |
+| Non-technical first command | `shipflow <instruction>` | Routes pure conversation directly; routes feature/code/docs to `sf-build`, maintenance to `sf-maintain`, bugs to `sf-bug`, release/deploy/prod proof to `sf-deploy`, content to `sf-content`, skill maintenance to `sf-skill-build`, and obvious specialist audits to `sf-audit-*`. Uses context-safe defaults and asks one numbered question when ambiguity changes route, risk, scope, or proof. |
 | Non-trivial product, code, site, or docs work | `sf-build <story, bug, or goal>` | Plain task text is the story. Use `report=agent`, `handoff`, `verbose`, or `full-report` only for detailed handoff evidence. |
 | Recurring project upkeep | `sf-maintain [mode]` | `full`/no argument, `quick`, `security`, `deps`, `docs`, `audits`, `no-ship`, `global`. |
 | Release confidence after implementation | `sf-deploy [target or mode]` | no argument, `skip-check`, `--preview`, `--prod`, `no-changelog`. |

@@ -1,7 +1,7 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: ShipFlow
 created: "2026-05-04"
 updated: "2026-05-04"
@@ -23,6 +23,7 @@ linked_systems:
   - skills/sf-skill-build/SKILL.md
   - skills/sf-audit/SKILL.md
   - skills/references/master-delegation-semantics.md
+  - skills/references/question-contract.md
   - docs/skill-launch-cheatsheet.md
   - README.md
   - shipflow-spec-driven-workflow.md
@@ -30,13 +31,17 @@ depends_on:
   - artifact: "skills/references/master-delegation-semantics.md"
     artifact_version: "1.1.0"
     required_status: active
-  - artifact: "skills/references/master-workflow-lifecycle.md"
+  - artifact: "skills/references/question-contract.md"
     artifact_version: "1.0.0"
+    required_status: active
+  - artifact: "skills/references/master-workflow-lifecycle.md"
+    artifact_version: "1.1.0"
     required_status: active
 supersedes: []
 evidence:
   - "User decision 2026-05-04: create `shipflow` as the primary non-technical router across the existing skill taxonomy."
   - "User decision 2026-05-04: `shipflow` should use direct main-thread handoff to selected master skills instead of nested master-skill subagents."
+  - "User decision 2026-05-04: ambiguous routing questions should be numbered decision briefs with a responsible recommendation."
 next_review: "2026-06-04"
 next_step: "/sf-verify specs/shipflow-primary-router-skill.md"
 ---
@@ -49,7 +54,7 @@ This reference defines the shared routing rules for `shipflow`, the primary natu
 
 It does not replace lifecycle, bug, release, content, maintenance, audit, or skill-maintenance owner contracts. It decides which existing contract should own the request.
 
-It defines only the minimum routing-question rule: ask one concise numbered question when the route is materially ambiguous.
+It defines only the routing-question rule. Load `skills/references/question-contract.md` for the shared question/default contract, then ask one concise numbered question when the route is materially ambiguous.
 
 ## Core Rule
 
@@ -91,9 +96,9 @@ Ask when the answer changes:
 - staging, deployment, closure, or ship semantics
 - whether the run should mutate files or stay read-only
 
-Do not ask when a best-practice route is clear, low-risk, reversible, and already covered by an existing owner skill.
+Do not ask when a best-practice route is clear, low-risk, reversible, already covered by an existing owner skill, compatible with current project context, and verifiable in the current run.
 
-When a routing question is required, it must be numbered, explain why the route changes behavior or risk, and name the recommended route with the reason.
+When a routing question is required, it follows `skills/references/question-contract.md`: numbered, concise, clear about why the route changes behavior or risk, and explicit about the recommended route when a responsible recommendation exists.
 
 ## Handoff Requirements
 

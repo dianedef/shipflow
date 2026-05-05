@@ -37,7 +37,8 @@ argument_modes:
     consequence: "Useful for another agent or blocked run, but noisier than the default user report."
 limits:
   - "It does not skip safeguards; it reduces manual command-chaining"
-  - "It asks a business-framed question when a decision changes behavior, risk, permissions, security, or ship posture"
+  - "It asks a business-framed numbered question when a decision changes behavior, risk, permissions, security, proof, or ship posture"
+  - "It proceeds by default only when the default is clear, context-safe, reversible, and verifiable"
   - "It should not ship unrelated dirty files without explicit user approval"
 related_skills:
   - "sf-spec"
@@ -58,6 +59,9 @@ order: 20
 Use `sf-build` when the useful request is the outcome, not the individual phase.
 It is designed to keep the user at the level of scope, product tradeoffs, and
 ship risk while ShipFlow handles the execution sequence underneath.
+When a decision matters, it asks a numbered question with why, a responsible
+recommendation, and practical options instead of forcing the user to infer the
+technical tradeoff.
 
 For a narrow command such as "run checks" or "open browser proof", call the
 focused owner skill directly. For a complete change, start here.

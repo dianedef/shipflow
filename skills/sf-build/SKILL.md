@@ -82,7 +82,9 @@ Before creating any spec:
 
 ## Question Gate
 
-Ask only when the answer changes behavior, security, data, permissions, money movement, destructive side effects, staging scope, or ship risk.
+Before asking a user-facing question, load `$SHIPFLOW_ROOT/skills/references/question-contract.md`.
+
+Ask only when the answer changes behavior, security, data, permissions, money movement, destructive side effects, staging scope, public claims, validation proof, closure, or ship risk.
 
 ### Decision Question Framing
 
@@ -96,7 +98,7 @@ Before the actual question, include:
 - Honorable recommendation: the best-practice answer, marked as recommended, with the reason and the condition that would make another option better.
 - Decision request: one precise question the user can answer without understanding implementation details.
 
-If the best-practice answer is clear, low-risk, reversible, and inside the existing contract, choose it and continue instead of asking. If the question is still necessary, make the recommended option first and explain why it is the most responsible default. Avoid jargon; translate technical details into business consequences.
+If the best-practice answer is clear, low-risk, reversible, inside the existing contract, compatible with the current technical/product/editorial context, aligned with current best practices, and verifiable in the current run, choose it and continue instead of asking. If the obvious or requested option conflicts with project context, public/editorial claims, architecture, security posture, or current best practices, surface the conflict and ask unless a safe compatible alternative is obvious and inside scope. If the question is still necessary, make the recommended option first and explain why it is the most responsible default. Avoid jargon; translate technical details into business consequences.
 
 Preferred path:
 

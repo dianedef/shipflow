@@ -98,6 +98,8 @@ Do not stop at "run `/skill ...`" when the user asked ShipFlow to handle the wor
 
 ## Question Gate
 
+Before asking a user-facing routing question, load `$SHIPFLOW_ROOT/skills/references/question-contract.md`.
+
 Ask only when the answer changes the route or safety posture. Ask one concise routing question with why the route matters and numbered options. Include a recommended route only when one option is clearly safe from the current instruction and project context.
 
 Good routing questions are short and practical:
