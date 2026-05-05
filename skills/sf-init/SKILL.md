@@ -148,16 +148,16 @@ Never leave the section with pipe-delimited placeholders after init. Pick the co
 
 ### Step 3: Create TASKS.md
 
-**Architecture**: TASKS.md lives in `~/shipflow_data/projects/[name]/TASKS.md` (personal data, not in git) and is symlinked into the project directory as `[project_dir]/TASKS.md`.
+**Architecture**: ShipFlow's operational `TASKS.md` lives in `~/shipflow_data/projects/[name]/TASKS.md` (personal data, not in git). Do not symlink it into the project directory; project-local `TASKS.md` files are app-owned and must be left untouched.
 
 `TASKS.md` is an operational tracker, not a metadata-bearing decision artifact. Do not add ShipFlow YAML frontmatter to generated `TASKS.md` files. Durable business, brand, guideline, spec, research, audit, review, or decision content belongs in separate artifacts with metadata.
 
-**Check first**: skip entirely if `TASKS.md` already exists (file or symlink) in the project directory.
+**Check first**: skip project-local `TASKS.md` writes entirely. If a legacy ShipFlow-created `TASKS.md` symlink points into `shipflow_data`, remove the symlink only; do not move or overwrite real project files.
 
 If it does not exist:
 1. Create directory `~/shipflow_data/projects/[name]/`
 2. Create `~/shipflow_data/projects/[name]/TASKS.md` with the canonical format below
-3. Create symlink: `ln -s ~/shipflow_data/projects/[name]/TASKS.md [project_dir]/TASKS.md`
+3. Do not create a project-local symlink
 
 Never create a bare placeholder — populate with real tasks detected in Step 1:
 

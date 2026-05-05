@@ -21,6 +21,7 @@ what_you_get:
   - "A technical and structural SEO audit"
   - "Findings around metadata, linking, performance, and AI visibility"
   - "A clearer improvement path before publishing more content"
+  - "Governance notes for indexed claims, public content surfaces, and documentation impact when relevant"
 example_prompts:
   - "/sf-audit-seo"
   - "/sf-audit-seo site/src/pages/docs.astro"
@@ -28,6 +29,7 @@ example_prompts:
 limits:
   - "It audits the current surface; it does not guarantee rankings"
   - "Long-term SEO performance still depends on content quality and external demand"
+  - "It should keep search visibility aligned with product truth and documented claims"
 related_skills:
   - "sf-enrich"
   - "sf-redact"

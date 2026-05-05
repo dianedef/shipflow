@@ -36,7 +36,7 @@ trap 'rm -rf "$tmp_root"' EXIT
 
 flutter_dir="$tmp_root/flutter_app"
 dart_dir="$tmp_root/dart_app"
-mkdir -p "$flutter_dir" "$dart_dir"
+mkdir -p "$flutter_dir/web" "$dart_dir"
 
 cat > "$flutter_dir/pubspec.yaml" <<'EOF'
 name: flutter_app
@@ -50,11 +50,21 @@ environment:
   sdk: ">=3.0.0 <4.0.0"
 EOF
 
+cat > "$flutter_dir/package.json" <<'EOF'
+{
+  "scripts": {
+    "convex:dev": "convex dev",
+    "convex:deploy": "convex deploy"
+  }
+}
+EOF
+
 assert_ok "detect_pubspec_kind: flutter" test "$(detect_pubspec_kind "$flutter_dir")" = "flutter"
 assert_ok "detect_pubspec_kind: dart" test "$(detect_pubspec_kind "$dart_dir")" = "dart"
 assert_ok "config preserves Dart package override" bash -lc "export SHIPFLOW_FLOX_DART_PACKAGES='dart@custom'; source '$SCRIPT_DIR/config.sh' && test \"\$SHIPFLOW_FLOX_DART_PACKAGES\" = 'dart@custom'"
 assert_ok "config preserves Flutter package override" bash -lc "export SHIPFLOW_FLOX_FLUTTER_PACKAGES='flutter@custom'; source '$SCRIPT_DIR/config.sh' && test \"\$SHIPFLOW_FLOX_FLUTTER_PACKAGES\" = 'flutter@custom'"
 assert_ok "detect_dev_command uses project Flox Dart command" bash -lc "source '$SCRIPT_DIR/config.sh' && source '$SCRIPT_DIR/lib.sh' && cmd=\$(detect_dev_command '$dart_dir') && [[ \"\$cmd\" == dart\\ pub\\ get* ]] && [[ \"\$cmd\" != *'/opt/flutter'* ]] && [[ \"\$cmd\" != *'.flutter-sdk'* ]]"
+assert_ok "detect_dev_command falls back to Flutter when package.json has only Convex scripts" bash -lc "source '$SCRIPT_DIR/config.sh' && source '$SCRIPT_DIR/lib.sh' && cmd=\$(detect_dev_command '$flutter_dir') && [[ \"\$cmd\" == flutter\\ config* ]] && [[ \"\$cmd\" == *'flutter run -d web-server'* ]]"
 assert_ok "flutter tmux session name is stable" test "$(flutter_web_session_name "My App")" = "shipflow-flutter-my-app"
 assert_ok "validate token: dart" validate_flox_runtime_package_token "dart"
 assert_ok "validate token: flutter pinned" validate_flox_runtime_package_token "flutter@3.41.5-sdk-links"

@@ -102,6 +102,9 @@ For projects detected from `pubspec.yaml`, runtime provisioning is explicit:
 
 Flutter Web has two runtime paths:
 - PM2-managed launch remains available through the normal environment lifecycle.
+- A `package.json` without a supported JS framework or exact runnable `dev` /
+  `start` script must not block `pubspec.yaml` detection; mixed Flutter +
+  Convex projects still use the Flutter Web command.
 - Interactive preview uses `tmux` from `action_flutter_web`, starts
   `flutter run -d web-server --web-hostname 0.0.0.0 --web-port <port>` inside
   the project Flox environment, records the session in
@@ -115,6 +118,10 @@ Flutter Web has two runtime paths:
 - Project paths must be validated and absolute before runtime use.
 - Port allocation must avoid active socket collisions and PM2 hidden collisions.
 - User-visible success and failure should be observable.
+- Project tracking initialization must keep ShipFlow-owned `TASKS.md` under
+  `SHIPFLOW_DATA_DIR` and must not create project-local `TASKS.md` symlinks.
+  Legacy symlinks from older ShipFlow versions should be removed when they
+  point into `shipflow_data`.
 - Top-level interactive menu actions should be dispatched through
   `ui_run_menu_action` in `screen` mode; nested menus may use `inline` when
   they already own their screen lifecycle.

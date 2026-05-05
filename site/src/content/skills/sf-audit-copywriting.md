@@ -21,6 +21,7 @@ what_you_get:
   - "A conversion-oriented copywriting review"
   - "Findings around proof, objections, and message match"
   - "A better basis for strategic rewrite work"
+  - "Governance notes for public claims, funnel promises, and documentation impact when relevant"
 example_prompts:
   - "/sf-audit-copywriting"
   - "/sf-audit-copywriting site/src/pages/index.astro"
@@ -28,6 +29,7 @@ example_prompts:
 limits:
   - "It critiques persuasion structure; it does not replace offer strategy work by itself"
   - "Stronger copy cannot compensate for a weak product or unclear audience"
+  - "It should flag unsupported claims instead of making the offer sound stronger than the proof allows"
 related_skills:
   - "sf-audit-copy"
   - "sf-market-study"

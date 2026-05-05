@@ -4,6 +4,24 @@ Chronological log of skill refreshes via `/sf-skills-refresh`. Most recent first
 
 ---
 
+## 2026-05-04 — content owner skill governance integration
+
+**Added:**
+- Shared editorial governance loading and output plan language for sf-enrich, sf-redact, sf-audit-copy, sf-audit-copywriting, and sf-audit-seo
+- Shared technical docs corpus loading and `Documentation Update Plan` expectations for mapped code, runtime content, site, skill, and docs changes
+
+**Updated:**
+- Public skill pages now mention governance notes for claims, surfaces, schemas, and documentation impact when relevant
+- sf-audit-copywriting and sf-audit-seo now load the editorial corpus before public-content scoring
+- Four target skill descriptions shortened slightly to keep discovery budget margin
+
+**New phases:**
+- Governance plan outputs: `Editorial Update Plan`, `Claim Impact Plan`, and `Documentation Update Plan`
+
+**Sources:** 0 URLs consulted (local editorial and technical governance corpus alignment)
+
+---
+
 ## 2026-05-04 — shipflow
 
 **Added:**

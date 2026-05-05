@@ -21,6 +21,7 @@ what_you_get:
   - "A more useful and current content direction"
   - "A stronger basis for rewriting or upgrading the page"
   - "A clearer path toward better SEO and answer quality"
+  - "Governance notes for public claims, content surfaces, and documentation impact when relevant"
 example_prompts:
   - "/sf-enrich pricing guide"
   - "/sf-enrich blog/how-to-ship-with-agents.md"
@@ -28,6 +29,7 @@ example_prompts:
 limits:
   - "It improves existing content, not product-market fit by itself"
   - "The final content still depends on underlying proof and positioning quality"
+  - "Public content changes still need claim, surface, schema, and documentation checks"
 related_skills:
   - "sf-research"
   - "sf-redact"

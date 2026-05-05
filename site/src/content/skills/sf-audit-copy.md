@@ -21,6 +21,7 @@ what_you_get:
   - "A copy review focused on clarity and persuasion"
   - "Findings around readability, trust, and CTA quality"
   - "A sharper basis for rewrite work"
+  - "Governance notes for public claims, page intent, schema risk, and documentation impact when relevant"
 example_prompts:
   - "/sf-audit-copy"
   - "/sf-audit-copy site/src/pages/pricing.astro"
@@ -28,6 +29,7 @@ example_prompts:
 limits:
   - "It diagnoses problems in the existing copy; it does not replace long-form writing work"
   - "Conversion improvements still need judgment about audience and offer"
+  - "It should not strengthen public claims without evidence"
 related_skills:
   - "sf-redact"
   - "sf-enrich"

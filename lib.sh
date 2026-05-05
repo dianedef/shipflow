@@ -3529,12 +3529,17 @@ detect_dev_command() {
                     echo "$pm_cmd dev"
                     ;;
             esac
+            return 0
         elif grep -q '"dev"' package.json; then
             echo "$pm_cmd dev"
+            return 0
         elif grep -q '"start"' package.json; then
             echo "$pm_cmd start"
+            return 0
         fi
-    elif [ -f "requirements.txt" ] || [ -f "pyproject.toml" ]; then
+    fi
+
+    if [ -f "requirements.txt" ] || [ -f "pyproject.toml" ]; then
         local py_cmd=""
         py_cmd=$(python_runtime_command "$project_dir")
         if [ -f "manage.py" ]; then
@@ -4237,8 +4242,22 @@ EOF
         log INFO "Started environment: $env_name on port $port at $project_dir"
     fi
 
-    # Initialize ShipFlow tracking on first start (no TASKS.md yet)
-    if [ ! -e "$project_dir/TASKS.md" ]; then
+    # Initialize ShipFlow tracking on first start or clean up legacy tracker symlinks.
+    local project_tracking_dir="${SHIPFLOW_DATA_DIR:-$HOME/shipflow_data}/projects/$env_name"
+    local should_init_tracking=false
+    if [ ! -f "$project_tracking_dir/TASKS.md" ]; then
+        should_init_tracking=true
+    elif [ -L "$project_dir/TASKS.md" ]; then
+        local project_tasks_target=""
+        project_tasks_target=$(readlink "$project_dir/TASKS.md" 2>/dev/null || true)
+        case "$project_tasks_target" in
+            *"/shipflow_data/projects/"*"/TASKS.md")
+                should_init_tracking=true
+                ;;
+        esac
+    fi
+
+    if [ "$should_init_tracking" = "true" ]; then
         shipflow_init_project "$env_name" "$project_dir"
     fi
 }
@@ -5588,8 +5607,8 @@ view_environment_logs() {
 # shipflow_init_project - Initialize ShipFlow tracking files for a project
 #
 # Description:
-#   Creates TASKS.md in shipflow_data/projects/[name]/ and symlinks it into
-#   the project directory. Creates CHANGELOG.md directly in the project dir.
+#   Creates TASKS.md in shipflow_data/projects/[name]/ and leaves the project
+#   directory's TASKS.md untouched. Creates CHANGELOG.md directly in the project dir.
 #   Safe to call multiple times — skips files that already exist.
 #
 # Arguments:
@@ -5598,7 +5617,7 @@ view_environment_logs() {
 #
 # Side Effects:
 #   - Creates shipflow_data/projects/[name]/TASKS.md
-#   - Creates symlink [project_dir]/TASKS.md → shipflow_data/projects/[name]/TASKS.md
+#   - Removes legacy project TASKS.md symlinks that point into shipflow_data
 #   - Creates [project_dir]/CHANGELOG.md (if missing)
 #   - Adds entry to shipflow_data/PROJECTS.md (if missing)
 # -----------------------------------------------------------------------------
@@ -5607,6 +5626,7 @@ shipflow_init_project() {
     local project_dir="$2"
     local shipflow_data="${SHIPFLOW_DATA_DIR:-$HOME/shipflow_data}"
     local project_data_dir="$shipflow_data/projects/$project_name"
+    local project_tasks_file="$project_dir/TASKS.md"
 
     # Ensure shipflow_data/projects/[name]/ exists
     mkdir -p "$project_data_dir"
@@ -5642,15 +5662,18 @@ TASKS_EOF
         log INFO "Created TASKS.md for $project_name in shipflow_data"
     fi
 
-    # Create symlink in project dir (only if TASKS.md is not already there)
-    if [ ! -e "$project_dir/TASKS.md" ]; then
-        ln -s "$project_data_dir/TASKS.md" "$project_dir/TASKS.md"
-        log INFO "Linked $project_dir/TASKS.md → $project_data_dir/TASKS.md"
-    elif [ ! -L "$project_dir/TASKS.md" ]; then
-        # A real file exists (not a symlink) — move it to shipflow_data and replace with symlink
-        mv "$project_dir/TASKS.md" "$project_data_dir/TASKS.md"
-        ln -s "$project_data_dir/TASKS.md" "$project_dir/TASKS.md"
-        log INFO "Migrated existing TASKS.md to shipflow_data and replaced with symlink"
+    if [ -L "$project_tasks_file" ]; then
+        local current_tasks_target=""
+        current_tasks_target=$(readlink "$project_tasks_file" 2>/dev/null || true)
+        case "$current_tasks_target" in
+            *"/shipflow_data/projects/"*"/TASKS.md")
+            rm -f "$project_tasks_file"
+            log INFO "Removed legacy ShipFlow TASKS.md symlink for $project_name: $current_tasks_target"
+            ;;
+            *)
+            log INFO "Left project TASKS.md symlink untouched for $project_name: $current_tasks_target"
+            ;;
+        esac
     fi
 
     # Create CHANGELOG.md directly in project dir (lives in git repo)

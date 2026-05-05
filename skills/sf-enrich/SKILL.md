@@ -1,6 +1,6 @@
 ---
 name: sf-enrich
-description: "Content enrichment with fresh research, stronger advice, user focus, and conversion fit."
+description: "Content enrichment with fresh research, user focus, and conversion fit."
 disable-model-invocation: true
 argument-hint: <file-path or folder>
 ---
@@ -16,6 +16,17 @@ Process role: `support-de-chantier`.
 
 Before producing the final report, load `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md` when this run is attached to a spec-first chantier. If exactly one active `specs/*.md` chantier is identified, append the current run to `Skill Run History`, update `Current Chantier Flow` when the run changes the chantier state, and include a final `Chantier` block. If no unique chantier is identified, do not write to any spec; report `Chantier: non applicable` or `Chantier: non trace` with the reason.
 
+
+## Governance Corpora And Output Plans
+
+Before changing, judging, or recommending public content, load `$SHIPFLOW_ROOT/skills/references/editorial-content-corpus.md` when `CONTENT_MAP.md` or `docs/editorial/` exists. Follow its load order for content surface routing, public page intent, claim register checks, editorial update gate, Astro runtime schema policy, and blog/article surface policy.
+
+Before changing code, runtime content, site files, content schemas, skill contracts, public docs, README guidance, or mapped technical documentation surfaces, load `$SHIPFLOW_ROOT/skills/references/technical-docs-corpus.md` and use `docs/technical/code-docs-map.md` to decide whether a `Documentation Update Plan` is required.
+
+The final report must include these governance outcomes when relevant:
+- `Editorial Update Plan`: required for public pages, README/public docs, public skill pages, FAQ, pricing/support copy, runtime public content, blog/article/newsletter requests, or any public content update. Use `no editorial impact` with a reason when there is no public-content consequence.
+- `Claim Impact Plan`: required when claims touch security, privacy, compliance, AI reliability, automation, speed, savings, availability, pricing, or business outcomes.
+- `Documentation Update Plan`: required when mapped code, runtime content, site files, skill contracts, or technical documentation surfaces changed; otherwise state `no documentation impact` with a reason.
 
 ## Context
 
@@ -51,7 +62,7 @@ Cette skill enrichit souvent du contenu applicatif. Elle doit donc distinguer :
 
 Avant l'enrichissement, lire le frontmatter complet de `BUSINESS.md`, `BRANDING.md` et des docs éditoriales/copywriting existantes (`docs/editorial/`, `docs/copywriting/persona.md`, `docs/copywriting/strategie.md`) quand elles existent. Le contenu enrichi doit respecter les versions de contexte utilisées.
 
-Si `docs/editorial/` existe, charger `$SHIPFLOW_ROOT/skills/references/editorial-content-corpus.md` avant de modifier du contenu public. Utiliser le claim register pour les unsupported public claims, la page intent map pour préserver le rôle des pages, l'Astro content schema policy avant de modifier du runtime content, et la blog/article surface policy avant de recommander ou créer un article. Si aucune surface blog n'est déclarée, signaler `surface missing: blog`.
+Si `docs/editorial/` existe, appliquer la section `Governance Corpora And Output Plans` avant de modifier du contenu public. Utiliser le claim register pour les unsupported public claims, la page intent map pour préserver le rôle des pages, l'Astro content schema policy avant de modifier du runtime content, et la blog/article surface policy avant de recommander ou créer un article. Si aucune surface blog n'est déclarée, signaler `surface missing: blog`.
 
 Champs compatibles à ajouter seulement si le schéma du projet les accepte :
 
@@ -313,6 +324,10 @@ Context versions:
   BRANDING.md:         [artifact_version or unknown/not found]
   Persona/strategy:    [artifact_version or unknown/not found]
 Metadata gaps:         [none / list]
+Governance:
+  Editorial Update Plan:      [complete/no editorial impact/blocked]
+  Claim Impact Plan:          [complete/not applicable/blocked]
+  Documentation Update Plan:  [complete/no documentation impact/blocked]
 ─────────────────────────────────────
 Key changes:
 • [change 1]

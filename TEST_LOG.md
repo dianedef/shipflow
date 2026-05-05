@@ -1,5 +1,18 @@
 # Test Log
 
+## 2026-05-05 - Flutter + Convex dev command retest
+
+- Scope: BUG-2026-05-04-004
+- Environment: local
+- Tester: user
+- Source: sf-test
+- Status: pass
+- Confidence: high
+- Result summary: ShipFlow restart for `nococaine` detected the Flutter Web command and PM2 launched the app online on port `3002`.
+- Bug pointer: BUG-2026-05-04-004 -> bugs/BUG-2026-05-04-004.md
+- Evidence pointer: chat-provided restart log; no secrets or private payloads stored
+- Follow-up: `/sf-verify BUG-2026-05-04-004`
+
 ## 2026-05-03 - sf-skill-build runtime visibility retest
 
 - Scope: BUG-2026-05-03-001

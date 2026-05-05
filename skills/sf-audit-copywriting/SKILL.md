@@ -26,6 +26,17 @@ Before producing the final report, load `$SHIPFLOW_ROOT/skills/references/report
 Default to `report=user`: concise, findings-first, and focused on top issues, proof gaps, chantier potential, and the next real action. Use `report=agent`, `handoff`, `verbose`, or `full-report` for the detailed audit matrix, domain checklist output, command evidence, assumptions, confidence limits, and handoff notes.
 
 
+## Governance Corpora And Output Plans
+
+Before scoring public funnel copy, persisting copywriting strategy artifacts, or recommending public content changes, load `$SHIPFLOW_ROOT/skills/references/editorial-content-corpus.md` when `CONTENT_MAP.md` or `docs/editorial/` exists. Follow its load order for content surface routing, public page intent, claim register checks, editorial update gate, Astro runtime schema policy, and blog/article surface policy.
+
+Before changing code, runtime content, site files, content schemas, skill contracts, public docs, README guidance, or mapped technical documentation surfaces, load `$SHIPFLOW_ROOT/skills/references/technical-docs-corpus.md` and use `docs/technical/code-docs-map.md` to decide whether a `Documentation Update Plan` is required.
+
+The final report must include these governance outcomes when relevant:
+- `Editorial Update Plan`: required for public pages, README/public docs, public skill pages, FAQ, pricing/support copy, runtime public content, blog/article/newsletter requests, or public copywriting strategy changes. Use `no editorial impact` with a reason when there is no public-content consequence.
+- `Claim Impact Plan`: required when claims touch security, privacy, compliance, AI reliability, automation, speed, savings, availability, pricing, or business outcomes.
+- `Documentation Update Plan`: required when mapped code, runtime content, site files, skill contracts, or technical documentation surfaces changed; otherwise state `no documentation impact` with a reason.
+
 ## Context
 
 - Current directory: !`pwd`
@@ -89,6 +100,8 @@ next_review: "[YYYY-MM-DD]"
 ```
 
 Avant d'auditer ou de persister les livrables, lire le frontmatter complet de `BUSINESS.md`, `BRANDING.md` et des docs copywriting existantes. Reporter leurs versions dans `depends_on`. Si une version manque, utiliser `artifact_version: "unknown"` et signaler un `metadata gap` dans le rapport.
+
+Si `docs/editorial/` existe, appliquer la section `Governance Corpora And Output Plans` avant de scorer les pages publiques, les claims de funnel, la cohérence docs/FAQ/pricing/support, ou les recommandations de contenu public.
 
 ### Bump `artifact_version`
 
@@ -228,6 +241,10 @@ OVERALL                [A/B/C/D]
 Recommandations stratégiques : X
 Impact conversion estimé : [fort/moyen/faible]
 Proof/docs gaps : [X]
+Governance:
+  Editorial Update Plan:      [complete/no editorial impact/blocked]
+  Claim Impact Plan:          [complete/not applicable/blocked]
+  Documentation Update Plan:  [complete/no documentation impact/blocked]
 ```
 
 ---

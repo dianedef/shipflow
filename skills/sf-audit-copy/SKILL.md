@@ -1,6 +1,6 @@
 ---
 name: sf-audit-copy
-description: "Copywriting audit for clarity, tone, conversion, message fit, and page-level friction."
+description: "Copy audit for clarity, tone, conversion, message fit, and friction."
 disable-model-invocation: true
 argument-hint: '[file-path | "global"] (omit for full project)'
 ---
@@ -26,6 +26,17 @@ Before producing the final report, load `$SHIPFLOW_ROOT/skills/references/report
 
 Default to `report=user`: concise, findings-first, and focused on top issues, proof gaps, chantier potential, and the next real action. Use `report=agent`, `handoff`, `verbose`, or `full-report` for the detailed audit matrix, domain checklist output, command evidence, assumptions, confidence limits, and handoff notes.
 
+
+## Governance Corpora And Output Plans
+
+Before scoring, rewriting, or fixing public content, load `$SHIPFLOW_ROOT/skills/references/editorial-content-corpus.md` when `CONTENT_MAP.md` or `docs/editorial/` exists. Follow its load order for content surface routing, public page intent, claim register checks, editorial update gate, Astro runtime schema policy, and blog/article surface policy.
+
+Before changing code, runtime content, site files, content schemas, skill contracts, public docs, README guidance, or mapped technical documentation surfaces, load `$SHIPFLOW_ROOT/skills/references/technical-docs-corpus.md` and use `docs/technical/code-docs-map.md` to decide whether a `Documentation Update Plan` is required.
+
+The final report must include these governance outcomes when relevant:
+- `Editorial Update Plan`: required for public pages, README/public docs, public skill pages, FAQ, pricing/support copy, runtime public content, blog/article/newsletter requests, or public copy changes. Use `no editorial impact` with a reason when there is no public-content consequence.
+- `Claim Impact Plan`: required when claims touch security, privacy, compliance, AI reliability, automation, speed, savings, availability, pricing, or business outcomes.
+- `Documentation Update Plan`: required when mapped code, runtime content, site files, skill contracts, or technical documentation surfaces changed; otherwise state `no documentation impact` with a reason.
 
 ## Context
 
@@ -73,7 +84,7 @@ Continuer l'audit dans tous les cas — ne pas bloquer. L'avertissement sert à 
 
 Use ShipFlow versioning semantics: patch = wording clarification without decision change, minor = changed message/voice guidance inside the same strategy, major = changed ICP, positioning, pricing promise, trust posture, market, or brand strategy.
 
-If `docs/editorial/` exists, load `$SHIPFLOW_ROOT/skills/references/editorial-content-corpus.md` and use it before scoring public content. Check the claim register, page intent map, Astro content schema policy, and blog/article policy when the audited copy touches public pages, README, FAQ, pricing, public docs, public skill pages, runtime content, or article output.
+If `docs/editorial/` exists, apply `Governance Corpora And Output Plans` before scoring public content. Check the claim register, page intent map, Astro content schema policy, and blog/article policy when the audited copy touches public pages, README, FAQ, pricing, public docs, public skill pages, runtime content, or article output.
 
 ---
 
@@ -279,7 +290,7 @@ Based on the Princeton GEO study — these structures lift LLM citation by 30-40
 
 ### Step 3: Rewrite and fix
 
-For each issue rated B or worse:
+For each issue rated B or worse, after the governance checks above are complete:
 1. Quote the problematic copy.
 2. Explain why it's weak.
 3. Provide a rewritten version directly in the code.
@@ -310,6 +321,10 @@ Docs Coherence     [A/B/C/D] — docs/pricing/FAQ/onboarding aligned
 OVERALL            [A/B/C/D]
 
 Rewrites applied: X | Needs decision: Y | Proof/docs gaps: Z
+Governance:
+  Editorial Update Plan:      [complete/no editorial impact/blocked]
+  Claim Impact Plan:          [complete/not applicable/blocked]
+  Documentation Update Plan:  [complete/no documentation impact/blocked]
 ```
 
 ---
@@ -372,7 +387,7 @@ For each page, check:
 
 ### Phase 5: Fix
 
-Rewrite and fix all issues directly in code. Prioritize:
+Rewrite and fix all issues directly in code only after the relevant editorial and technical governance checks are complete. Prioritize:
 1. **Homepage and pricing** (highest traffic/impact)
 2. **CTAs across the site** (direct conversion impact)
 3. **Inconsistent terminology** (fix at source: i18n files or shared constants)

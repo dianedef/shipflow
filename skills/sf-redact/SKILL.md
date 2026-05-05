@@ -1,6 +1,6 @@
 ---
 name: sf-redact
-description: "Long-form drafting for articles, guides, editorials, brand voice, and audience fit."
+description: "Long-form drafting for articles, guides, editorials, and brand voice."
 disable-model-invocation: true
 argument-hint: '<nombre> <format> [sujet] (ex: "3 blog", "1 editorial IA en éducation", "2 informational")'
 ---
@@ -16,6 +16,17 @@ Process role: `support-de-chantier`.
 
 Before producing the final report, load `$SHIPFLOW_ROOT/skills/references/chantier-tracking.md` when this run is attached to a spec-first chantier. If exactly one active `specs/*.md` chantier is identified, append the current run to `Skill Run History`, update `Current Chantier Flow` when the run changes the chantier state, and include a final `Chantier` block. If no unique chantier is identified, do not write to any spec; report `Chantier: non applicable` or `Chantier: non trace` with the reason.
 
+
+## Governance Corpora And Output Plans
+
+Before choosing a public surface, drafting public content, or recommending article/blog/newsletter output, load `$SHIPFLOW_ROOT/skills/references/editorial-content-corpus.md` when `CONTENT_MAP.md` or `docs/editorial/` exists. Follow its load order for content surface routing, public page intent, claim register checks, editorial update gate, Astro runtime schema policy, and blog/article surface policy.
+
+Before changing runtime content, site files, content schemas, public docs, README guidance, skill contracts, or mapped technical documentation surfaces, load `$SHIPFLOW_ROOT/skills/references/technical-docs-corpus.md` and use `docs/technical/code-docs-map.md` to decide whether a `Documentation Update Plan` is required.
+
+The final report must include these governance outcomes when relevant:
+- `Editorial Update Plan`: required for public pages, README/public docs, public skill pages, FAQ, pricing/support copy, runtime public content, or blog/article/newsletter output. Use `no editorial impact` with a reason when there is no public-content consequence.
+- `Claim Impact Plan`: required when claims touch security, privacy, compliance, AI reliability, automation, speed, savings, availability, pricing, or business outcomes.
+- `Documentation Update Plan`: required when mapped code, runtime content, site files, skill contracts, or technical documentation surfaces changed; otherwise state `no documentation impact` with a reason.
 
 ## Context
 
@@ -58,7 +69,7 @@ Cette skill peut produire deux types de fichiers :
 
 Avant de planifier ou rédiger, lire le frontmatter complet de `BUSINESS.md`, `BRANDING.md`, `GUIDELINES.md`, `FOUNDER.md`/`AUTHOR.md` quand ils existent. Si le contenu dépend de ces contrats, reporter leurs versions :
 
-Si `docs/editorial/` existe, charger `$SHIPFLOW_ROOT/skills/references/editorial-content-corpus.md` avant de choisir une surface publique. Utiliser le claim register pour éviter les unsupported public claims, la page intent map pour respecter le rôle des pages publiques, l'Astro content schema policy avant de modifier du runtime content, et la blog/article surface policy avant de créer un article. Si aucune surface blog n'est déclarée, signaler `surface missing: blog` et ne pas inventer de chemin.
+Si `docs/editorial/` existe, appliquer la section `Governance Corpora And Output Plans` avant de choisir une surface publique. Utiliser le claim register pour éviter les unsupported public claims, la page intent map pour respecter le rôle des pages publiques, l'Astro content schema policy avant de modifier du runtime content, et la blog/article surface policy avant de créer un article. Si aucune surface blog n'est déclarée, signaler `surface missing: blog` et ne pas inventer de chemin.
 
 ```yaml
 depends_on:
@@ -379,6 +390,10 @@ Context versions:
   BRANDING.md:  [artifact_version or unknown/not found]
   GUIDELINES.md:[artifact_version or unknown/not found]
 Metadata gaps:  [none / list]
+Governance:
+  Editorial Update Plan:      [complete/no editorial impact/blocked]
+  Claim Impact Plan:          [complete/not applicable/blocked]
+  Documentation Update Plan:  [complete/no documentation impact/blocked]
 ─────────────────────────────────────
 Sections :
   1. [titre H2]

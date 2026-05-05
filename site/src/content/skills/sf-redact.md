@@ -21,6 +21,7 @@ what_you_get:
   - "A stronger long-form content draft"
   - "Writing shaped to the project voice and user need"
   - "A better content asset for publishing or refinement"
+  - "Governance notes for public claims, target surfaces, and documentation impact when relevant"
 example_prompts:
   - "/sf-redact article on agent handoffs"
   - "/sf-redact launch guide for ShipFlow"
@@ -28,6 +29,7 @@ example_prompts:
 limits:
   - "It creates content, not proof or market demand on its own"
   - "The strongest output still depends on underlying positioning clarity"
+  - "It does not invent undeclared blog or article surfaces"
 related_skills:
   - "sf-research"
   - "sf-enrich"

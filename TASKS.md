@@ -58,6 +58,7 @@
 | ✅ | Ajouter un contrat partagé de rapports compacts pour les skills (`report=user` par défaut, `report=agent` explicite) et le propager aux skills lifecycle, bug et audit | ✅ done |
 | ✅ | Renforcer les questions `sf-build` en mode plan avec contexte, racine du problème, enjeu business, options et recommandation best practice | ✅ done |
 | ✅ | Ajouter une cheatsheet publique et Markdown repo des master skills, supporting skills et modes d'arguments, avec page publique `sf-build` | ✅ done |
+| 🟠 | Créer une skill `sf-prs` pour trier les PR GitHub ouvertes (`gh`), vérifier repo/branches/diffs/checks, regrouper Dependabot quand possible, merger les PRs vertes et fermer/commenter les PRs obsolètes selon une politique explicite | 📋 todo |
 
 ---
 
@@ -78,6 +79,10 @@
 | Pri | Task | Status |
 |-----|------|--------|
 | 🟠 | Harmoniser tous les sous-menus CLI : lettres au lieu de chiffres, `x) Cancel` unique, et comportement Cancel cohérent entre `gum` et fallback bash | ✅ done |
+| 🟢 | Aligner `sf-veille` avec la gouvernance contenu : router les idées blog/newsletter vers `sf-content`/`sf-repurpose` et signaler `surface missing: blog` quand aucune surface n'est déclarée | 💤 deferred |
+| 🟢 | Ajouter un handoff contenu à `sf-research` et `sf-market-study` quand leurs rapports recommandent des contenus publics, avec sources, claims et route vers `sf-content` | 💤 deferred |
+| 🟢 | Renforcer `sf-audit` master pour charger explicitement les corpus éditorial/technique quand l'audit touche des surfaces publiques, claims ou docs mappées | 💤 deferred |
+| 🟢 | Ajouter une micro-intégration `technical-docs-corpus` à `sf-content`/`sf-repurpose` quand les opportunités ou handoffs touchent des docs techniques internes | 💤 deferred |
 
 ---
 
@@ -97,6 +102,8 @@
 | ✅ | Corriger le raccourci CLI `sf u` et harmoniser les retours `x`/`Esc`/Backspace dans les sous-menus (`BUG-2026-05-04-002`) | ✅ done |
 | 🟠 | Consolidate duplicated tunnel lifecycle logic between `local/dev-tunnel.sh` and `local/local.sh` so the interactive menu inherits the same validation, collision handling, and managed stop behavior | 📋 todo |
 | 🟠 | Harden `install.sh` supply-chain and failure handling: replace live `curl | bash`/direct downloads with pinned, verified install steps and strict failure behavior | 🔄 in progress |
+| 🟡 | Corriger la détection de commande dev quand un projet Flutter contient un `package.json` uniquement Convex (`BUG-2026-05-04-004`) | 🔄 in progress |
+| 🟡 | Empêcher ShipFlow de créer des symlinks `TASKS.md` dans les projets et garder le tracking dans `shipflow_data` (`BUG-2026-05-05-001`) | 🔄 in progress |
 | 🟠 | Local MCP OAuth tunnel login: commande `shipflow-mcp-login`, intégration menu local, alias install, tests de validation et docs | ✅ done |
 | 🟠 | Split `lib.sh` hotspots around environment lifecycle, publishing, dashboard, inspector, and metadata helpers to reduce the 5,900+ line blast radius | 📋 todo |
 | 🟡 | Resolve the `site` production dependency advisory for Astro (`GHSA-j687-52p2-xcff`) through a planned Astro upgrade/migration | 📋 todo |

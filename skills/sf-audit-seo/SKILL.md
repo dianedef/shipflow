@@ -1,6 +1,6 @@
 ---
 name: sf-audit-seo
-description: "SEO audit for technical health, on-page quality, indexing, metadata, and search intent fit."
+description: "SEO audit for technical health, metadata, indexing, and intent fit."
 disable-model-invocation: true
 argument-hint: '[file-path | "global"] (omit for full project)'
 ---
@@ -26,6 +26,17 @@ Before producing the final report, load `$SHIPFLOW_ROOT/skills/references/report
 
 Default to `report=user`: concise, findings-first, and focused on top issues, proof gaps, chantier potential, and the next real action. Use `report=agent`, `handoff`, `verbose`, or `full-report` for the detailed audit matrix, domain checklist output, command evidence, assumptions, confidence limits, and handoff notes.
 
+
+## Governance Corpora And Output Plans
+
+Before scoring indexed public content, rewriting SEO copy, fixing public site metadata, or recommending article/blog output, load `$SHIPFLOW_ROOT/skills/references/editorial-content-corpus.md` when `CONTENT_MAP.md` or `docs/editorial/` exists. Follow its load order for content surface routing, public page intent, claim register checks, editorial update gate, Astro runtime schema policy, and blog/article surface policy.
+
+Before changing code, runtime content, site files, content schemas, sitemap/robots/metadata infrastructure, skill contracts, public docs, README guidance, or mapped technical documentation surfaces, load `$SHIPFLOW_ROOT/skills/references/technical-docs-corpus.md` and use `docs/technical/code-docs-map.md` to decide whether a `Documentation Update Plan` is required.
+
+The final report must include these governance outcomes when relevant:
+- `Editorial Update Plan`: required for public pages, README/public docs, public skill pages, FAQ, pricing/support copy, runtime public content, blog/article/newsletter requests, indexed claims, or public SEO copy changes. Use `no editorial impact` with a reason when there is no public-content consequence.
+- `Claim Impact Plan`: required when claims touch security, privacy, compliance, AI reliability, automation, speed, savings, availability, pricing, or business outcomes.
+- `Documentation Update Plan`: required when mapped code, runtime content, site files, skill contracts, or technical documentation surfaces changed; otherwise state `no documentation impact` with a reason.
 
 ## Context
 
@@ -69,6 +80,8 @@ Si le fichier existe mais semble incomplet, signaler. Continuer l'audit dans tou
 - Include a `Business metadata versions` section in every report.
 
 Use ShipFlow versioning semantics: patch = editorial clarification without strategy change, minor = changed keyword/persona guidance inside the same market strategy, major = changed ICP, positioning, pricing promise, trust posture, market, or acquisition strategy.
+
+If `docs/editorial/` exists, apply `Governance Corpora And Output Plans` before scoring public content, indexed claims, public docs, public skill pages, FAQ/pricing/support copy, runtime content, or article/blog output.
 
 ---
 
@@ -245,7 +258,7 @@ Score each category **A/B/C/D**. Be strict — production SEO standard.
 
 ### Step 3: Fix
 
-For each issue rated B or worse:
+For each issue rated B or worse, after the governance checks above are complete:
 1. Identify the exact file and line.
 2. Fix it directly in the code.
 3. For content decisions (keyword choice, meta description wording), propose 2 options.
@@ -388,7 +401,7 @@ Map the internal link graph:
 
 ### Phase 6: Fix
 
-Fix all issues in code. Priority:
+Fix all issues in code only after the relevant editorial and technical governance checks are complete. Priority:
 1. **Missing/broken meta tags** — highest SEO impact
 2. **Missing structured data** — add JSON-LD (including AI-specific types: `Person`, `SpeakableSpecification`, `QAPage`)
 3. **llms.txt + AI crawler rules** — generate if missing, the biggest AEO quick win of 2026
@@ -448,6 +461,10 @@ OVERALL              [A/B/C/D]
 
 Fixed: X issues across Y files
 Critical remaining: Z items
+Governance:
+  Editorial Update Plan:      [complete/no editorial impact/blocked]
+  Claim Impact Plan:          [complete/not applicable/blocked]
+  Documentation Update Plan:  [complete/no documentation impact/blocked]
 ```
 
 ---
