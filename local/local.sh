@@ -670,10 +670,17 @@ get_active_ports() {
 
 # Fonction pour récupérer uniquement les vrais processus de tunnel
 get_tunnel_processes() {
-    ps -eo pid=,args= | while IFS= read -r line; do
-        case "$line" in
-            *autossh*" $REMOTE_HOST"*"-L "*":localhost:"*|*ssh*" $REMOTE_HOST"*"-N "*"-L "*":localhost:"*)
-                echo "$line"
+    ps -eo pid=,args= | while read -r pid cmd; do
+        [ -n "$pid" ] || continue
+
+        case " $cmd " in
+            *" $REMOTE_HOST "*) ;;
+            *) continue ;;
+        esac
+
+        case " $cmd " in
+            *" autossh "*"-L "*":localhost:"*|*"/autossh "*"-L "*":localhost:"*|*" ssh "*"-N "*"-L "*":localhost:"*|*"/ssh "*"-N "*"-L "*":localhost:"*)
+                printf "%s %s\n" "$pid" "$cmd"
                 ;;
         esac
     done
@@ -751,7 +758,13 @@ start_tunnels() {
     
     # Arrêter les tunnels existants
     echo -e "${YELLOW}🛑 Arrêt des tunnels existants...${NC}"
-    pkill -f "autossh.*$REMOTE_HOST" 2>/dev/null || true
+    PIDS=$(get_tunnel_pids)
+    if [ -n "$PIDS" ]; then
+        echo "$PIDS" | while read -r pid; do
+            [ -n "$pid" ] || continue
+            kill "$pid" 2>/dev/null || true
+        done
+    fi
     sleep 1
     
     # Récupérer les ports
@@ -846,9 +859,11 @@ stop_tunnels() {
     
     if [ -z "$PIDS" ]; then
         echo -e "${YELLOW}⚠ Aucun tunnel actif trouvé pour $REMOTE_HOST${NC}"
-        echo ""
-        echo -e "${BLUE}💡 Processus SSH en cours:${NC}"
-        ps aux | grep ssh | grep -v grep | grep -v ssh-agent
+        if [ "${SHIPFLOW_DEBUG:-0}" = "1" ]; then
+            echo ""
+            echo -e "${BLUE}💡 Processus SSH en cours:${NC}"
+            ps aux | grep ssh | grep -v grep | grep -v ssh-agent || true
+        fi
     else
         echo -e "${GREEN}✓ Processus trouvés:${NC}"
         echo "$PIDS" | while read -r pid; do

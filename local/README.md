@@ -221,6 +221,13 @@ Vérifiez la configuration SSH :
 ssh "$(cat ~/.shipflow/current_connection)" "echo Connection OK"
 ```
 
+Si le menu indique qu'aucun tunnel actif n'a été trouvé et que vous voulez voir
+les processus SSH bruts pour diagnostiquer, relancez-le en mode debug :
+
+```bash
+SHIPFLOW_DEBUG=1 urls
+```
+
 ### MCP provider absent
 
 Si `shipflow-mcp-login vercel` ou `shipflow-mcp-login supabase` indique que le provider n'existe pas côté distant, ajoutez-le d'abord sur le serveur:

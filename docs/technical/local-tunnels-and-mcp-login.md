@@ -1,10 +1,10 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "1.0.1"
+artifact_version: "1.0.2"
 project: ShipFlow
 created: "2026-05-01"
-updated: "2026-05-02"
+updated: "2026-05-05"
 status: reviewed
 source_skill: sf-start
 scope: local-tunnels-and-mcp-login
@@ -25,6 +25,7 @@ supersedes: []
 evidence:
   - "local/README.md and function inventory for local scripts."
   - "Blacksmith OAuth callback tunnel added for remote CLI auth."
+  - "Managed tunnel detection accepts SSH targets before or after -L in process args."
 next_review: "2026-06-01"
 next_step: "/sf-docs technical audit local"
 ---
@@ -93,6 +94,7 @@ shipflow-blacksmith-login
 - Bare SSH identity filenames resolve from the menu launch directory, then `~/.ssh/`, then the user's home directory; the saved identity path should be absolute.
 - Local port occupancy is checked before opening a tunnel.
 - Managed tunnel stop logic should select ShipFlow-owned tunnels, not broad process patterns.
+- Raw SSH process listing is debug-only operator output via `SHIPFLOW_DEBUG=1`.
 - Active Flutter Web `tmux` ports are discovered from the server-side
   `SHIPFLOW_FLUTTER_WEB_SESSIONS_FILE` registry and included only when the
   recorded `tmux` session still exists.
