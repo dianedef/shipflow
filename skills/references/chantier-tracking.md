@@ -1,10 +1,10 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "0.4.3"
+artifact_version: "0.4.4"
 project: ShipFlow
 created: "2026-04-27"
-updated: "2026-05-06"
+updated: "2026-05-08"
 status: draft
 source_skill: sf-start
 scope: chantier-tracking
@@ -37,6 +37,7 @@ evidence:
   - "Master workflow lifecycle reference added: bug work items use bugs/*.md as source of truth; BUGS.md is optional/generated/triage view."
   - "Final report timestamp moved into a shared reporting brick loaded through reporting-contract.md."
   - "sf-design added as an obligatoire lifecycle master skill."
+  - "sf-bug clarified as bug lifecycle execution through owner skills and bounded subagents."
 next_review: "2026-05-27"
 next_step: "/sf-verify Specs as chantier registry"
 ---
@@ -109,7 +110,7 @@ This block coexists with the compact `Chantier` block. If the source skill is al
 |-------------|----------------|--------------|------------------|
 | `sf-spec`, `sf-ready`, `sf-build`, `sf-maintain`, `sf-design`, `sf-deploy`, `sf-start`, `sf-verify`, `sf-end`, `sf-ship` | `obligatoire` | `lifecycle` | Not a source; continue or create the owned chantier through the lifecycle gates. |
 | `sf-audit*`, `sf-deps`, `sf-perf` | `conditionnel` | `source-de-chantier` | Major audit findings, P0/P1, cross-domain P2 clusters, or fixes needing a spec. |
-| `sf-auth-debug`, `sf-prod`, `sf-check`, `sf-test`, `sf-migrate`, `sf-fix`, `sf-bug` | `conditionnel` | `source-de-chantier` | Incidents, failing flows, migration risk, bug files, bug lifecycle routing, or validation failures beyond a direct fix. |
+| `sf-auth-debug`, `sf-prod`, `sf-check`, `sf-test`, `sf-migrate`, `sf-fix`, `sf-bug` | `conditionnel` | `source-de-chantier` | Incidents, failing flows, migration risk, bug files, bug lifecycle execution, or validation failures beyond a direct fix. |
 | `sf-market-study`, `sf-veille`, `sf-research` | `conditionnel` | `source-de-chantier` | Strategic or research output that requires a product, content, architecture, or implementation decision. |
 | `sf-docs`, `sf-enrich`, `sf-redact`, `sf-repurpose`, `sf-scaffold`, `sf-changelog`, `sf-design-playground`, `sf-skills-refresh`, `sf-init` | `conditionnel` | `support-de-chantier` | Route to a source or `/sf-spec` only when the user explicitly asks to formalize follow-up work. |
 | `sf-tasks`, `sf-backlog`, `sf-priorities`, `sf-review`, `continue` | `conditionnel` | `pilotage` | Do not create a chantier from every note; route only when the user or evidence requires a durable spec. |

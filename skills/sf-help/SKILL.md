@@ -35,7 +35,7 @@ Quick reference for the skill system, modes, and workflows.
 | `/sf-maintain` | Master maintenance lifecycle from triage through delegated fixes, verification, and ship | `quick`, `full`, `security`, `global`, `no-ship` |
 | `/sf-content` | Master content lifecycle for strategy, repurposing, drafting, enrichment, audits, docs, validation, and ship routing | `plan`, `repurpose`, `draft`, `enrich`, `audit`, `seo`, `editorial`, `apply`, `ship` |
 | `/sf-design` | Master design lifecycle for UI/UX, tokens, playgrounds, a11y, implementation, proof, and ship routing | `tokens`, `audit`, `playground`, page/route, or natural-language design goal |
-| `/sf-bug` | Professional bug loop orchestrator for intake, bug files, fixes, retests, verification, and ship risk | `BUG-ID`, `--retest BUG-ID`, `--ship BUG-ID` |
+| `/sf-bug` | Professional bug loop lifecycle executor for intake, bug files, fixes, retests, verification, and ship risk | `BUG-ID`, `--retest BUG-ID`, `--ship BUG-ID` |
 | `/sf-fix` | Bug-first intake and routing (direct fix vs spec-first) | `<bug description>` |
 | `/sf-auth-debug` | Browser-auth diagnosis for Clerk, Supabase Auth, OAuth, Google/YouTube, Convex, sessions, callbacks | `<bug/URL/flow>` |
 | `/sf-browser` | General browser verification for public UI, visual state, console/network evidence, screenshots, and page-level assertions | `<URL or route> <objective>` |
@@ -75,7 +75,7 @@ Note: `/sf-verify` now includes guided next-step prompting when verdict is not r
 Note: `/sf-auth-debug` is the required diagnostic path for auth bugs that need browser evidence before implementation.
 Note: `/sf-browser` is the generic browser evidence path for non-auth page assertions; use `/sf-auth-debug` for auth/session/provider issues, `/sf-prod` for deployment truth, and `/sf-test` for durable manual QA logs.
 Note: `/sf-test` sits after verification and before shipping when a human needs to confirm the real user flow; it writes compact `TEST_LOG.md`, durable bug files under `bugs/`, and optional compact `BUGS.md` triage views when needed.
-Note: `/sf-bug` is the recommended entrypoint when you want the whole professional bug loop routed from a `BUG-ID`, retest, closure question, or ship-risk question.
+Note: `/sf-bug` is the recommended entrypoint when you want the whole professional bug loop executed from a `BUG-ID`, retest, closure question, or ship-risk question.
 Note: `/sf-start` now reuses the `sf-model` routing matrix and can choose `single-agent` vs `multi-agent` execution with explicit file ownership and per-group model overrides.
 Note: `/sf-spec` → `/sf-ready` → `/sf-start` → `/sf-verify` now share a `User Story` contract and should ask targeted user questions whenever behavior, scope, or security is still ambiguous.
 Note: `/shipflow` is the recommended first command for non-technical operators. It answers directly when no file work is needed, otherwise it hands off in the main conversation to the right owner skill; selected master skills own their own delegated sequential execution.
@@ -89,7 +89,7 @@ Note: User-facing skill questions follow the shared question contract: ask only 
 ### Professional Bug Loop (concise)
 
 Flow:
-1. `/sf-bug [BUG-ID or summary]` chooses the safest next command.
+1. `/sf-bug [BUG-ID or summary]` continues the safest lifecycle action when possible.
 2. `/sf-test [scope]` detects a fail and logs a compact test pointer.
 3. `bugs/BUG-ID.md` is the full bug file and source of truth (repro, expected/observed, diagnosis, Fix Attempts, Retest History, redaction state, next step).
 4. `BUGS.md`, when present, is only a compact optional/generated triage row (`BUG-ID`, status, severity, last-tested, bug file path).
@@ -414,7 +414,7 @@ Provide explicit arguments and prompts don't appear:
 
 ### Fix a bug
 ```bash
-/sf-bug BUG-2026-05-03-001      # Route the next step from bug-file status
+/sf-bug BUG-2026-05-03-001      # Continue from bug-file status when safe
 /sf-fix "short bug description"    # Triage + direct fix or route
 /sf-auth-debug "Google login returns to sign-in" # Reproduce auth flow and isolate the failure point
 /sf-browser "https://example.com" "verify Example Domain is visible" # Collect non-auth browser evidence
@@ -524,7 +524,7 @@ Provide explicit arguments and prompts don't appear:
 
 **Content work?** → `/sf-content` (content map + editorial gates + owner skills + validation)
 
-**Bug has a BUG-ID?** → `/sf-bug BUG-ID` (routes fix, retest, verify, or ship risk from bug-file state)
+**Bug has a BUG-ID?** → `/sf-bug BUG-ID` (continues fix, retest, verify, or ship-risk flow from bug-file state)
 
 **Audit everything?** → `/sf-audit global` (all 8 domains)
 

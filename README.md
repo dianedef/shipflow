@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "0.9.0"
+artifact_version: "0.9.1"
 project: "shipflow"
 created: "2026-04-25"
-updated: "2026-05-06"
+updated: "2026-05-08"
 status: draft
 source_skill: sf-docs
 scope: readme
@@ -24,6 +24,7 @@ linked_systems:
   - skills/sf-content/SKILL.md
   - skills/sf-design/SKILL.md
   - skills/sf-browser/SKILL.md
+  - skills/sf-bug/SKILL.md
   - skills/shipflow/SKILL.md
   - skills/references/question-contract.md
   - site/src/content/skills/shipflow.md
@@ -46,6 +47,7 @@ evidence:
   - "Documented shipflow <instruction> as the recommended non-technical router before direct sf-* expert entrypoints."
   - "Documented the shared question/default contract for numbered questions and context-safe defaults."
   - "Added sf-design as the master design lifecycle entrypoint."
+  - "Clarified sf-bug as a bug lifecycle executor that continues through owner skills and bounded subagents when safe."
 next_step: "/sf-docs audit README.md"
 ---
 
@@ -320,7 +322,7 @@ Skill launch cheatsheet:
 | Non-trivial product, code, site, or docs work | `sf-build <story, bug, or goal>` | Plain task text is the story; use `report=agent`, `handoff`, `verbose`, or `full-report` only for detailed handoff evidence. |
 | Recurring project upkeep | `sf-maintain [mode]` | `full`/no argument, `quick`, `security`, `deps`, `docs`, `audits`, `no-ship`, `global`. |
 | Release confidence after implementation | `sf-deploy [target or mode]` | no argument, `skip-check`, `--preview`, `--prod`, `no-changelog`. |
-| Bug-loop routing | `sf-bug [BUG-ID, summary, or mode]` | no argument, `BUG-ID`, `--fix`, `--retest`, `--verify`, `--ship`, `--close`. |
+| Bug-loop lifecycle | `sf-bug [BUG-ID, summary, or mode]` | no argument, `BUG-ID`, `--fix`, `--retest`, `--verify`, `--ship`, `--close`. |
 | Content management | `sf-content [goal, source, file, or mode]` | `plan`, `repurpose`, `draft`, `enrich`, `audit`, `seo`, `editorial`, `apply`, `ship`. |
 | Skill creation or maintenance | `sf-skill-build <idea or path>` | new skill idea, existing skill path, optional `sf-explore` for fuzzy placement, public page/docs/runtime validation gates. |
 | Design lifecycle | `sf-design <design question or goal>` | Master design entrypoint for UI/UX, tokens, playgrounds, component/a11y audits, implementation, browser proof, verification, and ship routing. |
@@ -335,7 +337,7 @@ Bug loop entrypoint:
 sf-bug -> sf-test -> bug file -> sf-fix -> sf-test --retest -> sf-verify -> sf-ship
 ```
 
-Use `sf-bug` when you want the professional bug loop orchestrated from a `BUG-ID`, a fresh bug report, a retest request, or a ship-risk question. It routes to the narrower owner skill without bypassing the bug file, retest, verification, or ship-risk gates.
+Use `sf-bug` when you want the professional bug loop executed from a `BUG-ID`, a fresh bug report, a retest request, or a ship-risk question. It continues through narrower owner skills and bounded subagents when safe, without bypassing the bug file, retest, verification, or ship-risk gates.
 
 Bug-first repair entrypoint:
 

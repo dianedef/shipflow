@@ -1,10 +1,10 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "1.12.0"
+artifact_version: "1.12.1"
 project: ShipFlow
 created: "2026-05-01"
-updated: "2026-05-06"
+updated: "2026-05-08"
 status: reviewed
 source_skill: sf-start
 scope: skill-runtime-and-lifecycle
@@ -25,6 +25,7 @@ linked_systems:
   - skills/sf-design/SKILL.md
   - skills/sf-skill-build/SKILL.md
   - skills/sf-browser/SKILL.md
+  - skills/sf-bug/SKILL.md
   - skills/sf-init/SKILL.md
   - skills/sf-docs/SKILL.md
   - skills/references/reporting-contract.md
@@ -38,7 +39,7 @@ linked_systems:
   - docs/editorial/
 depends_on:
   - artifact: "shipflow-spec-driven-workflow.md"
-    artifact_version: "0.15.0"
+    artifact_version: "0.15.1"
     required_status: draft
   - artifact: "skills/references/technical-docs-corpus.md"
     artifact_version: "1.1.0"
@@ -66,6 +67,7 @@ evidence:
   - "Master workflow lifecycle extracted to skills/references/master-workflow-lifecycle.md; bug work items now use bugs/*.md as source of truth and BUGS.md as optional/generated triage."
   - "shipflow <instruction> documented as the primary non-technical router with direct main-thread handoff to selected skills."
   - "Shared question/default contract added for numbered user-facing decisions and context-safe defaults."
+  - "sf-bug clarified as a bug lifecycle executor through owner skills and bounded subagents, not a simple next-command router."
 next_review: "2026-06-01"
 next_step: "/sf-docs technical audit skills"
 ---
@@ -100,7 +102,7 @@ This doc covers ShipFlow skills, lifecycle flow, references, templates, model/to
 - `sf-docs`: documentation generation, audit, metadata, and technical-docs mode.
 - `sf-docs technical`: technical governance bootstrap, code-docs map creation, and audit.
 - `sf-docs editorial`: editorial governance scaffolding and audit for public-content drift, claim register, page intent, and runtime content schema preservation.
-- `sf-bug`: professional bug loop orchestrator (`sf-test -> bug file -> sf-fix -> sf-test --retest -> sf-verify -> sf-ship`).
+- `sf-bug`: professional bug loop lifecycle executor (`sf-test -> bug file -> sf-fix -> sf-test --retest -> sf-verify -> sf-ship`).
 - `sf-maintain`: master project maintenance lifecycle for bugs, dependencies, docs, checks, audits, migrations, tasks, security posture, delegated remediation, verification, and ship/deploy routing.
 - `sf-browser`: generic non-auth browser verification through Playwright MCP for URLs, page-level assertions, screenshots, console summaries, and network summaries.
 - `sf-build`: user-facing orchestrator that consumes the governance corpus gate before implementation, closure, and ship.
@@ -235,7 +237,7 @@ sf-content
   ARM64 Chrome-stable fallback evidence.
 - `sf-browser` owns generic non-auth browser proof. `sf-auth-debug` owns auth, session, callback, provider, tenant, and protected-route browser proof.
 - `sf-deploy` owns release orchestration only; `sf-ship` owns commit/push, `sf-prod` owns deployed truth, and proof skills own observed behavior.
-- `sf-bug` owns bug lifecycle orchestration only; phase skills still own bug record mutation, diagnosis, retest evidence, verification, and shipping.
+- `sf-bug` owns bug lifecycle execution through owner skills and bounded subagents; phase skills still own bug record mutation, diagnosis, retest evidence, verification, and shipping internals.
 - `sf-maintain` owns the maintenance lifecycle; bugs, dependencies, docs, checks, audits, migrations, tasks, security review, repair, verification, and ship still run through their specialist owner skills and gates.
 - `sf-content` owns content-management orchestration; repurposing, drafting, enrichment, copy audit, copywriting audit, SEO audit, docs, veille, market study, browser proof, verification, and ship still run through their specialist owner skills and gates.
 - `sf-design` owns design lifecycle orchestration; UI/UX audits, token audits, component audits, accessibility audits, playground tooling, design-system creation, browser proof, implementation, verification, and ship still run through their specialist owner skills and gates.

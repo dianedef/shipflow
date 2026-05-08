@@ -1,10 +1,10 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "0.15.0"
+artifact_version: "0.15.1"
 project: ShipFlow
 created: "2026-04-22"
-updated: "2026-05-06"
+updated: "2026-05-08"
 status: draft
 source_skill: sf-docs
 scope: spec-driven-workflow
@@ -21,6 +21,7 @@ linked_systems:
   - skills/sf-content/SKILL.md
   - skills/sf-design/SKILL.md
   - skills/sf-browser/SKILL.md
+  - skills/sf-bug/SKILL.md
   - skills/references/entrypoint-routing.md
   - templates/artifacts/
   - tools/shipflow_metadata_lint.py
@@ -57,6 +58,7 @@ evidence:
   - "Updated on 2026-05-04 to document shipflow <instruction> as the primary non-technical router with direct main-thread handoff to selected skills."
   - "Updated on 2026-05-05 to document shared question/default doctrine across skills."
   - "Updated on 2026-05-06 to add sf-design as the master design lifecycle entrypoint."
+  - "Updated on 2026-05-08 to clarify sf-bug as a bug lifecycle executor that continues through owner skills and bounded subagents when safe."
 next_review: "unknown"
 next_step: "/sf-docs audit shipflow-spec-driven-workflow.md"
 ---
@@ -96,7 +98,7 @@ Skill launch cheatsheet:
 | Non-trivial product, code, site, or docs work | `sf-build <story, bug, or goal>` | Plain task text is the story; use `report=agent`, `handoff`, `verbose`, or `full-report` only for detailed handoff evidence. |
 | Recurring project upkeep | `sf-maintain [mode]` | `full`/no argument, `quick`, `security`, `deps`, `docs`, `audits`, `no-ship`, `global`. |
 | Release confidence after implementation | `sf-deploy [target or mode]` | no argument, `skip-check`, `--preview`, `--prod`, `no-changelog`. |
-| Bug-loop routing | `sf-bug [BUG-ID, summary, or mode]` | no argument, `BUG-ID`, `--fix`, `--retest`, `--verify`, `--ship`, `--close`. |
+| Bug-loop lifecycle | `sf-bug [BUG-ID, summary, or mode]` | no argument, `BUG-ID`, `--fix`, `--retest`, `--verify`, `--ship`, `--close`. |
 | Content management | `sf-content [goal, source, file, or mode]` | `plan`, `repurpose`, `draft`, `enrich`, `audit`, `seo`, `editorial`, `apply`, `ship`. |
 | Skill creation or maintenance | `sf-skill-build <idea or path>` | new skill idea, existing skill path, optional `sf-explore` for fuzzy placement, public page/docs/runtime validation gates. |
 | Design lifecycle | `sf-design <design question or goal>` | Master design entrypoint for UI/UX, tokens, playgrounds, component/a11y audits, implementation, browser proof, verification, and ship routing. |
@@ -111,7 +113,7 @@ Bug loop entrypoint:
 sf-bug -> sf-test -> bug file -> sf-fix -> sf-test --retest -> sf-verify -> sf-ship
 ```
 
-Use `sf-bug` when the operator wants one bug lifecycle router for a new report, a `BUG-ID`, a retest, a closure question, or a ship-risk question. It routes to the existing owner skill rather than mutating bug records or code itself.
+Use `sf-bug` when the operator wants one bug lifecycle executor for a new report, a `BUG-ID`, a retest, a closure question, or a ship-risk question. It continues through existing owner skills and bounded subagents when safe rather than mutating bug records or code in the master thread itself.
 
 Bug repair entrypoint:
 
@@ -713,7 +715,7 @@ sf-bug -> sf-test -> bug file -> sf-fix -> sf-test --retest -> sf-verify -> sf-s
 
 Each stage has a narrow job:
 
-- `sf-bug` reads bug state and routes the next command without bypassing lifecycle gates.
+- `sf-bug` reads bug state and continues the next safe lifecycle action through owner skills or bounded subagents without bypassing lifecycle gates.
 - `sf-test` captures the failure, opens or updates the bug file, and may refresh the optional compact index.
 - `sf-fix` reads the bug file and appends diagnosis and fix attempts.
 - `sf-test --retest BUG-ID` appends the retest history and updates the bug state.

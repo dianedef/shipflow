@@ -19,13 +19,13 @@ Before producing the final report, load `$SHIPFLOW_ROOT/skills/references/chanti
 
 Before producing the final report, load `$SHIPFLOW_ROOT/skills/references/reporting-contract.md`.
 
-Default to `report=user`: concise, route-first, and using the compact chantier block. The detailed report template below is for `report=agent`, blocked runs, or explicit handoff.
+Default to `report=user`: concise, lifecycle-first, and using the compact chantier block. The detailed report template below is for `report=agent`, blocked runs, or explicit handoff.
 
 ## Master Delegation
 
 Before choosing execution topology, load `$SHIPFLOW_ROOT/skills/references/master-delegation-semantics.md`.
 
-This skill follows that reference; local nuances below only narrow or route it. Bug-loop orchestration defaults to delegated sequential for evidence routing, fix/retest/verify/ship routing, and bug-file/state checks when subagents are available; parallel bug work requires ready `Execution Batches`.
+This skill follows that reference; local nuances below only narrow it. Bug-loop orchestration defaults to delegated sequential for bug-file/state checks, evidence gathering, fix attempts, retests, verification, closure preparation, and ship preparation when subagents are available. Parallel bug work requires ready `Execution Batches`.
 
 ## Master Workflow Lifecycle
 
@@ -51,15 +51,17 @@ Because this skill has process role `source-de-chantier`, evaluate the standard 
 
 ## Mission
 
-`sf-bug` is the professional bug loop orchestrator.
+`sf-bug` is the professional bug loop lifecycle executor.
 
-It routes the lifecycle:
+It orchestrates the lifecycle through owner skills and bounded subagents:
 
 ```text
 intake -> sf-test -> bug file -> sf-fix -> sf-test --retest -> sf-verify -> sf-ship
 ```
 
-The goal is fewer manual decisions, not weaker gates. `sf-bug` must not treat a bug as closed just because code changed, a retest was requested, a deploy succeeded, or the operator wants to move on.
+The goal is fewer manual decisions and fewer manual commands, not weaker gates. When scope, evidence, and risk are clear, `sf-bug` should keep executing the lifecycle in delegated sequential mode instead of ending with a command for the operator to run next.
+
+`sf-bug` must not treat a bug as closed just because code changed, a retest was requested, a deploy succeeded, or the operator wants to move on.
 
 ## Ownership Boundaries
 
@@ -71,21 +73,21 @@ Orchestrate existing skills; do not duplicate their internals.
 - `sf-browser` owns narrow non-auth browser evidence.
 - `sf-verify` owns closure, user-story coherence, and remaining bug-risk verification.
 - `sf-ship` owns commit/push and pre-ship bug-risk reporting.
-- `sf-bug` owns status interpretation, safety gates, and next-command routing.
+- `sf-bug` owns status interpretation, safety gates, execution topology, lifecycle continuation, owner-skill routing, integration of downstream evidence, and final bug-loop reporting.
 
-Route to a narrower skill when the user clearly asks for only that phase.
+Delegate or route to a narrower skill when that skill owns the phase. Stop with a next command only when a stop condition, missing approval, unavailable subagent, unavailable proof surface, or explicit user request prevents continuing in the current run.
 
 ## Mode Detection
 
 Parse `$ARGUMENTS`:
 
-- empty -> inspect `bugs/*.md` and optional `BUGS.md`, then recommend the highest-priority next bug command.
-- `BUG-YYYY-MM-DD-NNN` -> read the bug file first, use the optional compact index only as secondary context, interpret status, and route to the next lifecycle step.
-- free text -> decide whether this is an observed failure needing `/sf-test [scope]`, a narrow actionable bug needing `/sf-fix [summary]`, or an ambiguous defect needing `/sf-spec [bug title]`.
-- `--fix BUG-ID` -> route to `/sf-fix BUG-ID` after confirming the bug file exists.
-- `--retest BUG-ID` -> route to `/sf-test --retest BUG-ID`.
-- `--verify BUG-ID` -> route to `/sf-verify BUG-ID`.
-- `--ship BUG-ID` -> verify bug state first; route to `/sf-ship BUG-ID` only when the bug state does not block clean shipping.
+- empty -> inspect `bugs/*.md` and optional `BUGS.md`, then continue or recommend the highest-priority safe bug action.
+- `BUG-YYYY-MM-DD-NNN` -> read the bug file first, use the optional compact index only as secondary context, interpret status, and continue through the next lifecycle step when safe.
+- free text -> decide whether this is an observed failure needing `sf-test`, a narrow actionable bug needing `sf-fix`, or an ambiguous defect needing `sf-spec`; continue through that owner when safe.
+- `--fix BUG-ID` -> delegate to `sf-fix BUG-ID` after confirming the bug file exists.
+- `--retest BUG-ID` -> delegate to `sf-test --retest BUG-ID`.
+- `--verify BUG-ID` -> delegate to `sf-verify BUG-ID`.
+- `--ship BUG-ID` -> verify bug state first; delegate to `sf-ship BUG-ID` only when the bug state does not block clean shipping.
 - `--close BUG-ID` -> refuse direct closure unless the bug file contains passing retest evidence or an explicit `closed-without-retest` exception path is chosen.
 
 If arguments include multiple bug IDs, ask which one to handle first unless the user explicitly requests a dashboard summary.
@@ -110,26 +112,26 @@ If optional `BUGS.md` references a missing bug file:
 
 - keep or report the index row without treating it as durable proof
 - classify state as `needs-info`
-- route to `/sf-test --retest BUG-ID` or `/sf-fix BUG-ID` only if enough context remains to make that safe
+- continue through `sf-test --retest BUG-ID` or `sf-fix BUG-ID` only if enough context remains to make that safe
 - otherwise ask for recovery context
 
 If a bug file exists without an index row:
 
 - report the optional index gap
-- route to `/sf-test --retest BUG-ID` or `/sf-fix BUG-ID` after confirming the bug file frontmatter and status are usable
+- continue through `sf-test --retest BUG-ID` or `sf-fix BUG-ID` after confirming the bug file frontmatter and status are usable
 
 ## Step 2 — Interpret Status
 
 Use canonical professional bug states:
 
-- `open`: route to `/sf-fix BUG-ID`, or to evidence gathering when reproduction is weak.
+- `open`: continue through `sf-fix BUG-ID`, or through evidence gathering when reproduction is weak.
 - `needs-info`: ask for the missing environment, observed behavior, expected behavior, or evidence.
-- `needs-repro`: route to `/sf-test --retest BUG-ID`, `/sf-browser`, or `/sf-auth-debug` based on the missing proof.
-- `in-diagnosis`: route to `/sf-fix BUG-ID` unless another skill is actively running.
-- `fix-attempted`: route to `/sf-test --retest BUG-ID`; do not verify or ship as clean yet.
-- `fixed-pending-verify`: route to `/sf-verify BUG-ID`.
+- `needs-repro`: continue through `sf-test --retest BUG-ID`, `sf-browser`, or `sf-auth-debug` based on the missing proof.
+- `in-diagnosis`: continue through `sf-fix BUG-ID` unless another skill is actively running.
+- `fix-attempted`: continue through `sf-test --retest BUG-ID`; do not verify or ship as clean yet.
+- `fixed-pending-verify`: continue through `sf-verify BUG-ID`.
 - `closed`: report no action unless the user is investigating a regression or release notes.
-- `closed-without-retest`: report residual risk and route to `/sf-test --retest BUG-ID` if closure confidence matters.
+- `closed-without-retest`: report residual risk and continue through `sf-test --retest BUG-ID` if closure confidence matters.
 - `duplicate`: route to the canonical bug ID; do not fork work.
 - `wontfix`: report the decision and only reopen if the product decision changed.
 
@@ -140,7 +142,7 @@ Severity changes routing:
 
 ## Step 3 — Choose Evidence Path
 
-Route before fixing when the missing proof matters:
+Run the evidence owner before fixing when the missing proof matters:
 
 - Auth, OAuth, cookies, sessions, callbacks, tenants, protected routes -> `/sf-auth-debug [BUG-ID or title]`
 - Non-auth route, visible state, console, network, screenshot, or page assertion -> `/sf-browser [URL or scope] [objective]`
@@ -164,15 +166,15 @@ For `--ship BUG-ID`:
 
 1. Read the bug file and optional index.
 2. If severity is high/critical and status is not `fixed-pending-verify`, `closed`, `duplicate`, or `wontfix`, block clean shipping.
-3. If status is `fixed-pending-verify`, route to `/sf-verify BUG-ID` first.
-4. If status is `closed`, `duplicate`, or `wontfix`, route to `/sf-ship BUG-ID` only if the code scope is otherwise bounded.
-5. If user explicitly accepts partial-risk shipping, route to `/sf-ship BUG-ID` with a risk note; do not claim bug closure.
+3. If status is `fixed-pending-verify`, continue through `sf-verify BUG-ID` first.
+4. If status is `closed`, `duplicate`, or `wontfix`, continue through `sf-ship BUG-ID` only if the code scope is otherwise bounded.
+5. If user explicitly accepts partial-risk shipping, continue through `sf-ship BUG-ID` with a risk note; do not claim bug closure.
 
 For `--close BUG-ID`:
 
 - `closed` requires passing retest evidence in `Retest History` plus verification-compatible state.
 - `closed-without-retest` requires visible reason, residual risk, and operator-facing exception text.
-- If neither condition is met, route to `/sf-test --retest BUG-ID` or `/sf-verify BUG-ID`.
+- If neither condition is met, continue through `sf-test --retest BUG-ID` or `sf-verify BUG-ID` when safe.
 
 ## Security And Evidence Rules
 
@@ -203,10 +205,11 @@ Stop and report `blocked` when:
 Mode: [dashboard/intake/fix/retest/verify/ship/close]
 Bug state: [status, severity, bug file path]
 Classification: [needs capture / needs evidence / needs fix / needs retest / needs verify / shippable / blocked]
+Execution mode: [main-only / delegated sequential / spec-gated parallel]
 Development mode: [local / vercel-preview-push / hybrid / unknown]
 Evidence posture: [sufficient / missing / sensitive-blocked / not needed]
 Security posture: [ok / risk]
-Decision: [route / blocked / no action]
+Decision: [executed / routed / blocked / no action]
 
 Next step:
 - [exact command]
@@ -243,16 +246,16 @@ Prochaine etape:
 - [command]
 
 Verdict sf-bug:
-- [routed | blocked | no action]
+- [executed | routed | blocked | no action]
 ```
 
 ## Rules
 
-- Orchestrate the bug loop; do not repair code directly inside `sf-bug`.
+- Execute the bug loop through owner skills and bounded subagents; do not repair code directly inside the `sf-bug` master thread.
 - Do not write bug files directly except to report routing gaps; use `sf-test` or `sf-fix` for durable bug mutations.
 - Do not close bugs from intent, code diff, deployment status, or optimistic wording.
 - Do not route preview/manual/browser retests before `sf-ship -> sf-prod` when project mode requires deployed evidence.
 - Follow the shared master delegation reference for delegated sequential defaults and spec/batch-gated parallelism.
-- Prefer the safest next command over a broad report when a bug is actionable.
+- Prefer continuing the next safe lifecycle action over ending with a broad report when a bug is actionable and no stop condition blocks execution.
 - Ask only when the missing answer changes severity, status, destructive risk, closure, or ship risk.
 - Do not commit or push.

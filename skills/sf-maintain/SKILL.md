@@ -68,7 +68,7 @@ The goal is not another report. `sf-maintain` should keep the operator out of co
 
 Orchestrate existing skills; do not duplicate their internals.
 
-- `sf-bug` owns bug lifecycle routing, bug files, retests, verification, and ship risk.
+- `sf-bug` owns bug lifecycle execution, bug files, retests, verification, and ship risk.
 - `sf-deps` owns dependency health, vulnerabilities, supply chain, licenses, drift, and config.
 - `sf-docs` owns documentation update/audit, metadata, technical corpus, editorial corpus, and stale-doc repair.
 - `sf-check` owns local typecheck, lint, build, tests, and quick dependency checks.

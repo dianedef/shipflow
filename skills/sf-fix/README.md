@@ -37,7 +37,7 @@ That matters because a “quick fix” can easily create a worse product problem
 - a reroute to `sf-auth-debug` when the bug needs real browser-auth evidence
 - a reroute to `sf-browser` when the bug needs non-auth browser evidence
 - development-mode-aware retest routing, including `sf-ship` -> `sf-prod` before preview retests on Vercel-preview projects
-- bug-file-driven handoff compatibility with `sf-bug` when the operator wants lifecycle routing from a `BUG-ID`
+- bug-file-driven handoff compatibility with `sf-bug` when the operator wants lifecycle execution from a `BUG-ID`
 
 ## Typical Examples
 
@@ -54,7 +54,7 @@ That matters because a “quick fix” can easily create a worse product problem
 ## Related Skills
 
 - `sf-spec` when the bug needs a clear contract first
-- `sf-bug` when a `BUG-ID` needs fix, retest, verify, close, or ship-risk routing
+- `sf-bug` when a `BUG-ID` needs fix, retest, verify, close, or ship-risk execution
 - `sf-auth-debug` when the broken behavior lives in Clerk, OAuth, redirects, or browser session state
 - `sf-browser` when the broken behavior needs non-auth page, visual, console, or network evidence
 - `sf-start` to execute the approved fix path

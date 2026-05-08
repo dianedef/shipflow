@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "1.3.0"
+artifact_version: "1.3.1"
 project: ShipFlow
 created: "2026-05-04"
-updated: "2026-05-06"
+updated: "2026-05-08"
 status: reviewed
 source_skill: sf-docs
 scope: skill-launch-cheatsheet
@@ -22,7 +22,7 @@ linked_systems:
   - CONTENT_MAP.md
 depends_on:
   - artifact: "shipflow-spec-driven-workflow.md"
-    artifact_version: "0.15.0"
+    artifact_version: "0.15.1"
     required_status: draft
 supersedes: []
 evidence:
@@ -33,6 +33,7 @@ evidence:
   - "shipflow <instruction> documented as the primary non-technical router with direct handoff to selected skills."
   - "Shared question/default contract added for numbered decisions and context-safe defaults."
   - "sf-design added as the master design lifecycle entrypoint for UI/UX, tokens, playgrounds, implementation, proof, and ship routing."
+  - "sf-bug clarified as a lifecycle executor that continues through owner skills and bounded subagents when safe."
 next_step: "/sf-docs audit docs/skill-launch-cheatsheet.md"
 ---
 
@@ -56,7 +57,7 @@ Use a focused skill directly when you intentionally want one owner lane: checks,
 | Non-trivial product, code, site, or docs work | `sf-build <story, bug, or goal>` | Plain task text is the story. Use `report=agent`, `handoff`, `verbose`, or `full-report` only for detailed handoff evidence. |
 | Recurring project upkeep | `sf-maintain [mode]` | `full`/no argument, `quick`, `security`, `deps`, `docs`, `audits`, `no-ship`, `global`. |
 | Release confidence after implementation | `sf-deploy [target or mode]` | no argument, `skip-check`, `--preview`, `--prod`, `no-changelog`. |
-| Bug-loop routing | `sf-bug [BUG-ID, summary, or mode]` | no argument, `BUG-ID`, `--fix`, `--retest`, `--verify`, `--ship`, `--close`. |
+| Bug-loop lifecycle | `sf-bug [BUG-ID, summary, or mode]` | no argument, `BUG-ID`, `--fix`, `--retest`, `--verify`, `--ship`, `--close`. |
 | Content management | `sf-content [goal, source, file, or mode]` | `plan`, `repurpose`, `draft`, `enrich`, `audit`, `seo`, `editorial`, `apply`, `ship`. |
 | Design lifecycle | `sf-design <design question or goal>` | `tokens`, `audit`, `playground`, page/route targets, redesign goals, token migration, visual proof, or natural-language design requests. |
 | Skill creation or maintenance | `sf-skill-build <idea or path>` | new skill idea, existing skill path, optional `sf-explore` for fuzzy placement, public page/docs/runtime validation gates. |

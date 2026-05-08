@@ -1,10 +1,10 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "1.2.0"
+artifact_version: "1.2.1"
 project: ShipFlow
 created: "2026-05-04"
-updated: "2026-05-06"
+updated: "2026-05-08"
 status: active
 source_skill: sf-skill-build
 scope: master-workflow-lifecycle
@@ -36,7 +36,7 @@ depends_on:
     artifact_version: "1.0.0"
     required_status: active
   - artifact: "skills/references/chantier-tracking.md"
-    artifact_version: "0.4.3"
+    artifact_version: "0.4.4"
     required_status: draft
 supersedes: []
 evidence:
@@ -44,6 +44,7 @@ evidence:
   - "User decision 2026-05-04: bug work uses one Markdown bug file per bug under bugs/*.md; BUGS.md is optional/generated/triage view, not the source of truth."
   - "User decision 2026-05-04: user-facing questions should share a numbered, context-aware question/default contract."
   - "User decision 2026-05-06: sf-design joins the master lifecycle set."
+  - "User decision 2026-05-08: sf-bug is a lifecycle executor through owner skills and bounded subagents, not a simple next-command router."
 next_review: "2026-06-04"
 next_step: "/sf-verify master workflow lifecycle reference"
 ---
@@ -182,7 +183,7 @@ Typical routes:
 - `sf-content`: `sf-verify -> sf-ship` for bounded content changes
 - `sf-skill-build`: `sf-docs/help update -> sf-ship`
 - `sf-deploy`: `sf-check -> sf-ship -> sf-prod -> proof -> sf-verify -> sf-changelog`
-- `sf-bug`: retest/verify/ship-risk routing from the bug file
+- `sf-bug`: retest/verify/ship-risk execution from the bug file through owner skills
 
 Do not end a successful post-verify master report with a manual `/sf-end`, `/sf-ship`, or `/sf-deploy` next step unless a concrete blocker prevents orchestration in the current run.
 

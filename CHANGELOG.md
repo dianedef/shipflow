@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "0.3.7"
+artifact_version: "0.3.8"
 project: "shipflow"
 created: "2026-04-25"
-updated: "2026-05-04"
+updated: "2026-05-08"
 status: draft
 source_skill: sf-docs
 scope: documentation
@@ -25,6 +25,15 @@ evidence: []
 next_step: "/sf-docs audit CHANGELOG.md"
 ---
 # ShipFlow Changelog
+
+## [2026-05-08]
+
+### Changed
+- `sf-bug` now presents itself as a bug lifecycle executor that continues through owner skills and bounded subagents when safe, instead of a simple next-command router.
+- Repo docs, help text, launch cheatsheet, technical lifecycle docs, and public skill pages now use the same `sf-bug` lifecycle wording.
+
+### Fixed
+- Cleared stale Astro content cache and confirmed the public site builds without the duplicate `sf-bug` content id warning.
 
 ## [2026-05-06]
 

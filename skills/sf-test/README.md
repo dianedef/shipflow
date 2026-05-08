@@ -150,7 +150,7 @@ The canonical bug states are:
 
 Practical flow:
 
-- `sf-bug` can read the bug state and route the next lifecycle command.
+- `sf-bug` can read the bug state and continue the next safe lifecycle action through owner skills.
 - `sf-test` opens or updates the bug file when a scenario fails.
 - `sf-fix` reads the bug file and appends diagnosis and fix attempts.
 - `sf-test --retest BUG-ID` appends retest history and moves the bug toward verification or closure.
@@ -183,6 +183,6 @@ It records evidence; it does not prove the absence of every bug.
 - `sf-verify` before manual test planning
 - `sf-browser` when a one-off non-auth browser proof is enough and no durable QA log is needed
 - `sf-auth-debug` when auth failure needs browser-level diagnosis
-- `sf-bug` when a `BUG-ID` needs lifecycle routing
+- `sf-bug` when a `BUG-ID` needs lifecycle execution
 - `sf-fix` when a failed test creates an actionable bug
 - `sf-ship` once checks, verification, and testing are good enough
