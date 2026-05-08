@@ -158,7 +158,7 @@ shipflow_status() {
 # Root check — système packages need root, no silent elevation
 if [ "$EUID" -ne 0 ]; then
     shipflow_log "ERROR" "ShipFlow install stopped: non-root execution by $(id -un)."
-    shipflow_log "ERROR" "Root-required scope not applied: Node.js system install, global PM2/Vercel/Convex/Clerk npm prefix /usr/local, Supabase /usr/local/bin, PM2 systemd startup, Flox .deb, apt packages, GitHub CLI apt/deb, PyYAML system install, Caddy apt repo/install, /etc/dokploy/compose, and all-user ShipFlow configuration."
+    shipflow_log "ERROR" "Root-required scope not applied: Node.js system install, global PM2/Vercel/Convex/Clerk npm prefix /usr/local, Supabase /usr/local/bin, Flox .deb, apt packages, GitHub CLI apt/deb, PyYAML system install, Caddy apt repo/install, /etc/dokploy/compose, and all-user ShipFlow configuration."
     echo ""
     echo -e "${RED}╔══════════════════════════════════════════════════════════╗${NC}"
     echo -e "${RED}║                                                          ║${NC}"
@@ -168,7 +168,7 @@ if [ "$EUID" -ne 0 ]; then
     echo -e "${RED}║   Flox, Caddy, etc.) nécessite les droits root.          ║${NC}"
     echo -e "${RED}║                                                          ║${NC}"
     echo -e "${RED}║   Non appliqué sans root : /usr/local, /etc/dokploy,     ║${NC}"
-    echo -e "${RED}║   PM2 systemd, Caddy, Flox .deb et config tous users.    ║${NC}"
+    echo -e "${RED}║   Caddy, Flox .deb et config tous users.                 ║${NC}"
     echo -e "${RED}║                                                          ║${NC}"
     echo -e "${RED}║   Relancez avec :                                        ║${NC}"
     echo -e "${RED}║     ${YELLOW}sudo ./install.sh${RED}                                    ║${NC}"
@@ -179,7 +179,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 info "Mode root confirmé : installation système + configuration ShipFlow multi-utilisateur"
-echo -e "${BLUE}ℹ️${NC} Scope root appliqué : /usr/local, /etc/dokploy, PM2 systemd, Caddy, Flox, outils globaux"
+echo -e "${BLUE}ℹ️${NC} Scope root appliqué : /usr/local, /etc/dokploy, Caddy, Flox, outils globaux"
 shipflow_log "INFO" "Privilege scope: root run. Applying system/global setup plus ShipFlow user configuration."
 
 shipflow_capture_status
@@ -323,10 +323,9 @@ fi
 
 echo ""
 
-# 4. Configurer PM2 pour démarrer au boot
-info "Configuration de PM2 pour démarrage automatique..."
-pm2 startup systemd -u root --hp /root >/dev/null 2>&1
-success "PM2 configuré pour démarrer automatiquement"
+# 4. PM2 autostart policy
+info "PM2 installé sans démarrage automatique au boot"
+shipflow_log "INFO" "PM2 startup intentionally not configured. ShipFlow environments run under the operator user when started."
 
 echo ""
 

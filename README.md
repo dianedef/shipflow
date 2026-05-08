@@ -128,7 +128,7 @@ ShipFlow's installer is intentionally a root-level installer. It must be run wit
 
 - system packages and tools such as Node.js, PM2, Flox, Caddy, GitHub CLI, `jq`, `fuser`, and `ss`
 - global CLI binaries under `/usr/local`
-- PM2 startup through systemd
+- PM2 binary installation only; ShipFlow does not configure PM2 boot autostart by default
 - `/etc/dokploy/compose`
 - ShipFlow user configuration for root and detected regular users
 
@@ -139,6 +139,7 @@ The recommended server shape is:
 - use `root` or `sudo` for first-time system setup
 - use a regular non-root account such as `ubuntu`, `opc`, `debian`, `ec2-user`, or a manually created user for daily work
 - keep user-level config, credentials, project files, Claude/Codex settings, and ShipFlow data scoped to the operational user
+- start ShipFlow environments explicitly when needed instead of relying on PM2 resurrection at boot
 
 `dotfiles` may prepare generic user tooling in `~/.local/bin`, `~/.npm-global`, and `~/.config`. ShipFlow owns the AI/code workflow layer: skills, Claude/Codex settings, MCP registrations, ShipFlow aliases, and `~/shipflow_data`.
 

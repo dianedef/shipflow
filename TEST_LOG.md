@@ -1,5 +1,18 @@
 # Test Log
 
+## 2026-05-08 - PM2 orphan stop and crash-loop guard retest
+
+- Scope: BUG-2026-05-06-001
+- Environment: local
+- Tester: Codex tooling
+- Source: sf-test
+- Status: pass
+- Confidence: high
+- Result summary: `env_stop` stopped a PM2-only/orphan-style app by name; isolated `batch_stop_all` stopped the temporary PM2-only app; generated ecosystem config contains crash-loop limits.
+- Bug pointer: BUG-2026-05-06-001 -> bugs/BUG-2026-05-06-001.md
+- Evidence pointer: local PM2 commands with temporary `shipflow_retest_*` app names; no secrets or private payloads stored
+- Follow-up: completed by `/sf-verify BUG-2026-05-06-001` on 2026-05-08; no further retest required for this bug.
+
 ## 2026-05-05 - Flutter + Convex dev command retest
 
 - Scope: BUG-2026-05-04-004

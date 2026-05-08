@@ -1,10 +1,10 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.0.1"
 project: ShipFlow
 created: "2026-05-01"
-updated: "2026-05-02"
+updated: "2026-05-06"
 status: reviewed
 source_skill: sf-start
 scope: installer-and-user-scope
@@ -27,6 +27,7 @@ depends_on:
 supersedes: []
 evidence:
   - "README installer section and install.sh function inventory."
+  - "PM2 boot autostart removed from default installer contract."
 next_review: "2026-06-01"
 next_step: "/sf-docs technical audit installer"
 ---
@@ -72,6 +73,9 @@ sudo ./install.sh
 
 - Server install is root-level and should fail clearly without root.
 - Daily work should run under an operational user, not by forcing all state into root.
+- The installer installs the PM2 binary but must not configure PM2 boot
+  autostart by default; environments should start explicitly under the
+  operator user.
 - Existing user config must be preserved outside ShipFlow-managed blocks.
 - Symlinks and aliases should be idempotent and updated consistently.
 - ShipFlow skill runtime entries under `~/.claude/skills` and `~/.codex/skills` are symlinks to `$SHIPFLOW_ROOT/skills/<name>`.

@@ -70,6 +70,9 @@ This doc covers the server-side CLI runtime: `shipflow.sh`, `lib.sh`, and `confi
 - `lib.sh::ui_box_header`: prints fixed-width boxed CLI headers so left and
   right borders stay aligned across dashboard, logs, health, and success blocks.
 - `lib.sh::env_start`, `env_stop`, `env_restart`, `env_remove`: core environment lifecycle.
+- `lib.sh::list_pm2_app_names`, `list_all_stop_targets`, and
+  `pm2_stop_app_by_name`: PM2 stop safety helpers used to stop both
+  disk-discovered environments and PM2-only orphan entries.
 - `lib.sh::action_flutter_web`: interactive Flutter Web preview through `tmux`
   with hot reload/hot restart control.
 - `lib.sh::action_blacksmith_setup`: guided official-first Blacksmith setup
@@ -115,6 +118,10 @@ Flutter Web has two runtime paths:
 
 - PM2 is the execution state source.
 - `invalidate_pm2_cache` must run after PM2 mutations.
+- Stop flows must cover PM2 entries even when their project directories are no
+  longer resolvable from disk, then persist the stopped state with PM2.
+- Generated PM2 ecosystem configs for dev servers must bound automatic restart
+  loops so broken commands cannot fill logs indefinitely.
 - Project paths must be validated and absolute before runtime use.
 - Port allocation must avoid active socket collisions and PM2 hidden collisions.
 - User-visible success and failure should be observable.
@@ -142,6 +149,10 @@ Flutter Web has two runtime paths:
 - Back/cancel state can be lost when a selector runs inside Bash command
   substitution unless the shared skip-next-pause signal is used.
 - PM2 cache drift can make dashboard, health, and port decisions wrong.
+- Disk-only environment discovery can miss stale PM2 entries; stop flows should
+  union project-discovered environments with PM2 app names.
+- Unbounded PM2 autorestart can turn a missing directory, missing dependency, or
+  failing dev command into a restart storm and log growth incident.
 - Caddy/DuckDNS publishing failures must not be reported as successful public exposure.
 - Broad shell parsing can misread structured state; use `jq`, Node, or existing structured helpers where available.
 - Invalid Dart/Flutter package overrides (paths, shell fragments, option-like tokens) must be rejected before invoking `flox install`.

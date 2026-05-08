@@ -2,6 +2,7 @@
 
 | Bug ID | Status | Severity | Title | Last tested | Next step |
 |--------|--------|----------|-------|-------------|-----------|
+| [BUG-2026-05-06-001](bugs/BUG-2026-05-06-001.md) | closed | high | Stop Environment leaves orphaned PM2 apps and allows crash loops | 2026-05-08 | none |
 | [BUG-2026-05-05-002](bugs/BUG-2026-05-05-002.md) | fix-attempted | medium | Local tunnel restart reports no active tunnel when SSH target follows -L | 2026-05-05 | /sf-test --retest BUG-2026-05-05-002 |
 | [BUG-2026-05-05-001](bugs/BUG-2026-05-05-001.md) | fix-attempted | medium | ShipFlow tracking init should not create project TASKS.md symlinks | 2026-05-05 | /sf-test --retest BUG-2026-05-05-001 |
 | [BUG-2026-05-04-004](bugs/BUG-2026-05-04-004.md) | fixed-pending-verify | medium | Convex-only package.json blocks Flutter dev command detection | 2026-05-05 | /sf-verify BUG-2026-05-04-004 |

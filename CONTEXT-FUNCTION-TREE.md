@@ -239,6 +239,11 @@ PM2 / ports
   -> get_pm2_data_cached
   -> invalidate_pm2_cache
   -> get_pm2_app_data
+  -> list_pm2_app_names
+  -> pm2_app_exists_by_name
+  -> get_pm2_status_by_name
+  -> list_all_stop_targets
+  -> pm2_stop_app_by_name
   -> is_port_in_use
   -> get_all_pm2_ports
   -> find_available_port
@@ -260,6 +265,7 @@ environment discovery
   -> list_all_environment_identifiers
   -> cleanup_orphan_projects
   -> select_environment
+  -> select_stop_target
 
 session identity
   -> init_session

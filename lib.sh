@@ -1523,6 +1523,30 @@ select_environment() {
     return 0
 }
 
+select_stop_target() {
+    local prompt_text="${1:-Select environment to stop}"
+
+    local all_envs=$(list_all_stop_targets)
+
+    if [ -z "$all_envs" ]; then
+        echo -e "${RED}No environments or PM2 apps found${NC}" >&2
+        return 1
+    fi
+
+    local options=()
+    while IFS= read -r env; do
+        local status=$(get_pm2_status_by_name "$env")
+        local icon=$(get_status_icon "$status")
+        options+=("${icon} ${env}")
+    done <<< "$all_envs"
+
+    local selected
+    selected=$(ui_choose "$prompt_text" "${options[@]}") || return 1
+
+    echo "$selected" | sed 's/^[^ ]* //'
+    return 0
+}
+
 # ============================================================================
 # CREDENTIAL CACHE
 # ============================================================================
@@ -2317,6 +2341,97 @@ get_pm2_app_data() {
             return 0
         fi
     done
+}
+
+list_pm2_app_names() {
+    if ! command -v pm2 >/dev/null 2>&1; then
+        return 1
+    fi
+
+    if command -v jq >/dev/null 2>&1; then
+        pm2 jlist 2>/dev/null | jq -r '.[].name // empty' 2>/dev/null
+    else
+        pm2 jlist 2>/dev/null | python3 -c "
+import json
+import sys
+try:
+    apps = json.load(sys.stdin)
+except Exception:
+    sys.exit(0)
+for app in apps:
+    name = app.get('name')
+    if name:
+        print(name)
+" 2>/dev/null
+    fi
+}
+
+pm2_app_exists_by_name() {
+    local app_name="$1"
+    [ -z "$app_name" ] && return 1
+
+    list_pm2_app_names | awk -v name="$app_name" '$0 == name {found=1} END {exit found ? 0 : 1}'
+}
+
+get_pm2_status_by_name() {
+    local app_name="$1"
+    local status
+
+    if [ -z "$app_name" ]; then
+        echo "not-found"
+        return 1
+    fi
+
+    status=$(get_pm2_app_data "$app_name" "status")
+    if [ -n "$status" ]; then
+        echo "$status"
+        return 0
+    fi
+
+    echo "not-found"
+    return 1
+}
+
+list_all_stop_targets() {
+    {
+        list_all_environments
+        list_pm2_app_names
+    } 2>/dev/null | sed '/^[[:space:]]*$/d' | sort -u
+}
+
+pm2_stop_app_by_name() {
+    local app_name="$1"
+
+    if [ -z "$app_name" ]; then
+        error "PM2 app name is required"
+        return 1
+    fi
+
+    if ! command -v pm2 >/dev/null 2>&1; then
+        error "PM2 is not installed"
+        return 1
+    fi
+
+    if pm2 stop "$app_name" 2>/dev/null; then
+        pm2 save --force >/dev/null 2>&1
+        invalidate_pm2_cache
+        success "Projet $app_name arrêté"
+        log INFO "Stopped PM2 app: $app_name"
+        return 0
+    fi
+
+    if pm2_app_exists_by_name "$app_name"; then
+        info "Projet $app_name n'est pas en cours d'exécution"
+        pm2 save --force >/dev/null 2>&1
+        invalidate_pm2_cache
+        log DEBUG "PM2 app $app_name exists but was not running"
+        return 0
+    fi
+
+    info "Projet $app_name n'est pas en cours d'exécution"
+    invalidate_pm2_cache
+    log DEBUG "PM2 app $app_name does not exist; stop treated as idempotent"
+    return 0
 }
 
 # ============================================================================
@@ -4193,6 +4308,9 @@ module.exports = {
       PORT: $port
     },
     autorestart: true,
+    max_restarts: 3,
+    min_uptime: "10s",
+    restart_delay: 2000,
     watch: false
   }]
 };
@@ -4292,29 +4410,19 @@ env_stop() {
     fi
 
     local project_dir=$(resolve_project_path "$identifier")
+    local pm2_app_name=""
 
-    if [ -z "$project_dir" ]; then
+    if [ -n "$project_dir" ]; then
+        pm2_app_name=$(basename "$project_dir")
+    elif pm2_app_exists_by_name "$identifier"; then
+        pm2_app_name="$identifier"
+        warning "Projet $identifier introuvable sur disque; arrêt de l'entrée PM2 orpheline."
+    else
         warning "Projet $identifier introuvable ou chemin invalide."
         return 1
     fi
 
-    # Ensure env_name is correctly derived for PM2 operations
-    local pm2_app_name=$(basename "$project_dir")
-
-    # Atomic stop operation (Priority 3 #11: Fix race condition)
-    # Use pm2 stop with idempotent operation (no check-then-act)
-    if pm2 stop "$pm2_app_name" 2>/dev/null; then
-        pm2 save >/dev/null 2>&1
-        # Invalidate cache after PM2 state change
-        invalidate_pm2_cache
-        success "Projet $pm2_app_name arrêté"
-        log INFO "Stopped environment: $pm2_app_name"
-    else
-        info "Projet $pm2_app_name n'est pas en cours d'exécution"
-        log DEBUG "Environment $pm2_app_name was not running"
-    fi
-
-    return 0
+    pm2_stop_app_by_name "$pm2_app_name"
 }
 
 # Web Inspector Functions
@@ -5106,10 +5214,10 @@ auto_fix_known_issues() {
 #   0 - Completed (even if some environments failed)
 # -----------------------------------------------------------------------------
 batch_stop_all() {
-    local all_envs=$(list_all_environments)
+    local all_envs=$(list_all_stop_targets)
 
     if [ -z "$all_envs" ]; then
-        echo -e "${YELLOW}No environments found${NC}"
+        echo -e "${YELLOW}No environments or PM2 apps found${NC}"
         return 0
     fi
 
@@ -5123,7 +5231,7 @@ batch_stop_all() {
     while IFS= read -r name; do
         ((count++))
         echo -e "${BLUE}[$count/$total] Stopping $name...${NC}"
-        if env_stop "$name" >/dev/null 2>&1; then
+        if pm2_stop_app_by_name "$name" >/dev/null 2>&1; then
             echo -e "  ${GREEN}✅ $name stopped${NC}"
         else
             echo -e "  ${RED}❌ $name failed to stop${NC}"
@@ -5132,6 +5240,7 @@ batch_stop_all() {
         fi
     done <<< "$all_envs"
 
+    pm2 save --force >/dev/null 2>&1
     invalidate_pm2_cache
     echo ""
     echo -e "${GREEN}Summary: $((count - failed))/$total stopped successfully${NC}"
@@ -6261,7 +6370,7 @@ action_restart() {
 
 action_stop() {
     echo -e "${GREEN}🛑 Stop Environment${NC}"
-    ENV_NAME=$(select_environment "Select environment to stop")
+    ENV_NAME=$(select_stop_target "Select environment to stop")
     if [ -n "$ENV_NAME" ]; then
         log INFO "Menu: stopping $ENV_NAME"
         echo -e "${YELLOW}🛑 Stopping $ENV_NAME...${NC}"
