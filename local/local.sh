@@ -143,6 +143,10 @@ local_menu_line() {
     echo -e "  ${CYAN}${key})${NC} ${LIGHT_BLUE}${label}${NC}"
 }
 
+local_clear_screen() {
+    clear
+}
+
 trim_input() {
     local value="${1:-}"
 
@@ -1022,12 +1026,13 @@ pause() {
 # Fonction principale
 main() {
     while true; do
-        clear
+        local_clear_screen
         print_header
         show_menu
 
         prompt_inline "${YELLOW}Tape la lettre de ton choix ?${NC} "
         read_menu_choice CHOICE
+        local_clear_screen
 
         case $CHOICE in
             t)
