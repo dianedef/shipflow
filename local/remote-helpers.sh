@@ -185,7 +185,7 @@ validate_tcp_port() {
 }
 
 ssh_args() {
-    printf '%s\n' "-o" "ConnectTimeout=7" "-o" "BatchMode=yes"
+    printf '%s\n' "-o" "ConnectTimeout=7" "-o" "BatchMode=yes" "-o" "StrictHostKeyChecking=accept-new"
     if [ -n "${SSH_IDENTITY_FILE:-}" ]; then
         printf '%s\n' "-i" "$(resolve_identity_path "$SSH_IDENTITY_FILE" || normalize_identity_path "$SSH_IDENTITY_FILE")" "-o" "IdentitiesOnly=yes"
     fi

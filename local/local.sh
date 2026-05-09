@@ -91,6 +91,19 @@ trim_input() {
     printf '%s' "$value"
 }
 
+normalize_identity_input() {
+    local value
+    value="$(trim_input "${1:-}")"
+
+    # The interactive menu reads single-letter shortcuts in other places. If a
+    # stray keypress lands after the path, keep the path token the user typed.
+    if [[ "$value" == *[[:space:]]* ]]; then
+        value="${value%%[[:space:]]*}"
+    fi
+
+    printf '%s' "$value"
+}
+
 normalize_menu_choice() {
     local choice="${1:-}"
 
@@ -144,7 +157,7 @@ read_menu_choice() {
 
 save_and_activate_connection() {
     local target="$1"
-    local identity_file="${2:-${SSH_IDENTITY_FILE:-}}"
+    local identity_file="${2-}"
 
     if ! validate_connection_target "$target"; then
         echo -e "${RED}✗ Cible invalide: $target${NC}"
@@ -165,12 +178,13 @@ save_and_activate_connection() {
 
     echo ""
     echo -e "${BLUE}Test SSH vers $target...${NC}"
-    local ssh_args=("-o" "ConnectTimeout=7" "-o" "BatchMode=yes")
+    local ssh_args=("-o" "ConnectTimeout=7" "-o" "BatchMode=yes" "-o" "StrictHostKeyChecking=accept-new")
     if [ -n "$identity_file" ]; then
         ssh_args+=("-i" "$identity_file" "-o" "IdentitiesOnly=yes")
     fi
 
-    if ssh "${ssh_args[@]}" "$target" "echo ok" &>/dev/null; then
+    local ssh_output=""
+    if ssh_output=$(ssh "${ssh_args[@]}" "$target" "echo ok" 2>&1); then
         echo -e "${GREEN}✓ Connexion réussie${NC}"
         REMOTE_HOST="$target"
         SSH_IDENTITY_FILE="$identity_file"
@@ -185,6 +199,9 @@ save_and_activate_connection() {
     fi
 
     echo -e "${RED}✗ Connexion impossible vers $target${NC}"
+    if [ -n "$ssh_output" ]; then
+        echo -e "${YELLOW}  Détail SSH: ${ssh_output//$'\n'/ }${NC}"
+    fi
     echo -e "${YELLOW}  Vérifiez l'IP, l'utilisateur SSH et la clé autorisée sur le serveur.${NC}"
     return 1
 }
@@ -246,7 +263,10 @@ configure_new_server() {
     echo -e "${YELLOW}Laisse vide pour utiliser la valeur par défaut : connexion SSH normale.${NC}"
     prompt_inline "${YELLOW}Chemin de la clé SSH si tu l'as enregistrée dans un dossier particulier ou avec un nom spécifique:${NC} "
     read -r identity_file
-    identity_file="$(trim_input "$identity_file")"
+    identity_file="$(normalize_identity_input "$identity_file")"
+    if [ -n "$identity_file" ]; then
+        echo -e "${BLUE}Clé SSH utilisée:${NC} ${GREEN}$identity_file${NC}"
+    fi
 
     echo ""
     echo -e "${BLUE}Connexion qui va être testée:${NC} ${GREEN}$target${NC}"
