@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "0.1.4"
+artifact_version: "0.1.9"
 project: "shipflow"
 created: "2026-04-25"
-updated: "2026-05-08"
+updated: "2026-05-09"
 status: draft
 source_skill: manual
 scope: "context"
@@ -13,10 +13,10 @@ confidence: "medium"
 risk_level: "low"
 security_impact: "none"
 docs_impact: "yes"
-linked_systems: ["shipflow.sh", "lib.sh", "config.sh", "install.sh", "local/local.sh", "local/dev-tunnel.sh"]
+linked_systems: ["shipflow.sh", "lib.sh", "menu_gum.sh", "menu_bash.sh", "config.sh", "install.sh", "local/local.sh", "local/dev-tunnel.sh"]
 depends_on: []
 supersedes: []
-evidence: ["Function extraction from shipflow.sh, lib.sh, config.sh, install.sh, local/local.sh, local/dev-tunnel.sh", "Blacksmith setup menu helpers added to lib.sh", "Blacksmith OAuth callback tunnel added to local tooling", "Codex MCP on-demand launcher added to lib.sh"]
+evidence: ["Function extraction from shipflow.sh, lib.sh, config.sh, install.sh, local/local.sh, local/dev-tunnel.sh", "Blacksmith setup menu helpers added to lib.sh", "Blacksmith OAuth callback tunnel added to local tooling", "Codex MCP on-demand launcher added to lib.sh", "Grouped root menu and submenu wrappers added to menu frontends", "Root menu shortcuts aligned with visible menu labels", "Disk overview helpers added to the Health Check monitor", "Agent history and cache cleanup helpers added to disk cleanup", "PM2 log cleanup/rotation and disk usage detail helpers added"]
 next_step: "/sf-docs update CONTEXT-FUNCTION-TREE.md"
 ---
 
@@ -39,6 +39,8 @@ shipflow.sh
      -> run_menu() OR run_menu_shortcut()
 
 run_menu()
+  -> MAIN_MENU_ITEMS root actions
+  -> grouped submenu wrappers
   -> action_* handlers
   -> core environment functions in lib.sh
   -> PM2 / Flox / user Caddy / local tooling
@@ -46,6 +48,7 @@ run_menu()
 run_menu_shortcut()
   -> action_codex_launcher() for codex/co
   -> resolve_menu_shortcut_action()
+  -> MAIN_MENU_ITEMS visible root actions
   -> action_* handler
 ```
 
@@ -167,10 +170,20 @@ UI helpers
   -> ui_is_back_choice
   -> ui_is_back_selection
 
-menu shortcuts
+visible menu keys
   -> print_menu_shortcut_usage
   -> resolve_menu_shortcut_action
   -> run_menu_shortcut
+
+menu frontends
+  -> menu_gum.sh::_gum_run_menu
+  -> menu_gum.sh::_gum_run_nested_menu
+  -> menu_bash.sh::_bash_run_menu
+  -> menu_bash.sh::_bash_run_nested_menu
+  -> action_environments_menu
+  -> action_tools_web_menu
+  -> action_system_menu
+  -> action_agents_ci_menu
 
 Codex launcher
   -> action_mcp_menu
@@ -183,11 +196,41 @@ Codex launcher
 system health
   -> disk_free_bytes
   -> disk_free_human
+  -> disk_total_human
+  -> disk_used_human
+  -> disk_filesystem
+  -> disk_used_pct
   -> disk_warn_threshold_bytes
+  -> disk_gb_to_bytes
+  -> disk_pressure_level
   -> disk_is_low_space
+  -> print_disk_pressure_warning
   -> format_bytes
+  -> print_usage_bar
   -> cleanup_disk_light
   -> cleanup_disk_aggressive
+  -> path_size_bytes
+  -> agent_history_old_files
+  -> agent_history_old_sizes
+  -> agent_history_old_count
+  -> agent_history_old_bytes
+  -> agent_history_prune_empty_dirs
+  -> cleanup_agent_history_old
+  -> agent_cache_log_paths
+  -> agent_cache_log_bytes
+  -> cleanup_agent_cache_logs
+  -> pm2_home_dir
+  -> pm2_logs_bytes
+  -> pm2_logrotate_installed
+  -> pm2_logrotate_status
+  -> truncate_file_zero
+  -> cleanup_pm2_logs
+  -> configure_pm2_logrotate
+  -> cleanup_pm2_logs_with_rotation
+  -> print_du_top
+  -> print_top_files_by_size
+  -> print_project_dir_top
+  -> disk_usage_details_menu
   -> disk_cleanup_menu
   -> mem_available_kb
   -> mem_total_kb

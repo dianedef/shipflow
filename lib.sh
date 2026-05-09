@@ -132,9 +132,9 @@ _ui_normalize_choice() {
         esc|escape|backspace) choice="x" ;;
     esac
 
-    if [[ "$choice" =~ ^([a-z]+)\).*$ ]]; then
+    if [[ "$choice" =~ ^([[:alnum:]?]+)\).*$ ]]; then
         choice="${BASH_REMATCH[1]}"
-    elif [[ "$choice" =~ ^([a-z]+)[[:space:]].*$ ]]; then
+    elif [[ "$choice" =~ ^([[:alnum:]?]+)[[:space:]].*$ ]]; then
         choice="${BASH_REMATCH[1]}"
     fi
 
@@ -620,34 +620,30 @@ ui_confirm() {
 #   $2 - Subtitle (optional)
 #   $3 - Status left (optional, shown at top-left)
 #   $4 - Status right (optional, shown at top-right)
+#   $5 - Extra header block (optional, newline-delimited)
 # -----------------------------------------------------------------------------
 ui_header() {
     local title="$1"
     local subtitle="${2:-}"
     local status_left="${3:-}"
     local status_right="${4:-}"
+    local extra_block="${5:-}"
     local width=50
     local content_width=46
 
     local status_line=""
     if [ -n "$status_left" ] || [ -n "$status_right" ]; then
-        local left="$status_left"
-        local right="$status_right"
-        local left_len=${#left}
-        local right_len=${#right}
-        local max_right=$((content_width - left_len - 1))
-        if [ $max_right -lt 0 ]; then
-            max_right=0
+        if [ -n "$status_left" ] && [ -n "$status_right" ]; then
+            status_line="${status_left} |  ${status_right}"
+        else
+            status_line="${status_left}${status_right}"
         fi
-        if [ $right_len -gt $max_right ]; then
-            right=${right:0:$max_right}
-            right_len=${#right}
+        if [ ${#status_line} -gt "$content_width" ]; then
+            status_line="${status_line:0:$content_width}"
+        else
+            local status_pad=$(( (content_width - ${#status_line}) / 2 ))
+            status_line="$(printf '%*s%s' "$status_pad" '' "$status_line")"
         fi
-        local spaces=$((content_width - left_len - right_len))
-        if [ $spaces -lt 1 ]; then
-            spaces=1
-        fi
-        status_line="${left}$(printf '%*s' "$spaces" '')${right}"
     fi
 
     center_line() {
@@ -663,17 +659,26 @@ ui_header() {
 
     if [ "$HAS_GUM" = true ]; then
         local header_lines=()
+        local title_line
+        local colored_title_line
         if [ -n "$status_line" ]; then
             header_lines+=("$status_line" "")
         fi
-        header_lines+=("$(center_line "$title")")
+        title_line=$(center_line "$title")
+        printf -v colored_title_line "%b%s%b" "$YELLOW" "$title_line" "$NC"
+        header_lines+=("$colored_title_line")
         if [ -n "$subtitle" ]; then
             header_lines+=("$(center_line "$subtitle")")
+        fi
+        if [ -n "$extra_block" ]; then
+            while IFS= read -r extra_line; do
+                header_lines+=("$extra_line")
+            done <<< "$extra_block"
         fi
 
         gum style \
             --foreground 212 --border-foreground 212 --border double \
-            --align left --width 50 --margin "1 2" --padding "1 2" \
+            --align left --width 50 --margin "1 2" --padding "1 2 0 2" \
             "${header_lines[@]}"
     else
         echo -e "${CYAN}══════════════════════════════════════════════════${NC}"
@@ -684,6 +689,11 @@ ui_header() {
         printf " %b%s%b\n" "$YELLOW" "$(center_line "$title")" "$NC"
         if [ -n "$subtitle" ]; then
             printf " %b%s%b\n" "$BLUE" "$(center_line "$subtitle")" "$NC"
+        fi
+        if [ -n "$extra_block" ]; then
+            while IFS= read -r extra_line; do
+                printf " %b\n" "$extra_line"
+            done <<< "$extra_block"
         fi
         echo -e "${CYAN}══════════════════════════════════════════════════${NC}"
     fi
@@ -741,6 +751,18 @@ disk_free_bytes() {
 
 disk_free_human() {
     df -h --output=avail / 2>/dev/null | tail -n 1 | tr -d ' '
+}
+
+disk_total_human() {
+    df -h --output=size / 2>/dev/null | tail -n 1 | tr -d ' '
+}
+
+disk_used_human() {
+    df -h --output=used / 2>/dev/null | tail -n 1 | tr -d ' '
+}
+
+disk_filesystem() {
+    df -P / 2>/dev/null | awk 'NR == 2 {print $1}'
 }
 
 header_storage_human() {
@@ -858,6 +880,50 @@ format_bytes() {
     fi
 }
 
+print_usage_bar() {
+    local used_pct="${1:-}"
+    local bar_width="${2:-30}"
+    local red_at="${3:-80}"
+    local yellow_at="${4:-60}"
+
+    if ! [[ "$used_pct" =~ ^[0-9]+$ ]]; then
+        return 0
+    fi
+    if ! [[ "$bar_width" =~ ^[0-9]+$ ]] || [ "$bar_width" -le 0 ]; then
+        bar_width=30
+    fi
+    if ! [[ "$red_at" =~ ^[0-9]+$ ]]; then
+        red_at=80
+    fi
+    if ! [[ "$yellow_at" =~ ^[0-9]+$ ]]; then
+        yellow_at=60
+    fi
+    if [ "$used_pct" -gt 100 ]; then
+        used_pct=100
+    fi
+
+    local filled=$(( used_pct * bar_width / 100 ))
+    local empty=$(( bar_width - filled ))
+    local bar_color="${GREEN}"
+    if [ "$used_pct" -ge "$red_at" ]; then
+        bar_color="${RED}"
+    elif [ "$used_pct" -ge "$yellow_at" ]; then
+        bar_color="${YELLOW}"
+    fi
+
+    printf "  ["
+    printf "%b" "$bar_color"
+    local i
+    for ((i = 0; i < filled; i++)); do
+        printf '█'
+    done
+    printf "%b" "$NC"
+    for ((i = 0; i < empty; i++)); do
+        printf '░'
+    done
+    printf "] %s%%\n" "$used_pct"
+}
+
 cleanup_disk_light() {
     rm -rf "$HOME/.cache/yarn" \
         "$HOME/.cache/pip" \
@@ -882,6 +948,310 @@ cleanup_disk_aggressive() {
     done
 }
 
+path_size_bytes() {
+    local path="$1"
+    [ -e "$path" ] || return 0
+    du -sb "$path" 2>/dev/null | awk 'NR == 1 {print $1}'
+}
+
+agent_history_old_files() {
+    local days="$1"
+    local root
+
+    if ! [[ "$days" =~ ^[0-9]+$ ]] || [ "$days" -lt 1 ]; then
+        return 1
+    fi
+
+    for root in "$HOME/.codex/sessions" "$HOME/.claude/projects" "$HOME/.claude/file-history"; do
+        [ -d "$root" ] || continue
+        find "$root" -type f -mtime +"$days" -print0 2>/dev/null
+    done
+}
+
+agent_history_old_sizes() {
+    local days="$1"
+    local root
+
+    if ! [[ "$days" =~ ^[0-9]+$ ]] || [ "$days" -lt 1 ]; then
+        return 1
+    fi
+
+    for root in "$HOME/.codex/sessions" "$HOME/.claude/projects" "$HOME/.claude/file-history"; do
+        [ -d "$root" ] || continue
+        find "$root" -type f -mtime +"$days" -printf '%s\n' 2>/dev/null
+    done
+}
+
+agent_history_old_count() {
+    local days="$1"
+    agent_history_old_sizes "$days" | awk 'END {print NR + 0}'
+}
+
+agent_history_old_bytes() {
+    local days="$1"
+    agent_history_old_sizes "$days" | awk '{total += $1} END {print total + 0}'
+}
+
+agent_history_prune_empty_dirs() {
+    local root
+    for root in "$HOME/.codex/sessions" "$HOME/.claude/projects" "$HOME/.claude/file-history"; do
+        [ -d "$root" ] || continue
+        find "$root" -mindepth 1 -type d -empty -delete 2>/dev/null || true
+    done
+}
+
+cleanup_agent_history_old() {
+    local days="$1"
+    local count=0
+    local file
+
+    if ! [[ "$days" =~ ^[0-9]+$ ]] || [ "$days" -lt 1 ]; then
+        echo -e "${RED}Invalid retention:${NC} $days days"
+        return 1
+    fi
+
+    while IFS= read -r -d '' file; do
+        [ -f "$file" ] || continue
+        count=$((count + 1))
+        if [ "${SHIPFLOW_DISK_CLEANUP_DRY_RUN:-0}" = "1" ]; then
+            echo "rm -f $file"
+        else
+            rm -f -- "$file" 2>/dev/null || true
+        fi
+    done < <(agent_history_old_files "$days")
+
+    if [ "${SHIPFLOW_DISK_CLEANUP_DRY_RUN:-0}" != "1" ]; then
+        agent_history_prune_empty_dirs
+    fi
+
+    echo -e "${GREEN}Removed:${NC} $count old agent history file(s)."
+}
+
+agent_cache_log_paths() {
+    printf '%s\n' \
+        "$HOME/.codex/.tmp" \
+        "$HOME/.codex/tmp" \
+        "$HOME/.codex/cache" \
+        "$HOME/.codex/shell_snapshots" \
+        "$HOME/.codex/log/codex-tui.log" \
+        "$HOME/.claude/cache" \
+        "$HOME/.claude/downloads" \
+        "$HOME/.claude/paste-cache" \
+        "$HOME/.claude/plugins/cache"
+}
+
+agent_cache_log_bytes() {
+    local total=0
+    local path size
+
+    while IFS= read -r path; do
+        [ -n "$path" ] || continue
+        size=$(path_size_bytes "$path")
+        [ -n "$size" ] || size=0
+        total=$((total + size))
+    done < <(agent_cache_log_paths)
+
+    printf '%s' "$total"
+}
+
+cleanup_agent_cache_logs() {
+    local path
+    while IFS= read -r path; do
+        [ -e "$path" ] || continue
+        case "$path" in
+            "$HOME/.codex/log/codex-tui.log")
+                if [ "${SHIPFLOW_DISK_CLEANUP_DRY_RUN:-0}" = "1" ]; then
+                    echo ": > $path"
+                else
+                    : > "$path" 2>/dev/null || true
+                fi
+                ;;
+            "$HOME/.codex/"*|"$HOME/.claude/"*)
+                if [ "${SHIPFLOW_DISK_CLEANUP_DRY_RUN:-0}" = "1" ]; then
+                    echo "rm -rf $path"
+                else
+                    rm -rf -- "$path" 2>/dev/null || true
+                fi
+                ;;
+        esac
+    done < <(agent_cache_log_paths)
+
+    echo -e "${GREEN}Agent caches/logs cleaned.${NC}"
+}
+
+pm2_home_dir() {
+    printf '%s' "${PM2_HOME:-$HOME/.pm2}"
+}
+
+pm2_logs_bytes() {
+    local pm2_home
+    pm2_home=$(pm2_home_dir)
+    local total=0
+    local path size
+
+    for path in "$pm2_home/pm2.log" "$pm2_home/logs"; do
+        [ -e "$path" ] || continue
+        size=$(path_size_bytes "$path")
+        [ -n "$size" ] || size=0
+        total=$((total + size))
+    done
+
+    printf '%s' "$total"
+}
+
+pm2_logrotate_installed() {
+    command -v pm2 >/dev/null 2>&1 || return 1
+    pm2 describe pm2-logrotate >/dev/null 2>&1
+}
+
+pm2_logrotate_status() {
+    if pm2_logrotate_installed; then
+        printf 'configured'
+    else
+        printf 'not configured'
+    fi
+}
+
+truncate_file_zero() {
+    local file="$1"
+    [ -f "$file" ] || return 0
+
+    if [ "${SHIPFLOW_PM2_LOG_CLEANUP_DRY_RUN:-0}" = "1" ] || [ "${SHIPFLOW_DISK_CLEANUP_DRY_RUN:-0}" = "1" ]; then
+        echo ": > $file"
+        return 0
+    fi
+
+    : > "$file" 2>/dev/null || true
+}
+
+cleanup_pm2_logs() {
+    local pm2_home
+    pm2_home=$(pm2_home_dir)
+
+    if [ "${SHIPFLOW_PM2_LOG_CLEANUP_DRY_RUN:-0}" = "1" ] || [ "${SHIPFLOW_DISK_CLEANUP_DRY_RUN:-0}" = "1" ]; then
+        echo "pm2 flush"
+    elif command -v pm2 >/dev/null 2>&1; then
+        pm2 flush >/dev/null 2>&1 || true
+    fi
+
+    truncate_file_zero "$pm2_home/pm2.log"
+
+    if [ -d "$pm2_home/logs" ]; then
+        if [ "${SHIPFLOW_PM2_LOG_CLEANUP_DRY_RUN:-0}" = "1" ] || [ "${SHIPFLOW_DISK_CLEANUP_DRY_RUN:-0}" = "1" ]; then
+            find "$pm2_home/logs" -type f -name '*.log' -print 2>/dev/null | while IFS= read -r file; do
+                echo ": > $file"
+            done
+        else
+            find "$pm2_home/logs" -type f -name '*.log' -exec sh -c ': > "$1"' _ {} \; 2>/dev/null || true
+        fi
+    fi
+
+    echo -e "${GREEN}PM2 logs cleaned.${NC}"
+}
+
+configure_pm2_logrotate() {
+    local max_size="${SHIPFLOW_PM2_LOGROTATE_MAX_SIZE:-50M}"
+    local retain="${SHIPFLOW_PM2_LOGROTATE_RETAIN:-5}"
+
+    if [ "${SHIPFLOW_PM2_LOG_CLEANUP_DRY_RUN:-0}" = "1" ] || [ "${SHIPFLOW_DISK_CLEANUP_DRY_RUN:-0}" = "1" ]; then
+        echo "pm2 install pm2-logrotate"
+        echo "pm2 set pm2-logrotate:max_size $max_size"
+        echo "pm2 set pm2-logrotate:retain $retain"
+        echo "pm2 set pm2-logrotate:compress true"
+        return 0
+    fi
+
+    if ! command -v pm2 >/dev/null 2>&1; then
+        echo -e "${YELLOW}PM2 not found; log rotation not configured.${NC}"
+        return 0
+    fi
+
+    if ! pm2_logrotate_installed; then
+        echo -e "${YELLOW}Installing pm2-logrotate to cap future PM2 logs...${NC}"
+        if ! pm2 install pm2-logrotate; then
+            echo -e "${RED}Failed to install pm2-logrotate.${NC}"
+            return 1
+        fi
+    fi
+
+    pm2 set pm2-logrotate:max_size "$max_size" >/dev/null 2>&1 || true
+    pm2 set pm2-logrotate:retain "$retain" >/dev/null 2>&1 || true
+    pm2 set pm2-logrotate:compress true >/dev/null 2>&1 || true
+    echo -e "${GREEN}PM2 log rotation configured:${NC} max_size=$max_size retain=$retain compress=true"
+}
+
+cleanup_pm2_logs_with_rotation() {
+    cleanup_pm2_logs
+    configure_pm2_logrotate || true
+}
+
+print_du_top() {
+    local title="$1"
+    local path="$2"
+    local depth="${3:-1}"
+    local limit="${4:-12}"
+
+    [ -d "$path" ] || return 0
+
+    echo -e "${BLUE}${title}${NC}"
+    du -xhd"$depth" "$path" 2>/dev/null | sort -h | tail -n "$limit" | while IFS=$'\t' read -r size item; do
+        [ -n "$size" ] || continue
+        printf "  ${YELLOW}%-8s${NC} %s\n" "$size" "$item"
+    done
+    echo ""
+}
+
+print_top_files_by_size() {
+    local title="$1"
+    local path="$2"
+    local limit="${3:-10}"
+
+    [ -d "$path" ] || return 0
+
+    echo -e "${BLUE}${title}${NC}"
+    find "$path" -type f -printf '%s %p\n' 2>/dev/null | sort -nr | head -n "$limit" | while read -r bytes file; do
+        [ -n "$bytes" ] || continue
+        printf "  ${YELLOW}%-8s${NC} %s\n" "$(format_bytes "$bytes")" "$file"
+    done
+    echo ""
+}
+
+print_project_dir_top() {
+    local title="$1"
+    local path="$2"
+    local limit="${3:-12}"
+
+    [ -d "$path" ] || return 0
+
+    echo -e "${BLUE}${title}${NC}"
+    for dir in "$path"/*/; do
+        [ -d "$dir" ] || continue
+        du -xsh "$dir" 2>/dev/null
+    done | sort -h | tail -n "$limit" | while IFS=$'\t' read -r size item; do
+        [ -n "$size" ] || continue
+        printf "  ${YELLOW}%-8s${NC} %s\n" "$size" "${item%/}"
+    done
+    echo ""
+}
+
+disk_usage_details_menu() {
+    local pm2_home
+    pm2_home=$(pm2_home_dir)
+
+    echo -e "${GREEN}📊 Disk Details${NC}"
+    echo ""
+    echo -e "${BLUE}Filesystem:${NC}"
+    df -h / 2>/dev/null | awk 'NR == 1 || NR == 2 {print "  " $0}'
+    echo ""
+    echo -e "${BLUE}PM2 logs:${NC} ${YELLOW}$(format_bytes "$(pm2_logs_bytes)")${NC} (${CYAN}rotation: $(pm2_logrotate_status)${NC})"
+    echo ""
+
+    print_top_files_by_size "Top PM2 log files" "$pm2_home" 8
+    print_du_top "Top /home/$USER entries" "$HOME" 1 14
+    print_project_dir_top "Top project/work directories in $PROJECTS_DIR" "$PROJECTS_DIR" 12
+    print_du_top "Top root filesystem entries" "/" 1 12
+}
+
 disk_cleanup_menu() {
     echo -e "${GREEN}🧹 Disk Cleanup${NC}"
     echo ""
@@ -894,28 +1264,98 @@ disk_cleanup_menu() {
     before_used_pct=$(disk_used_pct)
     local before_level
     before_level=$(disk_pressure_level "$before_bytes" "$before_used_pct")
+    local agent_7_bytes agent_14_bytes agent_cache_bytes
+    agent_7_bytes=$(agent_history_old_bytes 7)
+    agent_14_bytes=$(agent_history_old_bytes 14)
+    agent_cache_bytes=$(agent_cache_log_bytes)
+    local pm2_log_bytes
+    pm2_log_bytes=$(pm2_logs_bytes)
 
     echo -e "${BLUE}Free space before:${NC} ${GREEN}${before_human}${NC} (${before_used_pct}% used on /)"
     print_disk_pressure_warning "$before_level" "$before_human" "$before_used_pct"
     echo ""
 
-    local choice
-    choice=$(printf "%s\n%s\n%s" \
-        "Light (safe caches only)" \
-        "Aggressive (includes npm + pnpm caches)" \
-        "Cancel" | ui_choose "Cleanup level:")
+    echo -e "${BLUE}Options:${NC}"
+    echo -e "  ${CYAN}v)${NC} Show disk usage details"
+    echo -e "  ${CYAN}p)${NC} PM2 logs - flush + enable rotation (${YELLOW}up to $(format_bytes "$pm2_log_bytes")${NC})"
+    echo -e "  ${CYAN}a)${NC} Agent histories - keep last 7 days (${YELLOW}up to $(format_bytes "$agent_7_bytes")${NC})"
+    echo -e "  ${CYAN}b)${NC} Agent histories - keep last 14 days (${YELLOW}up to $(format_bytes "$agent_14_bytes")${NC})"
+    echo -e "  ${CYAN}c)${NC} Agent caches/logs only (${YELLOW}up to $(format_bytes "$agent_cache_bytes")${NC})"
+    echo -e "  ${CYAN}l)${NC} Light disk cleanup - package/browser disk caches"
+    echo -e "  ${CYAN}g)${NC} Aggressive disk cleanup - includes npm + pnpm caches"
+    echo ""
+    echo -e "  ${CYAN}x)${NC} Back"
+    echo ""
+    echo -e "${YELLOW}Choose:${NC} \c"
 
-    if ui_is_back_selection "$choice"; then
+    local choice
+    ui_read_choice choice
+
+    if [ -z "$choice" ] || ui_is_back_choice "$choice"; then
         ui_return_back
         return 0
     fi
 
     echo ""
-    if [ "$choice" = "Light (safe caches only)" ]; then
+    if [ "$choice" = "v" ]; then
+        disk_usage_details_menu
+        return 0
+    elif [ "$choice" = "p" ]; then
+        echo -e "${YELLOW}This will truncate PM2 daemon/app log files and configure future rotation:${NC}"
+        echo -e "  ${CYAN}•${NC} $(pm2_home_dir)/pm2.log"
+        echo -e "  ${CYAN}•${NC} $(pm2_home_dir)/logs/*.log"
+        echo -e "  ${CYAN}•${NC} pm2-logrotate max_size=${SHIPFLOW_PM2_LOGROTATE_MAX_SIZE:-50M}, retain=${SHIPFLOW_PM2_LOGROTATE_RETAIN:-5}, compress=true"
+        echo -e "${GREEN}Protected:${NC} PM2 process list, project directories, app files, auth, config, skills, and memories."
+        echo ""
+        if ! ui_confirm "Flush PM2 logs and enable log rotation now?"; then
+            echo -e "${BLUE}Cancelled${NC}"
+            return 0
+        fi
+        cleanup_pm2_logs_with_rotation
+    elif [ "$choice" = "a" ]; then
+        echo -e "${YELLOW}This will remove old agent history files only:${NC}"
+        echo -e "  ${CYAN}•${NC} ~/.codex/sessions files older than 7 days"
+        echo -e "  ${CYAN}•${NC} ~/.claude/projects transcript files older than 7 days"
+        echo -e "  ${CYAN}•${NC} ~/.claude/file-history files older than 7 days"
+        echo -e "${GREEN}Protected:${NC} project directories, auth, config, skills, memories, and the last 7 days of histories."
+        echo ""
+        if ! ui_confirm "Delete old agent histories and keep the last 7 days?"; then
+            echo -e "${BLUE}Cancelled${NC}"
+            return 0
+        fi
+        cleanup_agent_history_old 7
+    elif [ "$choice" = "b" ]; then
+        echo -e "${YELLOW}This will remove old agent history files only:${NC}"
+        echo -e "  ${CYAN}•${NC} ~/.codex/sessions files older than 14 days"
+        echo -e "  ${CYAN}•${NC} ~/.claude/projects transcript files older than 14 days"
+        echo -e "  ${CYAN}•${NC} ~/.claude/file-history files older than 14 days"
+        echo -e "${GREEN}Protected:${NC} project directories, auth, config, skills, memories, and the last 14 days of histories."
+        echo ""
+        if ! ui_confirm "Delete old agent histories and keep the last 14 days?"; then
+            echo -e "${BLUE}Cancelled${NC}"
+            return 0
+        fi
+        cleanup_agent_history_old 14
+    elif [ "$choice" = "c" ]; then
+        echo -e "${YELLOW}This will remove temporary agent caches and truncate the Codex TUI log:${NC}"
+        echo -e "  ${CYAN}•${NC} ~/.codex/.tmp"
+        echo -e "  ${CYAN}•${NC} ~/.codex/tmp"
+        echo -e "  ${CYAN}•${NC} ~/.codex/cache"
+        echo -e "  ${CYAN}•${NC} ~/.codex/shell_snapshots"
+        echo -e "  ${CYAN}•${NC} ~/.codex/log/codex-tui.log"
+        echo -e "  ${CYAN}•${NC} ~/.claude/cache, downloads, paste-cache, plugins/cache"
+        echo -e "${GREEN}Protected:${NC} histories, auth, config, skills, memories, and project directories."
+        echo ""
+        if ! ui_confirm "Clean agent caches/logs now?"; then
+            echo -e "${BLUE}Cancelled${NC}"
+            return 0
+        fi
+        cleanup_agent_cache_logs
+    elif [ "$choice" = "l" ]; then
         echo -e "${YELLOW}This will remove:${NC}"
         echo -e "  ${CYAN}•${NC} ~/.cache/yarn"
         echo -e "  ${CYAN}•${NC} ~/.cache/pip"
-        echo -e "  ${CYAN}•${NC} ~/.cache/pnpm"
+        echo -e "  ${CYAN}•${NC} ~/.cache/pnpm (PNPM disk cache)"
         echo -e "  ${CYAN}•${NC} ~/.npm/_cacache"
         echo -e "  ${CYAN}•${NC} ~/.chromium-browser-snapshots"
         echo -e "  ${CYAN}•${NC} ~/.rustup/tmp/*"
@@ -925,14 +1365,15 @@ disk_cleanup_menu() {
             return 0
         fi
         cleanup_disk_light
-    else
+    elif [ "$choice" = "g" ]; then
         echo -e "${YELLOW}This will remove:${NC}"
         echo -e "  ${CYAN}•${NC} ~/.cache (entire cache directory)"
         echo -e "  ${CYAN}•${NC} ~/.npm"
-        echo -e "  ${CYAN}•${NC} ~/.local/share/pnpm"
+        echo -e "  ${CYAN}•${NC} ~/.local/share/pnpm (PNPM disk store/cache)"
         echo -e "  ${CYAN}•${NC} ~/.chromium-browser-snapshots"
         echo -e "  ${CYAN}•${NC} ~/.rustup/tmp/*"
         echo -e "  ${CYAN}•${NC} Rust/Tauri target/ build artifacts"
+        echo -e "  ${CYAN}•${NC} PM2 daemon/app logs + pm2-logrotate"
         echo ""
         if [ "$before_level" = "critical" ] || [ "$before_level" = "high" ]; then
             echo -e "${RED}This cleanup is recommended: current disk pressure is ${before_level}.${NC}"
@@ -942,6 +1383,10 @@ disk_cleanup_menu() {
             return 0
         fi
         cleanup_disk_aggressive
+        cleanup_pm2_logs_with_rotation
+    else
+        echo -e "${RED}Invalid option${NC}"
+        return 1
     fi
 
     local after_bytes
@@ -1799,21 +2244,32 @@ system_monitor_menu() {
     echo -e "  Available: ${GREEN}${avail}${NC}  /  Total: ${CYAN}${total}${NC}  (${YELLOW}${used_pct}%${NC} used)"
 
     # Visual bar
-    if [[ "$used_pct" =~ ^[0-9]+$ ]]; then
-        local bar_width=30
-        local filled=$(( used_pct * bar_width / 100 ))
-        local empty=$(( bar_width - filled ))
-        local bar_color="${GREEN}"
-        if [ "$used_pct" -ge 80 ]; then
-            bar_color="${RED}"
-        elif [ "$used_pct" -ge 60 ]; then
-            bar_color="${YELLOW}"
+    print_usage_bar "$used_pct"
+    echo ""
+
+    # --- Disk Overview ---
+    local disk_free disk_total disk_used disk_pct disk_level disk_fs
+    disk_free=$(disk_free_human)
+    disk_total=$(disk_total_human)
+    disk_used=$(disk_used_human)
+    disk_pct=$(disk_used_pct)
+    disk_level=$(disk_pressure_level "" "$disk_pct")
+    disk_fs=$(disk_filesystem)
+
+    echo -e "${BLUE}━━━ Disk Overview ━━━${NC}"
+    if [ -n "$disk_free" ] && [ -n "$disk_total" ]; then
+        echo -e "  Available: ${GREEN}${disk_free}${NC}  /  Total: ${CYAN}${disk_total}${NC}  (${YELLOW}${disk_pct:-?}%${NC} used)"
+        if [ -n "$disk_used" ]; then
+            echo -e "  Used: ${YELLOW}${disk_used}${NC}  /  Filesystem: ${CYAN}${disk_fs:-/}${NC} mounted on ${CYAN}/${NC}"
         fi
-        printf "  [${bar_color}"
-        printf '%0.s█' $(seq 1 $filled 2>/dev/null) 2>/dev/null || true
-        printf "${NC}"
-        printf '%0.s░' $(seq 1 $empty 2>/dev/null) 2>/dev/null || true
-        printf "] %s%%\n" "$used_pct"
+        print_usage_bar "$disk_pct" 30 "${SHIPFLOW_DISK_HIGH_PCT:-90}" "${SHIPFLOW_DISK_WARN_PCT:-85}"
+        if [ "$disk_level" = "ok" ]; then
+            echo -e "  Status: ${GREEN}OK${NC}"
+        else
+            print_disk_pressure_warning "$disk_level" "$disk_free" "$disk_pct"
+        fi
+    else
+        echo -e "  ${YELLOW}Disk metrics unavailable${NC}"
     fi
     echo ""
 
@@ -2110,6 +2566,7 @@ updates_menu() {
 
     echo -e "${BLUE}Options:${NC}"
     echo -e "  ${CYAN}u)${NC} Update All"
+    echo ""
     echo -e "  ${CYAN}x)${NC} Back"
     echo ""
     echo -e "${YELLOW}Your choice:${NC} \c"
@@ -2581,6 +3038,7 @@ install_sdk_menu() {
     fi
 
     echo -e "  ${CYAN}f)${NC} Flutter + Dart  [$flutter_status]"
+    echo ""
     echo -e "  ${CYAN}x)${NC} Back"
     echo ""
     echo -e "${YELLOW}Your choice:${NC} \c"
@@ -2600,7 +3058,7 @@ install_sdk_menu() {
             # Requires root
             if [ "$EUID" -ne 0 ]; then
                 echo -e "${RED}Installation requires root privileges.${NC}"
-                echo -e "${YELLOW}Run: ${CYAN}sudo sf${YELLOW} then Advanced > Install SDK${NC}"
+                echo -e "${YELLOW}Run: ${CYAN}sudo sf${YELLOW} then Tools & Web > Install SDK${NC}"
                 return 1
             fi
 
@@ -3688,6 +4146,36 @@ display_session_banner() {
     echo -e "${GREEN}$(center_session_banner_text "$user@$host")${NC}"
     echo -e "${YELLOW}$(center_session_banner_text "$session_code")${NC}"
     echo -e "${CYAN}──────────────────────────────────────────────────${NC}"
+}
+
+session_banner_header_block() {
+    if [ "$SHIPFLOW_SESSION_ENABLED" != "true" ]; then
+        return 1
+    fi
+
+    local session_id
+    session_id=$(get_session_id)
+    if [ -z "$session_id" ]; then
+        return 1
+    fi
+
+    local hash_art
+    local session_code
+    local user
+    local host
+    hash_art=$(generate_hash_art "$session_id")
+    session_code=$(get_session_code "$session_id")
+    user="${USER:-unknown}"
+    host="${HOSTNAME:-$(hostname 2>/dev/null || echo 'unknown')}"
+
+    printf "%b%s%b\n" $'\033[38;5;141m' "$(center_session_banner_text "Session Identity" 46)" "$NC"
+    printf "%b══════════════════════════════════════════════%b\n" "$CYAN" "$NC"
+    while IFS= read -r line; do
+        printf "              %b%s%b\n" "$BLUE" "$line" "$NC"
+    done <<< "$hash_art"
+    printf "%b%s%b\n" "$GREEN" "$(center_session_banner_text "$user@$host" 46)" "$NC"
+    printf "%b%s%b\n" $'\033[38;5;117m' "$(center_session_banner_text "$session_code" 46)" "$NC"
+    printf "%b──────────────────────────────────────────────%b" "$YELLOW" "$NC"
 }
 
 # -----------------------------------------------------------------------------
@@ -6939,7 +7427,13 @@ print_header() {
         status_right="Up: $MENU_STATUS_UPDATES_TOTAL"
     fi
 
-    ui_header "Shipflow DevServer" "Development Environment" "$status_left" "$status_right"
+    local session_header_block=""
+    if [ "$SHIPFLOW_SESSION_ENABLED" = "true" ]; then
+        init_session 2>/dev/null
+        session_header_block=$(session_banner_header_block 2>/dev/null || true)
+    fi
+
+    ui_header "Shipflow DevServer" "" "$status_left" "$status_right" "$session_header_block"
 
     if [ "${MENU_STATUS_LOW_SPACE:-0}" = "1" ]; then
         local header_used_pct
@@ -6962,11 +7456,7 @@ print_header() {
         echo -e "${YELLOW}⚠️  ${long_count} process(es) running ${SHIPFLOW_PROCESS_LONG_RUNNING_HOURS:-24}h+ — press h) Health Check${NC}"
     fi
 
-    if [ "$SHIPFLOW_SESSION_ENABLED" = "true" ]; then
-        init_session 2>/dev/null
-        display_session_banner
-        echo ""
-    fi
+    echo ""
 }
 
 # ============================================================================
@@ -7165,6 +7655,7 @@ action_flutter_web() {
     echo -e "  ${CYAN}a)${NC} Attach terminal"
     echo -e "  ${CYAN}t)${NC} Stop session"
     echo -e "  ${CYAN}v)${NC} Show sessions"
+    echo ""
     echo -e "  ${CYAN}x)${NC} Back"
     echo ""
     echo -e "${YELLOW}Choose:${NC} \c"
@@ -7213,13 +7704,16 @@ action_health() {
     ui_flush_pending_input
     echo -e "${BLUE}Options:${NC}"
     echo -e "  ${CYAN}r)${NC} Refresh current processes"
-    echo -e "  ${CYAN}s)${NC} Clean all safe targets"
+    echo -e "  ${CYAN}v)${NC} Disk details (largest files/directories)"
+    echo -e "  ${CYAN}d)${NC} Disk cleanup (files: agent histories/caches/package caches)"
+    echo -e "  ${CYAN}s)${NC} Safe process cleanup (RAM/processes only)"
     echo -e "  ${CYAN}m)${NC} MCP process cleanup (local servers)"
     echo -e "  ${CYAN}p)${NC} Stop empty PM2 daemon"
     echo -e "  ${CYAN}c)${NC} Stop all Caddy if no PM2 apps"
     echo -e "  ${CYAN}a)${NC} Auto-fix PM2 app issues"
-    echo -e "  ${CYAN}g)${NC} Aggressive cleanup"
-    echo -e "  ${CYAN}x)${NC} Back to menu"
+    echo -e "  ${CYAN}g)${NC} Aggressive process cleanup"
+    echo ""
+    echo -e "  ${CYAN}x)${NC} Back"
     echo ""
     echo -e "${YELLOW}Choose:${NC} \c"
 
@@ -7236,9 +7730,18 @@ action_health() {
             ui_skip_next_pause
             return 0
             ;;
+        v)
+            echo ""
+            disk_usage_details_menu
+            ;;
         g)
             echo ""
             aggressive_cleanup_menu
+            ;;
+        d)
+            echo ""
+            disk_cleanup_menu
+            refresh_menu_status_cache_sync >/dev/null 2>&1 || true
             ;;
         s)
             echo ""
@@ -7303,7 +7806,7 @@ action_reboot_vm() {
 action_exit() { echo -e "${GREEN}👋 Goodbye!${NC}"; exit 0; }
 
 # ============================================================================
-# ACTION HANDLERS — Advanced Menu
+# ACTION HANDLERS — Grouped Menus
 # ============================================================================
 
 action_view_logs() {
@@ -7681,6 +8184,7 @@ codex_select_mcp_preset() {
     echo -e "  ${CYAN}a)${NC} Auth - Clerk + Supabase" >&2
     echo -e "  ${CYAN}o)${NC} Docs - Context7" >&2
     echo -e "  ${CYAN}c)${NC} Custom selection" >&2
+    echo "" >&2
     echo -e "  ${CYAN}x)${NC} Back" >&2
     echo "" >&2
     echo -e "${YELLOW}Choose:${NC} \c" >&2
@@ -8218,52 +8722,67 @@ action_install_sdk() { install_sdk_menu; }
 # ============================================================================
 
 MAIN_MENU_ITEMS=(
-    "---|📊 OVERVIEW|"
-    "d|Dashboard - View all environments|action_dashboard"
-    "s|ShipFlow - Tasks · Priorities · Changelog|action_shipflow_overview"
-    "---|🚀 MANAGE|"
-    "e|Deploy - Launch or deploy environment|action_deploy"
-    "r|Restart - Restart an environment|action_restart"
-    "t|Stop - Stop an environment|action_stop"
-    "w|Remove - Delete an environment|action_remove"
-    "y|Rename - Rename an environment|action_rename"
-    "---|⚡ BATCH|"
-    "a|Start All - Start all environments|action_start_all"
-    "o|Stop All - Stop all environments|action_stop_all"
-    "b|Restart All - Restart all environments|action_restart_all"
-    "---|🔧 TOOLS|"
-    "g|Flutter Web - tmux hot reload|action_flutter_web"
-    "l|Logs - Display application logs|action_view_logs"
-    "p|Publish - Configure HTTPS (Caddy + DuckDNS)|action_publish"
-    "i|Inspector - Toggle browser web inspector|action_inspector"
-    "n|Navigate - Open a project directory|action_navigate"
-    "---|⚙️ SYSTEM|"
-    "h|Health Check - RAM, processes, crash loops|action_health"
-    "m|Mobile Guide - Setup Android + Expo|action_mobile"
-    "u|Updates - Check & update packages|action_updates"
-    "k|Cleanup - Free disk space (light/aggressive)|action_cleanup"
-    "f|Install SDK - Flutter, Dart...|action_install_sdk"
-    "v|Tools Status - Voir les outils installés|action_tools"
-    "0|Reboot VM - Restart this server|action_reboot_vm"
-    "z|Blacksmith - CI runners and Testbox setup|action_blacksmith_setup"
-    "j|Session Identity - View or reset session|action_session"
-    "c|Local Setup - Show server address for tunnels|action_local_connection_info"
-    "q|MCP / Codex - Auth and launcher|action_mcp_menu"
-    "?|Help - How ShipFlow works|action_adv_help"
-    "x|Exit|action_exit"
+    "d|📊 Dashboard|action_dashboard"
+    "e|🚀 Deploy / Start|action_deploy"
+    "m|🧭 Environments|action_environments_menu"
+    "t|🧰 Tools|action_tools_web_menu"
+    "s|⚙️ System|action_system_menu"
+    "a|🤖 Agents|action_agents_ci_menu"
+    "f|🚢 ShipFlow|action_shipflow_overview"
+    "h|❓ Help|action_adv_help"
+    "x|👋 Exit|action_exit"
+)
+
+ENVIRONMENT_MENU_ITEMS=(
+    "r|🔄 Restart|action_restart"
+    "t|🛑 Stop|action_stop"
+    "w|🗑️ Remove|action_remove"
+    "y|✏️ Rename|action_rename"
+    "a|▶️ Start All|action_start_all"
+    "o|⏹️ Stop All|action_stop_all"
+    "b|🔁 Restart All|action_restart_all"
+    "l|📝 Logs|action_view_logs"
+    "n|📁 Navigate|action_navigate"
+    "x|↩️ Back|__EXIT__"
+)
+
+TOOLS_WEB_MENU_ITEMS=(
+    "g|📱 Flutter Web - tmux hot reload|action_flutter_web"
+    "p|🌐 Publish - Configure HTTPS (Caddy + DuckDNS)|action_publish"
+    "i|🔍 Inspector - Toggle browser web inspector|action_inspector"
+    "m|🤳 Mobile Guide - Setup Android + Expo|action_mobile"
+    "f|📦 Install SDK - Flutter, Dart...|action_install_sdk"
+    "v|🧪 Tools Status - Voir les outils installés|action_tools"
+    "x|↩️ Back|__EXIT__"
+)
+
+SYSTEM_MENU_ITEMS=(
+    "h|🩺 Health Check - RAM, disk, processes, crash loops|action_health"
+    "u|⬆️ Updates - Check & update packages|action_updates"
+    "k|🧹 Cleanup - Disk details, PM2 logs, caches|action_cleanup"
+    "0|🔌 Reboot VM - Restart this server|action_reboot_vm"
+    "j|🔐 Session Identity - View or reset session|action_session"
+    "c|🌐 Local Setup - Show server address for tunnels|action_local_connection_info"
+    "x|↩️ Back|__EXIT__"
+)
+
+AGENTS_CI_MENU_ITEMS=(
+    "q|🧠 MCP / Codex - Auth and launcher|action_mcp_menu"
+    "z|🏗️ Blacksmith - CI runners and Testbox setup|action_blacksmith_setup"
+    "x|↩️ Back|__EXIT__"
 )
 
 # Legacy: ADVANCED_MENU_ITEMS kept for action_advanced fallback
 ADVANCED_MENU_ITEMS=(
-    "x|← Back to Main Menu|__EXIT__"
+    "x|↩️ Back|__EXIT__"
 )
 
 print_menu_shortcut_usage() {
     echo -e "${BLUE}Usage:${NC} sf [menu shortcut]" >&2
-    echo -e "${BLUE}Example:${NC} sf u" >&2
+    echo -e "${BLUE}Example:${NC} sf t" >&2
     echo -e "${BLUE}Codex launcher:${NC} sf codex [mcp ...]" >&2
     echo "" >&2
-    echo -e "${BLUE}Available shortcuts:${NC}" >&2
+    echo -e "${BLUE}Available menu keys:${NC}" >&2
 
     local item key label action
     for item in "${MAIN_MENU_ITEMS[@]}"; do
@@ -8508,13 +9027,12 @@ show_help() {
                 echo -e "         Check the Dashboard (${YELLOW}d${NC}) to see the port"
                 echo ""
                 echo -e "  ${CYAN}Step 4:${NC} ${GREEN}Publish to web (optional)${NC}"
-                echo -e "         Press ${YELLOW}g${NC} (More Options) then ${YELLOW}p${NC} (Publish)"
+                echo -e "         Press ${YELLOW}t${NC} (Tools) then ${YELLOW}p${NC} (Publish)"
                 echo ""
                 echo -e "${BLUE}┌───────────────────────────────────────────────────────────────┐${NC}"
                 echo -e "${BLUE}│${NC} ${YELLOW}Quick Reference:${NC}                                              ${BLUE}│${NC}"
-                echo -e "${BLUE}│${NC}   ${CYAN}d${NC} Dashboard  ${CYAN}e${NC} Deploy  ${CYAN}r${NC} Restart  ${CYAN}t${NC} Stop  ${CYAN}w${NC} Remove     ${BLUE}│${NC}"
-                echo -e "${BLUE}│${NC}   ${CYAN}a${NC} StartAll  ${CYAN}o${NC} StopAll  ${CYAN}b${NC} RestartAll              ${BLUE}│${NC}"
-                echo -e "${BLUE}│${NC}   ${CYAN}g${NC} Advanced  ${CYAN}m${NC} Mobile  ${CYAN}h${NC} Health  ${CYAN}x${NC} Exit          ${BLUE}│${NC}"
+                echo -e "${BLUE}│${NC}   ${CYAN}d${NC} Dashboard  ${CYAN}e${NC} Deploy/Start  ${CYAN}m${NC} Environments  ${CYAN}t${NC} Tools       ${BLUE}│${NC}"
+                echo -e "${BLUE}│${NC}   ${CYAN}s${NC} System  ${CYAN}a${NC} Agents  ${CYAN}f${NC} ShipFlow  ${CYAN}h${NC} Help  ${CYAN}x${NC} Exit         ${BLUE}│${NC}"
                 echo -e "${BLUE}└───────────────────────────────────────────────────────────────┘${NC}"
                 ;;
             2)
@@ -8596,7 +9114,7 @@ show_help() {
                 echo ""
                 echo -e "  Inject a visual element selector into your web app:"
                 echo ""
-                echo -e "  ${CYAN}•${NC} Inject/remove manually via ${YELLOW}Advanced → Toggle Web Inspector${NC}"
+                echo -e "  ${CYAN}•${NC} Inject/remove manually via ${YELLOW}Tools & Web → Inspector${NC}"
                 echo -e "  ${CYAN}•${NC} Shows numbered buttons on every ${YELLOW}<div>${NC} element"
                 echo -e "  ${CYAN}•${NC} ${GREEN}Click${NC} → Copy XPath to clipboard"
                 echo -e "  ${CYAN}•${NC} ${GREEN}Long-press${NC} → Screenshot menu:"

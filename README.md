@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "0.9.1"
+artifact_version: "0.9.3"
 project: "shipflow"
 created: "2026-04-25"
-updated: "2026-05-08"
+updated: "2026-05-09"
 status: draft
 source_skill: sf-docs
 scope: readme
@@ -260,7 +260,7 @@ For Dart/Flutter projects, ShipFlow provisions runtime packages inside each
 project Flox environment (not as a required global SDK). Defaults are
 `SHIPFLOW_FLOX_DART_PACKAGES=dart` and
 `SHIPFLOW_FLOX_FLUTTER_PACKAGES=flutter@3.41.5-sdk-links`, with strict token
-validation on overrides. The `Advanced > Install SDK` menu stays available as
+validation on overrides. The `Tools & Web > Install SDK` menu stays available as
 an optional global convenience.
 
 Flutter Web can also be launched from `sf` through `Flutter Web - tmux hot
@@ -298,13 +298,14 @@ Unlike Claude Code, Codex does not expose a custom shell-command status line ren
 ```bash
 sf
 shipflow
-sf u   # open Updates directly
+sf t   # open Tools
 sf codex   # open the Codex MCP launcher
 ```
 
-Passing a top-level menu key as the only argument runs that menu action once.
-Action-level confirmations still apply, including before package upgrades.
-Inside menus, `x`, `Esc`, and `Backspace` go back when a Back option exists.
+Passing a visible root menu key as the only argument runs that menu action once.
+Group keys open their submenu. Action-level confirmations still apply,
+including before package upgrades. Inside menus, `x`, `Esc`, and `Backspace`
+go back when a Back option exists.
 
 Typical CLI actions:
 - dashboard and PM2 status

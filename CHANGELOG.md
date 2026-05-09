@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "0.3.8"
+artifact_version: "0.3.9"
 project: "shipflow"
 created: "2026-04-25"
-updated: "2026-05-08"
+updated: "2026-05-09"
 status: draft
 source_skill: sf-docs
 scope: documentation
@@ -25,6 +25,24 @@ evidence: []
 next_step: "/sf-docs audit CHANGELOG.md"
 ---
 # ShipFlow Changelog
+
+## [2026-05-09]
+
+### Changed
+- The ShipFlow root menu is now grouped into readable entries (`Dashboard`,
+  `Deploy / Start`, `Environments`, `Tools`, `System`,
+  `Agents`, `ShipFlow`, `Help`, `Exit`) with icons.
+- The previous `Agents / ShipFlow` root entry is now split into separate
+  `Agents` and `ShipFlow` items, giving the ShipFlow tracker menu its own
+  shortcut.
+- Environment, tools, system, and agents submenus now show iconed titles,
+  a blank spacer, and iconed one-key actions in both Gum and bash frontends.
+- CLI one-shot menu keys now match the visible root menu keys instead of
+  preserving hidden direct shortcuts.
+
+### Fixed
+- The bash fallback no longer highlights action rows just because their label
+  contains words such as `CI`.
 
 ## [2026-05-08]
 

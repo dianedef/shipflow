@@ -71,6 +71,14 @@ _gum_run_menu() {
                 right_lines+=("${label}")
             fi
         else
+            if [ "$action" = "__EXIT__" ] && [ ${#display_lines[@]} -gt 0 ]; then
+                display_lines+=("")
+                if [ "$side" = "left" ]; then
+                    left_lines+=("")
+                else
+                    right_lines+=("")
+                fi
+            fi
             display_lines+=("${key_color}${key})${color_reset}  ${label}")
             if [ "$side" = "left" ]; then
                 left_lines+=("${key}) ${label}")
@@ -142,17 +150,24 @@ _gum_pause() {
     ui_read_key pause_key
 }
 
-# Advanced menu — loop with gum style
-action_advanced() {
+_gum_run_nested_menu() {
+    local header="$1"
+    shift
+    local items=("$@")
+
     while true; do
         clear
         gum style --foreground 212 --border-foreground 212 --border double \
             --align center --width 50 --margin "1 2" --padding "1 2" \
-            "Advanced Options"
+            "$header"
+        echo ""
 
-        _gum_run_menu "Advanced Options" "" "inline" "${ADVANCED_MENU_ITEMS[@]}"
+        _gum_run_menu "$header" "" "inline" "${items[@]}"
         local rc=$?
-        [ $rc -eq 1 ] && break
+        if [ $rc -eq 1 ]; then
+            ui_return_back
+            break
+        fi
         if [ $rc -eq 0 ]; then
             if ui_should_skip_next_pause; then
                 continue
@@ -161,6 +176,14 @@ action_advanced() {
         fi
     done
 }
+
+action_environments_menu() { _gum_run_nested_menu "🧭 Environments" "${ENVIRONMENT_MENU_ITEMS[@]}"; }
+action_tools_web_menu() { _gum_run_nested_menu "🧰 Tools" "${TOOLS_WEB_MENU_ITEMS[@]}"; }
+action_system_menu() { _gum_run_nested_menu "⚙️ System" "${SYSTEM_MENU_ITEMS[@]}"; }
+action_agents_ci_menu() { _gum_run_nested_menu "🤖 Agents" "${AGENTS_CI_MENU_ITEMS[@]}"; }
+
+# Legacy advanced menu entry point
+action_advanced() { _gum_run_nested_menu "Advanced Options" "${ADVANCED_MENU_ITEMS[@]}"; }
 
 # Main menu loop — gum styled display, instant keypress
 run_menu() {

@@ -1,10 +1,10 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "1.0.4"
+artifact_version: "1.0.10"
 project: ShipFlow
 created: "2026-05-01"
-updated: "2026-05-08"
+updated: "2026-05-09"
 status: reviewed
 source_skill: sf-start
 scope: runtime-cli
@@ -16,6 +16,8 @@ docs_impact: yes
 linked_systems:
   - shipflow.sh
   - lib.sh
+  - menu_gum.sh
+  - menu_bash.sh
   - config.sh
   - CONTEXT-FUNCTION-TREE.md
 depends_on:
@@ -30,6 +32,12 @@ evidence:
   - "Function inventory from shipflow.sh, lib.sh, config.sh, and CONTEXT-FUNCTION-TREE.md."
   - "Blacksmith setup menu added for official CLI/Testbox guidance without token handling."
   - "Remote Blacksmith auth now routes to local SSH callback tunnel instead of direct server login."
+  - "Main menu shortened with grouped submenus."
+  - "Root menu labels simplified to visible user actions without abstract section headers."
+  - "Health Check system monitor now shows disk capacity alongside memory."
+  - "Disk cleanup now includes protected agent-history and agent-cache cleanup choices."
+  - "Disk details and PM2 log cleanup/rotation added to explain and cap disk usage."
+  - "Main menu session identity now renders inside the top status header."
 next_review: "2026-06-01"
 next_step: "/sf-docs technical audit runtime-cli"
 ---
@@ -46,6 +54,7 @@ This doc covers the server-side CLI runtime: `shipflow.sh`, `lib.sh`, and `confi
 | --- | --- | --- |
 | `shipflow.sh` | Thin CLI entrypoint that sources runtime and menu files, then calls `main` | Keep thin; do not move business logic here |
 | `lib.sh` | Main orchestration library for UI, validation, PM2/Flox/Caddy operations, health, deploy, publish, and actions | High blast radius; prefer focused changes and syntax checks |
+| `menu_gum.sh`, `menu_bash.sh` | Menu frontends that render the root menu and grouped submenus | Keep frontend behavior equivalent; update both variants together |
 | `config.sh` | Central configuration defaults and validation | Keep defaults explicit and validation actionable |
 | `CONTEXT-FUNCTION-TREE.md` | Navigation aid for large shell files | Update when major functions or flows move |
 
@@ -53,20 +62,23 @@ This doc covers the server-side CLI runtime: `shipflow.sh`, `lib.sh`, and `confi
 
 - `shipflow` / `sf`: installed wrappers that call `shipflow.sh`.
 - `shipflow.sh::main`: checks prerequisites, cleans orphan state, then starts
-  the menu or runs a one-shot top-level menu shortcut.
+  the menu or runs a one-shot visible root menu key.
 - `sf codex` / `sf co`: early Codex launcher shortcut that bypasses
   environment cleanup, asks for a workspace/MCP preset when needed, then
   replaces the ShipFlow process with `codex`.
 - `lib.sh::run_menu`: dispatches interactive menu choices to `action_*` handlers.
-- `lib.sh::run_menu_shortcut`: dispatches a single CLI shortcut argument such
-  as `sf u` to the same top-level action while preserving action confirmations.
-- `menu_gum.sh` / `menu_bash.sh`: render the top-level menu from
-  `MAIN_MENU_ITEMS`. Startup rendering should avoid per-item subprocesses; the
-  Gum frontend should batch styling through one boxed render instead of one
-  `gum style` call per item. The top-level menu uses a two-column layout on
-  wide terminals and falls back to one column on narrow terminals.
-- `menu_bash.sh` / `menu_gum.sh`: render the top-level menu and use shared
-  key input helpers so `x`, `Esc`, and `Backspace` act consistently for Back.
+- `lib.sh::run_menu_shortcut`: dispatches a single CLI menu-key argument such
+  as `sf t` to the matching visible root action in `MAIN_MENU_ITEMS`.
+- `menu_gum.sh` / `menu_bash.sh`: render the root menu from `MAIN_MENU_ITEMS`
+  and grouped submenus from `ENVIRONMENT_MENU_ITEMS`, `TOOLS_WEB_MENU_ITEMS`,
+  `SYSTEM_MENU_ITEMS`, and `AGENTS_CI_MENU_ITEMS`. Startup rendering should
+  avoid per-item subprocesses; the Gum frontend should batch styling through
+  one boxed render instead of one `gum style` call per item. The root menu uses
+  a two-column layout on wide terminals and falls back to one column on narrow
+  terminals. ShipFlow's own tracker overview is exposed as a dedicated root
+  action instead of being nested under agents.
+- `menu_bash.sh` / `menu_gum.sh`: render menus and use shared key input helpers
+  so `x`, `Esc`, and `Backspace` act consistently for Back.
 - `lib.sh` UI helpers: `ui_read_choice`, `ui_run_menu_action`,
   `ui_return_back`, and the skip-next-pause signal define the reusable
   Back/cancel contract for nested menus, including selections made through
@@ -75,6 +87,8 @@ This doc covers the server-side CLI runtime: `shipflow.sh`, `lib.sh`, and `confi
   interactive actions run in `screen` mode so command output starts from a
   clean screen instead of below the root menu, while nested menus can keep
   `inline` behavior.
+- `lib.sh::ui_header`: prints the main menu status header and can embed the
+  session identity block inside the same top frame.
 - `lib.sh::ui_box_header`: prints fixed-width boxed CLI headers so left and
   right borders stay aligned across dashboard, logs, health, and success blocks.
 - `lib.sh::env_start`, `env_stop`, `env_restart`, `env_remove`: core environment lifecycle.
@@ -97,9 +111,20 @@ This doc covers the server-side CLI runtime: `shipflow.sh`, `lib.sh`, and `confi
 - `lib.sh::mcp_cleanup_menu`: health-menu cleanup for local MCP process
   groups. It lists provider/RAM/uptime/parent Codex evidence and stops only a
   confirmed process group.
-- `lib.sh::action_health`: renders the system monitor and PM2 health first,
-  then uses explicit one-key actions for cleanup commands. It must not route
-  destructive cleanup options through searchable/default-select menus.
+- `lib.sh::action_health`: renders the system monitor with RAM, disk, swap,
+  process, and PM2 health first, then uses explicit one-key actions for cleanup
+  commands. It must not route destructive cleanup options through
+  searchable/default-select menus.
+- `lib.sh::disk_cleanup_menu`: one-key disk cleanup flow for old Codex/Claude
+  history files, agent caches/logs, and package/browser disk caches. It shows
+  estimated recoverable space and protects project directories, auth, config,
+  skills, memories, and recent agent histories.
+- `lib.sh::disk_usage_details_menu`: read-only disk usage detail view for the
+  largest PM2 log files, `$HOME` entries, project/work directories, and root
+  filesystem entries.
+- `lib.sh::cleanup_pm2_logs_with_rotation`: truncates PM2 daemon/app logs and
+  configures `pm2-logrotate` (`max_size=50M`, `retain=5` by default) so PM2
+  logs cannot refill the disk unchecked.
 - Command submenus that can start, stop, restart, launch, or clean up runtime
   state should use explicit one-key choices or confirmations; `ui_filter_choose`
   is reserved for longer data-selection lists and flushes pending input before
@@ -162,8 +187,8 @@ Flutter Web has two runtime paths:
   `SHIPFLOW_DATA_DIR` and must not create project-local `TASKS.md` symlinks.
   Legacy symlinks from older ShipFlow versions should be removed when they
   point into `shipflow_data`.
-- Top-level interactive menu actions should be dispatched through
-  `ui_run_menu_action` in `screen` mode; nested menus may use `inline` when
+- Root interactive menu actions should be dispatched through
+  `ui_run_menu_action` in `screen` mode; grouped submenus may use `inline` when
   they already own their screen lifecycle.
 - Back/cancel paths should signal parent redraw through the shared UI helpers
   instead of returning like completed actions.
@@ -179,7 +204,7 @@ Flutter Web has two runtime paths:
 ## Failure Modes
 
 - Missing prerequisites should produce an actionable error before secondary failures.
-- Unknown shortcut arguments should fail visibly with the available top-level keys.
+- Unknown shortcut arguments should fail visibly with the available visible root menu keys.
 - Back actions should redraw the parent menu directly instead of requiring an
   extra pause keypress.
 - Back/cancel state can be lost when a selector runs inside Bash command
@@ -204,6 +229,13 @@ Flutter Web has two runtime paths:
   Codex conversations or MCP processes.
 - MCP cleanup should target only local MCP server process groups, ask for
   confirmation, and refuse any process group that contains a `codex` process.
+- Disk cleanup must keep project directories out of scope and must not delete
+  agent auth/config/skills/memories; history cleanup is retention-based.
+- Package-manager caches such as PNPM are disk cleanup targets, not RAM/process
+  cleanup targets.
+- PM2 logs can dominate disk usage; disk cleanup should expose their size, offer
+  a confirmed flush, and configure rotation rather than relying on manual
+  operator cleanup.
 
 ## Security Notes
 
@@ -221,6 +253,10 @@ test_flox_runtime_provisioning.sh
 rg -n "invalidate_pm2_cache" lib.sh
 printf 'x\n' | env SHIPFLOW_PROJECTS_DIR=/tmp/shipflow-empty ./shipflow.sh u
 SHIPFLOW_CODEX_DRY_RUN=1 ./shipflow.sh codex --dir "$PWD" supabase playwright
+printf 'x' | bash -lc 'source ./lib.sh; action_health'
+printf 'x\n' | bash -lc 'source ./lib.sh; disk_cleanup_menu'
+SHIPFLOW_PM2_LOG_CLEANUP_DRY_RUN=1 bash -lc 'source ./lib.sh; cleanup_pm2_logs_with_rotation'
+bash -lc 'source ./lib.sh; disk_usage_details_menu'
 SHIPFLOW_MCP_CLEANUP_DRY_RUN=1 bash -lc 'source ./lib.sh; mcp_cleanup_menu'
 SHIPFLOW_USER_CADDY_DRY_RUN=1 bash -lc 'source ./lib.sh; refresh_user_caddy_from_pm2'
 printf 'o\n' | SHIPFLOW_REBOOT_DRY_RUN=1 bash -lc 'source ./lib.sh; action_reboot_vm'

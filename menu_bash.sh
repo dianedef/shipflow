@@ -62,6 +62,14 @@ _bash_run_menu() {
                 right_lines+=("${label}")
             fi
         else
+            if [ "$action" = "__EXIT__" ] && [ ${#display_lines[@]} -gt 0 ]; then
+                display_lines+=("")
+                if [ "$side" = "left" ]; then
+                    left_lines+=("")
+                else
+                    right_lines+=("")
+                fi
+            fi
             display_lines+=("  ${key}) ${label}")
             if [ "$side" = "left" ]; then
                 left_lines+=("  ${key}) ${label}")
@@ -96,7 +104,7 @@ _bash_run_menu() {
                 echo ""
             elif [[ "$line" == ---* ]]; then
                 echo -e "${BLUE}${line}${NC}"
-            elif [[ "$line" == *OVERVIEW* || "$line" == *MANAGE* || "$line" == *BATCH* || "$line" == *TOOLS* || "$line" == *SYSTEM* ]]; then
+            elif [[ "$line" != "  "* && ( "$line" == *ENVIRONMENT* || "$line" == *BATCH* || "$line" == *INSPECT* || "$line" == *WEB* || "$line" == *SDKS* || "$line" == *SYSTEM* || "$line" == *ACCESS* || "$line" == *AGENTS* || "$line" == *CI* ) ]]; then
                 echo -e "${BLUE}${line}${NC}"
             else
                 echo "$line"
@@ -127,18 +135,24 @@ _bash_run_menu() {
     return 0
 }
 
-# Advanced menu — loop with bash
-action_advanced() {
+_bash_run_nested_menu() {
+    local header="$1"
+    shift
+    local items=("$@")
+
     while true; do
         clear
         echo -e "${CYAN}══════════════════════════════════════════════════${NC}"
-        echo -e "                 ${YELLOW}Advanced Options${NC}"
+        printf "                 ${YELLOW}%s${NC}\n" "$header"
         echo -e "${CYAN}══════════════════════════════════════════════════${NC}"
         echo ""
 
-        _bash_run_menu "inline" "${ADVANCED_MENU_ITEMS[@]}"
+        _bash_run_menu "inline" "${items[@]}"
         local rc=$?
-        [ $rc -eq 1 ] && break
+        if [ $rc -eq 1 ]; then
+            ui_return_back
+            break
+        fi
         if [ $rc -eq 0 ]; then
             if ui_should_skip_next_pause; then
                 continue
@@ -147,6 +161,14 @@ action_advanced() {
         fi
     done
 }
+
+action_environments_menu() { _bash_run_nested_menu "🧭 Environments" "${ENVIRONMENT_MENU_ITEMS[@]}"; }
+action_tools_web_menu() { _bash_run_nested_menu "🧰 Tools" "${TOOLS_WEB_MENU_ITEMS[@]}"; }
+action_system_menu() { _bash_run_nested_menu "⚙️ System" "${SYSTEM_MENU_ITEMS[@]}"; }
+action_agents_ci_menu() { _bash_run_nested_menu "🤖 Agents" "${AGENTS_CI_MENU_ITEMS[@]}"; }
+
+# Legacy advanced menu entry point
+action_advanced() { _bash_run_nested_menu "Advanced Options" "${ADVANCED_MENU_ITEMS[@]}"; }
 
 # Main menu loop — pure bash
 run_menu() {

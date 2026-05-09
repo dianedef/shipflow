@@ -1,10 +1,10 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.0.1"
 project: ShipFlow
 created: "2026-05-01"
-updated: "2026-05-01"
+updated: "2026-05-09"
 status: reviewed
 source_skill: sf-start
 scope: code-docs-map
@@ -24,6 +24,7 @@ depends_on:
 supersedes: []
 evidence:
   - "Repository inventory and ready spec task map."
+  - "Menu frontend variants mapped to runtime CLI docs after grouped root menu change."
 next_review: "2026-06-01"
 next_step: "/sf-docs technical audit"
 ---
@@ -41,6 +42,7 @@ Shared files in this map are sequential integration files. Do not assign concurr
 | Path pattern | Subsystem | Primary technical doc | Secondary docs | Required validation | Docs update trigger |
 | --- | --- | --- | --- | --- | --- |
 | `shipflow.sh` | Runtime CLI | `docs/technical/runtime-cli.md` | `CONTEXT-FUNCTION-TREE.md`, `ARCHITECTURE.md` | `bash -n shipflow.sh`; focused CLI smoke when behavior changes | Entrypoint, sourcing, menu dispatch, startup, or visible CLI behavior changes |
+| `menu_gum.sh`, `menu_bash.sh` | Runtime CLI | `docs/technical/runtime-cli.md` | `CONTEXT-FUNCTION-TREE.md` | `bash -n menu_gum.sh menu_bash.sh`; focused CLI smoke when behavior changes | Root menu layout, grouped submenu behavior, key handling, or visible CLI behavior changes |
 | `lib.sh` | Runtime CLI | `docs/technical/runtime-cli.md` | `CONTEXT-FUNCTION-TREE.md`, `GUIDELINES.md` | `bash -n lib.sh`; relevant function smoke or grep proof | PM2/Flox/Caddy/DuckDNS behavior, validation, dashboard, health, publish, or environment lifecycle changes |
 | `config.sh` | Runtime CLI | `docs/technical/runtime-cli.md` | `README.md` | `bash -n config.sh`; config validation smoke when changed | Config variable, default, or validation contract changes |
 | `local/**` | Local tunnels and MCP login | `docs/technical/local-tunnels-and-mcp-login.md` | `local/README.md`, `README.md` | `bash -n local/*.sh`; PowerShell syntax review when `.ps1` changes | SSH target, identity path, tunnel lifecycle, MCP OAuth, or local UX changes |
