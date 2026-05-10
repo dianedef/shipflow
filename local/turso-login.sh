@@ -47,7 +47,7 @@ Options:
 
 Examples:
   shipflow-turso-login
-  shipflow-turso-login --project-dir /home/ubuntu/contentflow/contentflow_lab
+  shipflow-turso-login --project-dir /home/<user>/<projet>
 EOF
 }
 
@@ -171,6 +171,41 @@ check_local_port_free() {
     return 0
 }
 
+wait_remote_callback_port_ready() {
+    local port="$1"
+    local waited=0
+    local max_wait=20
+
+    while [ "$waited" -lt "$max_wait" ]; do
+        if run_remote_bash "command -v ss >/dev/null 2>&1 && ss -ltn '( sport = :$port )' 2>/dev/null | grep -q ':$port'"; then
+            return 0
+        fi
+        sleep 0.5
+        waited=$((waited + 1))
+    done
+
+    return 1
+}
+
+wait_local_tunnel_ready() {
+    local port="$1"
+    local waited=0
+    local max_wait=20
+
+    while [ "$waited" -lt "$max_wait" ]; do
+        if command -v nc >/dev/null 2>&1 && nc -z 127.0.0.1 "$port" >/dev/null 2>&1; then
+            return 0
+        fi
+        if command -v lsof >/dev/null 2>&1 && lsof -nP -iTCP:"$port" -sTCP:LISTEN >/dev/null 2>&1; then
+            return 0
+        fi
+        sleep 0.5
+        waited=$((waited + 1))
+    done
+
+    return 1
+}
+
 extract_auth_url() {
     sed -nE 's/.*(https:\/\/[^[:space:]"]+).*/\1/p' "$LOGIN_OUTPUT_FILE" | tail -1
 }
@@ -200,25 +235,29 @@ extract_callback_port() {
 
 open_browser_or_print() {
     local auth_url="$1"
+    local opened=0
+
     echo -e "${BLUE}🌐 URL Turso:${NC}"
     echo "$auth_url"
     echo ""
 
     if command -v open >/dev/null 2>&1; then
-        open "$auth_url" >/dev/null 2>&1 || true
-        echo -e "${GREEN}✓ Navigateur ouvert via open${NC}"
+        open "$auth_url" >/dev/null 2>&1 && opened=1
     elif command -v xdg-open >/dev/null 2>&1; then
-        xdg-open "$auth_url" >/dev/null 2>&1 || true
-        echo -e "${GREEN}✓ Navigateur ouvert via xdg-open${NC}"
+        xdg-open "$auth_url" >/dev/null 2>&1 && opened=1
     elif command -v wslview >/dev/null 2>&1; then
-        wslview "$auth_url" >/dev/null 2>&1 || true
-        echo -e "${GREEN}✓ Navigateur ouvert via wslview${NC}"
+        wslview "$auth_url" >/dev/null 2>&1 && opened=1
     elif command -v cmd.exe >/dev/null 2>&1; then
-        cmd.exe /c start "" "$auth_url" >/dev/null 2>&1 || true
-        echo -e "${GREEN}✓ Navigateur ouvert via cmd.exe${NC}"
+        cmd.exe /c start "" "$auth_url" >/dev/null 2>&1 && opened=1
+    elif command -v python3 >/dev/null 2>&1; then
+        python3 -m webbrowser "$auth_url" >/dev/null 2>&1 && opened=1
+    fi
+
+    if [ "$opened" -eq 1 ]; then
+        echo -e "${GREEN}✓ Navigateur local ouvert${NC}"
     else
-        echo -e "${YELLOW}⚠ Aucun opener auto détecté.${NC}"
-        echo -e "${YELLOW}  Ouvre l'URL ci-dessus manuellement dans ton navigateur local.${NC}"
+        echo -e "${YELLOW}⚠ Impossible d'ouvrir automatiquement le navigateur.${NC}"
+        echo -e "${YELLOW}  Ouvre l'URL Turso ci-dessus manuellement dans ton navigateur local.${NC}"
     fi
 }
 
@@ -358,18 +397,26 @@ run_turso_login() {
             return 1
         fi
 
+        echo -e "${BLUE}⏳ Attente du callback Turso distant sur 127.0.0.1:${callback_port}...${NC}"
+        if ! wait_remote_callback_port_ready "$callback_port"; then
+            echo -e "${YELLOW}⚠ Callback distant non détecté sur le port ${callback_port}.${NC}"
+            echo -e "${YELLOW}  Je tente quand même le tunnel; si le navigateur échoue, relance avec --headless.${NC}"
+        fi
+
         echo -e "${BLUE}🔁 Tunnel Turso OAuth: localhost:${callback_port} -> ${REMOTE_HOST}:127.0.0.1:${callback_port}${NC}"
-        local tunnel_args=("-N" "-L" "${callback_port}:127.0.0.1:${callback_port}")
+        local tunnel_args=("-N" "-o" "ExitOnForwardFailure=yes" "-L" "${callback_port}:127.0.0.1:${callback_port}")
         while IFS= read -r arg; do
             tunnel_args+=("$arg")
         done < <(ssh_args)
         ssh "${tunnel_args[@]}" "$REMOTE_HOST" >"$TUNNEL_LOG_FILE" 2>&1 &
         TUNNEL_PID="$!"
-        sleep 1
-        if ! kill -0 "$TUNNEL_PID" 2>/dev/null; then
+        sleep 0.5
+        if ! kill -0 "$TUNNEL_PID" 2>/dev/null || ! wait_local_tunnel_ready "$callback_port"; then
             echo -e "${RED}✗ Impossible de démarrer le tunnel SSH OAuth Turso.${NC}"
+            [ -s "$TUNNEL_LOG_FILE" ] && sed 's/^/  /' "$TUNNEL_LOG_FILE" | tail -10
             return 1
         fi
+        echo -e "${GREEN}✓ Tunnel Turso prêt sur localhost:${callback_port}${NC}"
     else
         echo -e "${YELLOW}⚠ Aucun callback localhost détecté; Turso semble utiliser un login headless/device.${NC}"
         echo -e "${YELLOW}  Pas de tunnel nécessaire pour ce mode.${NC}"
