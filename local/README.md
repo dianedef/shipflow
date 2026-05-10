@@ -165,7 +165,7 @@ urls
 Si Turso n'est disponible que dans un environnement Flox projet côté serveur :
 
 ```bash
-shipflow-turso-login --project-dir /home/ubuntu/contentflow/contentflow_lab
+shipflow-turso-login --project-dir /home/<user>/<projet>
 ```
 
 Le helper lance `turso auth login` sur le serveur. Si Turso affiche une URL
@@ -190,7 +190,7 @@ n'affiche pas les tokens Turso.
 Si Turso n'est disponible que dans un environnement Flox projet côté serveur :
 
 ```bash
-shipflow-turso-ssh --project-dir /home/ubuntu/contentflow/contentflow_lab contentflow-prod2
+shipflow-turso-ssh --project-dir /home/<user>/<projet> contentflow-prod2
 ```
 
 Résumé mental:

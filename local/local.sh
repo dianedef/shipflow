@@ -754,6 +754,64 @@ run_blacksmith_login_menu() {
 prompt_turso_project_dir() {
     local project_dir=""
 
+    echo -e "${BLUE}Recherche des environnements Flox contenant Turso côté serveur...${NC}" >&2
+    local remote_projects
+    remote_projects=$(run_remote_ssh "bash -lc '
+        find \"\$HOME\" /home /opt -maxdepth 5 -path \"*/.flox/env/manifest.toml\" -type f 2>/dev/null |
+        while IFS= read -r manifest; do
+            if grep -Eiq \"(^|[^A-Za-z0-9_-])(turso|turso-cli)([^A-Za-z0-9_-]|\$)\" \"\$manifest\"; then
+                project_dir=\${manifest%/.flox/env/manifest.toml}
+                printf \"%s\n\" \"\$project_dir\"
+            fi
+        done |
+        sort -u |
+        head -20
+    '" 2>/dev/null || true)
+
+    if [ -n "$remote_projects" ]; then
+        echo -e "${BLUE}Env Turso détectés:${NC}" >&2
+        local options=()
+        local keys=()
+        local i=0
+        local detected
+
+        while IFS= read -r detected; do
+            [ -n "$detected" ] || continue
+            local key
+            key=$(menu_letter_key "$i")
+            options+=("$detected")
+            keys+=("$key")
+            echo -e "  ${CYAN}${key})${NC} ${LIGHT_BLUE}$detected${NC}" >&2
+            ((i++))
+        done <<< "$remote_projects"
+
+        echo -e "  ${CYAN}g)${NC} Turso global / aucun project-dir" >&2
+        echo -e "  ${CYAN}m)${NC} Saisir un chemin manuellement" >&2
+        echo "" >&2
+        printf "%b" "${YELLOW}Choix project-dir Turso ?${NC} " >&2
+
+        local choice=""
+        read_menu_choice choice true
+        case "$choice" in
+            g|"")
+                printf ''
+                return 0
+                ;;
+            m)
+                ;;
+            *)
+                local idx
+                for ((idx=0; idx<${#keys[@]}; idx++)); do
+                    if [ "$choice" = "${keys[$idx]}" ]; then
+                        printf '%s' "${options[$idx]}"
+                        return 0
+                    fi
+                done
+                echo -e "${YELLOW}Choix non reconnu; saisie manuelle.${NC}" >&2
+                ;;
+        esac
+    fi
+
     # This helper is called through command substitution; prompts must not go to stdout.
     printf "%b" "${YELLOW}Project-dir Flox distant si Turso n'est pas global (Entrée pour aucun):${NC} " >&2
     read -r project_dir
