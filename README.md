@@ -209,6 +209,7 @@ shipflow-mcp-login vercel
 shipflow-mcp-login supabase
 shipflow-mcp-login all
 shipflow-blacksmith-login
+shipflow-turso-ssh contentflow-prod2
 ```
 
 The reason is specific to remote agent work: Codex or the provider CLI runs on
@@ -225,6 +226,12 @@ normal SSH config or agent. ShipFlow does not store OAuth tokens; Codex,
 Blacksmith, and the provider own the token exchange. See
 [local/README.md](./local/README.md) for the guided setup and troubleshooting
 flow.
+
+For Turso Cloud CLI auth on a remote ShipFlow server,
+`shipflow-turso-ssh` copies the local official Turso CLI config directory to
+the configured server over SSH/SCP, verifies `turso auth whoami`, and can run
+the ContentFlow table/column checks when a database name is provided. It does
+not read or print Turso tokens.
 
 The server-side `sf` menu also includes `Blacksmith - CI runners and Testbox
 setup`. This is a guided official-first helper for Blacksmith: it checks whether

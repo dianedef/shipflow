@@ -111,6 +111,8 @@ alias urls='$SCRIPT_DIR/local.sh'
 alias tunnel='$SCRIPT_DIR/local.sh'
 alias shipflow-mcp-login='$SCRIPT_DIR/mcp-login.sh'
 alias shipflow-blacksmith-login='$SCRIPT_DIR/blacksmith-login.sh'
+alias shipflow-turso-ssh='$SCRIPT_DIR/turso-ssh.sh'
+alias turso-ssh='$SCRIPT_DIR/turso-ssh.sh'
 "
 
 if grep -q "# ShipFlow - Alias pour tunnels SSH" "$SHELL_RC" 2>/dev/null; then
@@ -118,6 +120,11 @@ if grep -q "# ShipFlow - Alias pour tunnels SSH" "$SHELL_RC" 2>/dev/null; then
     if ! grep -q "alias shipflow-blacksmith-login=" "$SHELL_RC" 2>/dev/null; then
         echo "alias shipflow-blacksmith-login='$SCRIPT_DIR/blacksmith-login.sh'" >> "$SHELL_RC"
         echo -e "${GREEN}   ✓ Alias shipflow-blacksmith-login ajouté à $SHELL_RC${NC}"
+    fi
+    if ! grep -q "alias shipflow-turso-ssh=" "$SHELL_RC" 2>/dev/null; then
+        echo "alias shipflow-turso-ssh='$SCRIPT_DIR/turso-ssh.sh'" >> "$SHELL_RC"
+        echo "alias turso-ssh='$SCRIPT_DIR/turso-ssh.sh'" >> "$SHELL_RC"
+        echo -e "${GREEN}   ✓ Alias shipflow-turso-ssh ajouté à $SHELL_RC${NC}"
     fi
 else
     echo "$ALIAS_BLOCK" >> "$SHELL_RC"
@@ -131,6 +138,7 @@ chmod +x "$SCRIPT_DIR/dev-tunnel.sh"
 chmod +x "$SCRIPT_DIR/local.sh"
 chmod +x "$SCRIPT_DIR/mcp-login.sh"
 chmod +x "$SCRIPT_DIR/blacksmith-login.sh"
+chmod +x "$SCRIPT_DIR/turso-ssh.sh"
 echo -e "${GREEN}   ✓ Scripts exécutables${NC}"
 
 # 5. Résumé
@@ -141,6 +149,7 @@ echo -e "${BLUE}📋 Commandes disponibles:${NC}"
 echo -e "   ${GREEN}urls${NC} ou ${GREEN}tunnel${NC}         - Ouvrir le menu de gestion des tunnels"
 echo -e "   ${GREEN}shipflow-mcp-login${NC}   - Login OAuth MCP distant via tunnel éphémère"
 echo -e "   ${GREEN}shipflow-blacksmith-login${NC} - Login Blacksmith distant via tunnel éphémère"
+echo -e "   ${GREEN}shipflow-turso-ssh${NC} - Copie auth Turso vers le serveur + checks SQL"
 echo ""
 echo -e "${YELLOW}⚠  Pour activer les alias, rechargez votre shell:${NC}"
 echo -e "   ${BLUE}source $SHELL_RC${NC}"

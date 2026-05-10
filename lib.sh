@@ -386,9 +386,8 @@ ui_filter_choose() {
         return 1
     fi
 
-    ui_flush_pending_input
-
     if [ "$HAS_GUM" = true ] && command -v gum >/dev/null 2>&1; then
+        ui_flush_pending_input
         local selected
         selected=$(printf '%s\n' "${items[@]}" | gum filter --header "ShipFlow DevServer · $prompt" --placeholder "Type to search...")
         local rc=$?
@@ -401,13 +400,15 @@ ui_filter_choose() {
     fi
 
     if command -v fzf >/dev/null 2>&1; then
+        ui_flush_pending_input
         local selected
-        selected=$(printf '%s\n' "${items[@]}" | fzf \
+        selected=$(printf '%s\n' "${items[@]}" | FZF_DEFAULT_OPTS= fzf \
             --prompt "ShipFlow DevServer · $prompt > " \
             --height "${SHIPFLOW_FZF_HEIGHT:-70%}" \
             --layout reverse \
             --border \
-            --cycle)
+            --cycle \
+            --bind "enter:accept")
         local rc=$?
         if [ $rc -ne 0 ]; then
             ui_skip_next_pause
@@ -422,6 +423,7 @@ ui_filter_choose() {
     while true; do
         echo -e "${YELLOW}ShipFlow DevServer · $prompt${NC}" >&2
         echo -e "${YELLOW}Search:${NC} \c" >&2
+        ui_flush_pending_input
         ui_read_line query
 
         matches=()
@@ -527,21 +529,30 @@ ui_choose() {
             if ui_is_back_choice "$choice" || [ -z "$choice" ]; then
                 ui_skip_next_pause
                 if [ "$has_back_item" = true ]; then
-                    echo "$back_label"
-                    return 0
-                fi
-                return 1
+                echo "$back_label"
+                return 0
             fi
-
-            for ((i=0; i<${#keys[@]}; i++)); do
-                if [ "$choice" = "${keys[$i]}" ]; then
-                    echo "${filtered_items[$i]}"
-                    return 0
-                fi
-            done
-
-            echo -e "${RED}Invalid choice${NC}" >&2
             return 1
+        fi
+
+        for ((i=0; i<${#keys[@]}; i++)); do
+            if [ "$choice" = "${keys[$i]}" ]; then
+                echo "${filtered_items[$i]}"
+                return 0
+            fi
+        done
+
+        for ((i=0; i<${#filtered_items[@]}; i++)); do
+            local match_candidate=${filtered_items[$i]}
+            match_candidate=$(printf '%s' "$match_candidate" | sed 's/^[^ ]* //')
+            if [ "${match_candidate,,}" = "${choice}" ]; then
+                echo "${filtered_items[$i]}"
+                return 0
+            fi
+        done
+
+                echo -e "${RED}Invalid choice${NC}" >&2
+                return 1
         else
             local selected
             selected=$(ui_filter_choose "$prompt" "${items[@]}")
@@ -622,6 +633,15 @@ ui_choose() {
 
         for ((i=0; i<${#keys[@]}; i++)); do
             if [ "$choice" = "${keys[$i]}" ]; then
+                echo "${options[$i]}"
+                return 0
+            fi
+        done
+
+        for ((i=0; i<${#options[@]}; i++)); do
+            local match_candidate=${options[$i]}
+            match_candidate=$(printf '%s' "$match_candidate" | sed 's/^[^ ]* //')
+            if [ "${match_candidate,,}" = "${choice}" ]; then
                 echo "${options[$i]}"
                 return 0
             fi

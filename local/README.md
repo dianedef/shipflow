@@ -84,6 +84,7 @@ shipflow-mcp-login vercel   # Login OAuth MCP distant (Vercel)
 shipflow-mcp-login supabase # Login OAuth MCP distant (Supabase)
 shipflow-mcp-login all      # Enchaîne vercel puis supabase
 shipflow-blacksmith-login   # Login Blacksmith distant via tunnel OAuth
+shipflow-turso-ssh contentflow-prod2 # Copie auth Turso vers le serveur + checks SQL
 ```
 
 ### Menu interactif
@@ -142,6 +143,27 @@ par VM retention. La commande SSH se récupère dans le step `Setup runner` du
 job, et seul l'utilisateur GitHub qui a déclenché le job peut se connecter.
 L'option locale `Host *.vm.blacksmith.sh` dans `~/.ssh/config` est seulement un
 confort pour les hôtes éphémères; elle n'installe pas le CLI Blacksmith.
+
+### Turso sur serveur distant
+
+Pour transférer une session Turso CLI déjà authentifiée depuis le poste local
+vers le serveur ShipFlow configuré, utilisez :
+
+```bash
+shipflow-turso-ssh contentflow-prod2
+```
+
+Le helper copie `~/.config/turso` vers `~/.config/turso` sur le serveur via
+SSH/SCP, verrouille les permissions, lance `turso auth whoami`, puis vérifie
+les tables `jobs`, `CustomerPersona`, `UserSettings`, `Project` et
+`UserProviderCredential` si un nom de base est fourni. Il ne lit pas et
+n'affiche pas les tokens Turso.
+
+Si Turso n'est disponible que dans un environnement Flox projet côté serveur :
+
+```bash
+shipflow-turso-ssh --project-dir /home/ubuntu/contentflow/contentflow_lab contentflow-prod2
+```
 
 Résumé mental:
 - Codex distant lance le login.

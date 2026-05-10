@@ -2,6 +2,7 @@
 
 | Bug ID | Status | Severity | Title | Last tested | Next step |
 |--------|--------|----------|-------|-------------|-----------|
+| [BUG-2026-05-10-005](bugs/BUG-2026-05-10-005.md) | fix-attempted | medium | Menu navigation ignores typed environment/folder name | 2026-05-10 | /sf-test --retest BUG-2026-05-10-005 |
 | [BUG-2026-05-08-002](bugs/BUG-2026-05-08-002.md) | closed | high | Health Check can auto-enter aggressive cleanup after pressing H | 2026-05-08 | none |
 | [BUG-2026-05-08-001](bugs/BUG-2026-05-08-001.md) | closed | high | ShipFlow top-level menu takes several seconds to render with Gum | 2026-05-08 | none |
 | [BUG-2026-05-06-001](bugs/BUG-2026-05-06-001.md) | closed | high | Stop Environment leaves orphaned PM2 apps and allows crash loops | 2026-05-08 | none |

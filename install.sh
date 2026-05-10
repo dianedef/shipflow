@@ -1451,17 +1451,25 @@ ENV
 
 configure_command_wrappers() {
     local shipflow_target="$SHIPFLOW_DIR/shipflow.sh"
+    local turso_ssh_target="$SHIPFLOW_DIR/local/turso-ssh.sh"
     local bin_dir="/usr/local/bin"
 
     mkdir -p "$bin_dir"
     ln -sf "$shipflow_target" "$bin_dir/shipflow"
     ln -sf "$shipflow_target" "$bin_dir/sf"
-    chmod +x "$bin_dir/shipflow" "$bin_dir/sf" 2>/dev/null || true
+    if [ -f "$turso_ssh_target" ]; then
+        ln -sf "$turso_ssh_target" "$bin_dir/shipflow-turso-ssh"
+        ln -sf "$turso_ssh_target" "$bin_dir/turso-ssh"
+    fi
+    chmod +x "$bin_dir/shipflow" "$bin_dir/sf" "$bin_dir/shipflow-turso-ssh" "$bin_dir/turso-ssh" 2>/dev/null || true
 
     if [ -x "$bin_dir/shipflow" ] && [ -x "$bin_dir/sf" ]; then
         echo -e "  ${GREEN}✅ Commandes système disponibles :${NC} /usr/local/bin/shipflow et /usr/local/bin/sf"
     else
         echo -e "  ${YELLOW}⚠️ Commandes /usr/local/bin/shipflow ou /usr/local/bin/sf non trouvées${NC}"
+    fi
+    if [ -x "$bin_dir/shipflow-turso-ssh" ]; then
+        echo -e "  ${GREEN}✅ Commande Turso SSH disponible :${NC} /usr/local/bin/shipflow-turso-ssh"
     fi
 }
 
