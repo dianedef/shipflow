@@ -146,18 +146,24 @@ When the selected mode is `hybrid`, write:
 
 Never leave the section with pipe-delimited placeholders after init. Pick the confirmed/default values and keep unknowns explicit.
 
-### Step 3: Create TASKS.md
+### Step 3: Create local project tracker
 
-**Architecture**: ShipFlow's operational `TASKS.md` lives in `~/shipflow_data/projects/[name]/TASKS.md` (personal data, not in git). Do not symlink it into the project directory; project-local `TASKS.md` files are app-owned and must be left untouched.
+**Architecture**: In this phase, the active project backlog is local under the project umbrella.
+- primary source of truth: `shipflow_data/workflow/TASKS.md`
+- optional master aggregate: `${SHIPFLOW_DATA_DIR:-$HOME/shipflow_data}/TASKS.md` (cross-project view)
+- do not point project operators to master files as a task source of truth.
 
 `TASKS.md` is an operational tracker, not a metadata-bearing decision artifact. Do not add ShipFlow YAML frontmatter to generated `TASKS.md` files. Durable business, brand, guideline, spec, research, audit, review, or decision content belongs in separate artifacts with metadata.
 
-**Check first**: skip project-local `TASKS.md` writes entirely. If a legacy ShipFlow-created `TASKS.md` symlink points into `shipflow_data`, remove the symlink only; do not move or overwrite real project files.
+**Check first**:
+- prefer updating `shipflow_data/workflow/TASKS.md` when present
+- if `TASKS.md` exists as a real file, leave it as legacy local content unless the user requests migration
+- if a legacy ShipFlow-created `TASKS.md` symlink points into `shipflow_data`, remove the symlink only; do not move or overwrite real project files.
 
 If it does not exist:
-1. Create directory `~/shipflow_data/projects/[name]/`
-2. Create `~/shipflow_data/projects/[name]/TASKS.md` with the canonical format below
-3. Do not create a project-local symlink
+1. Create directory `shipflow_data/workflow/`
+2. Create `shipflow_data/workflow/TASKS.md` with the canonical format below
+3. Do not create a symlink for this tracker
 
 Never create a bare placeholder — populate with real tasks detected in Step 1:
 
@@ -245,7 +251,7 @@ Path rule:
 
 Créer les fichiers de contexte business/marque directement dans le repo du projet. Ces documents sont des contrats de décision du projet et leur source canonique doit rester au plus près du code, des specs et de la documentation qu'ils gouvernent.
 
-`shipflow_data` reste réservé au tracking partagé (`TASKS.md`, `AUDIT_LOG.md`, `PROJECTS.md`). Ne pas y déplacer `BUSINESS.md`, `BRANDING.md`, `CONTENT_MAP.md` ou `GUIDELINES.md` par défaut.
+`shipflow_data` reste réservé au tracking partagé (`TASKS.md`, `AUDIT_LOG.md`, `PROJECTS.md`). Les artefacts de gouvernance projet vivent dans `shipflow_data/business/*`, `shipflow_data/editorial/*` et `shipflow_data/technical/*` quand disponibles.
 
 **Pour chaque fichier** : vérifier d'abord s'il existe déjà dans le projet. Si oui, sauter.
 
@@ -257,7 +263,7 @@ Utiliser **AskUserQuestion** pour recueillir le contexte business :
 - Question : "Décris ton projet en une phrase — qu'est-ce que ça fait et pour qui ?"
 - (texte libre via "Other")
 
-Puis générer `[project_dir]/BUSINESS.md` :
+Puis générer `[project_dir]/shipflow_data/business/business.md` :
 
 ```markdown
 ---
@@ -320,7 +326,7 @@ Utiliser **AskUserQuestion** :
   - **Décontracté & fun** — "Familier, emojis OK, humour"
   - **Technique & précis** — "Documentation style, pas de fluff"
 
-Puis générer `[project_dir]/BRANDING.md` :
+Puis générer `[project_dir]/shipflow_data/business/branding.md` :
 
 ```markdown
 ---
@@ -425,7 +431,7 @@ next_step: "/sf-docs audit"
 [Auth, payments, analytics, CMS, hosting — détectés en Step 1]
 ```
 
-### Step 6: Create CHANGELOG.md + update master TASKS.md
+### Step 6: Create CHANGELOG.md + update trackers
 
 **CHANGELOG.md** lives directly in the project directory (committed to git, visible to other devs).
 
@@ -445,7 +451,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Initial project setup
 ```
 
-**Master TASKS.md** — add a section to `${SHIPFLOW_DATA_DIR:-$HOME/shipflow_data}/TASKS.md`:
+**Local tracker** — create or update `[project_dir]/shipflow_data/workflow/TASKS.md` if present.
+
+**Master TASKS.md (optional)** — when cross-project sync is enabled, add a section to `${SHIPFLOW_DATA_DIR:-$HOME/shipflow_data}/TASKS.md`:
 
 ```markdown
 ## [project name]
@@ -576,7 +584,7 @@ See `${SHIPFLOW_ROOT:-$HOME/shipflow}/tools/codebase-mcp/README.md` for full too
 
 Générer automatiquement depuis les dossiers détectés (`src/content`, `content`, `docs`, `app`, `pages`, routes marketing, collections Astro/MDX, changelog, FAQ/support si présents). Utiliser `templates/artifacts/content_map.md` comme structure.
 
-`[project_dir]/CONTENT_MAP.md` doit cartographier :
+`[project_dir]/shipflow_data/editorial/content-map.md` doit cartographier :
 - blog et articles
 - documentation produit/API/support
 - landing pages et pages marketing
@@ -599,7 +607,7 @@ Load these ShipFlow-owned references from `$SHIPFLOW_ROOT` before creating or au
 Detect:
 - code areas: `package.json`, lockfiles, `src/`, `app/`, `pages/`, `components/`, `lib/`, `convex/`, `supabase/`, `server/`, `api/`, `*.sh`, `*.py`, `*.ts`, `*.tsx`, `*.js`, `*.jsx`, `*.astro`, `*.vue`, or framework config files
 - public surfaces: public routes, `site/`, `src/pages/`, `app/`, `pages/`, `docs/`, README public promises, FAQ, pricing, support copy, public skill pages, blog/article intent, `src/content`, `content/`, Astro/MDX runtime content, newsletter/social surfaces
-- existing governance files: `docs/technical/README.md`, `docs/technical/code-docs-map.md`, `docs/editorial/README.md`, `CONTENT_MAP.md`
+- existing governance files: `docs/technical/README.md`, `docs/technical/code-docs-map.md`, `shipflow_data/editorial/README.md` (ou `docs/editorial/README.md`), `shipflow_data/editorial/content-map.md` (ou `CONTENT_MAP.md`)
 - agent entrypoint state: `AGENT.md` and `AGENTS.md`
 
 #### Technical governance bootstrap
@@ -645,7 +653,7 @@ If public surfaces are detected but `docs/editorial/` cannot be created safely:
 
 `AGENT.md` is the canonical agent routing entrypoint.
 
-- If `AGENT.md` is missing, create a baseline project-specific entrypoint that points to `CLAUDE.md`, `CONTEXT.md` when present, `docs/technical/code-docs-map.md`, `CONTENT_MAP.md`, and `README.md`.
+- If `AGENT.md` is missing, create a baseline project-specific entrypoint that points to `CLAUDE.md`, `CONTEXT.md` when present, `docs/technical/code-docs-map.md`, `shipflow_data/editorial/content-map.md` (or `CONTENT_MAP.md`), and `README.md`.
 - If `AGENTS.md` is missing and symlinks are supported, create `AGENTS.md -> AGENT.md` as compatibility only.
 - If `AGENTS.md` exists as a symlink to `AGENT.md`, report it as OK.
 - If `AGENTS.md` exists as a real file or points elsewhere, report `AGENTS.md: compatibility conflict` and ask before converting or preserving it as external-tool-specific guidance.

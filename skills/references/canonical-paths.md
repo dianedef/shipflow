@@ -40,8 +40,23 @@ ShipFlow skills often run from a project repository, but ShipFlow-owned tools an
 
 - ShipFlow-owned tools, shared references, skill references, templates, workflow docs, and internal scripts must be loaded from `$SHIPFLOW_ROOT`.
 - Skill-local references such as `references/foo.md` mean `$SHIPFLOW_ROOT/skills/<skill-name>/references/foo.md`, not `./references/foo.md` in the project repo.
-- Project-owned artifacts such as `BUSINESS.md`, `PRODUCT.md`, `specs/*.md`, `docs/**/*.md`, source code, package files, and tests are resolved from the project root.
-- Global trackers and registries such as `TASKS.md`, `PROJECTS.md`, and `AUDIT_LOG.md` are resolved from `${SHIPFLOW_DATA_DIR:-$HOME/shipflow_data}` when the skill names the master tracker.
+- Project-owned artifacts are resolved from the project local `shipflow_data` umbrella during this phase.
+
+  - `shipflow_data/technical/*`
+  - `shipflow_data/business/*`
+  - `shipflow_data/editorial/*`
+  - `shipflow_data/workflow/*`
+
+- Root compatibility exceptions remain at repository root:
+
+  - `AGENT.md`
+  - `CLAUDE.md`
+  - `README.md`
+  - `AGENTS.md` (must be a compatibility symlink to `AGENT.md`)
+
+- `shipflow_data/` remains the project-local governance corpus for this phase; the external `${SHIPFLOW_DATA_DIR:-$HOME/shipflow_data}` remains out of scope as project-document source of truth.
+- `shipflow_data/workflow/` holds project-level workflow artifacts such as `specs/`, `bugs/`, `audits/`, `reviews/`, `verification/`, and project-local operational trackers.
+- Files like `TASKS.md`, `AUDIT_LOG.md`, and `PROJECTS.md` are still master-tracker artifacts in `${SHIPFLOW_DATA_DIR:-$HOME/shipflow_data}` unless a project explicitly adopts local equivalents in its `shipflow_data/workflow/`.
 - If a ShipFlow-owned file is missing from `$SHIPFLOW_ROOT`, report a ShipFlow installation gap. Do not report it missing just because it is absent from the project repository.
 
 ## Command Pattern

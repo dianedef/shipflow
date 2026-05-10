@@ -79,9 +79,9 @@ Rejected scope:
 ## Entry Rules
 
 1. Resolve the input as one or more of: content goal, source, target surface, file path, mode keyword, or ship request.
-2. Load `CONTENT_MAP.md` if present.
+2. Load `shipflow_data/editorial/content-map.md` if present, otherwise fallback to `CONTENT_MAP.md`.
 3. Load `$SHIPFLOW_ROOT/skills/references/editorial-content-corpus.md` when the work touches public content, README public promises, docs, FAQ, pricing, support copy, public skill pages, blog/article intent, claims, or runtime content.
-4. Check `docs/editorial/claim-register.md`, `docs/editorial/page-intent-map.md`, `docs/editorial/editorial-update-gate.md`, and `docs/editorial/astro-content-schema-policy.md` when present.
+4. Check `shipflow_data/editorial/claim-register.md` (or `docs/editorial/claim-register.md`), `shipflow_data/editorial/page-intent-map.md` (or `docs/editorial/page-intent-map.md`), `shipflow_data/editorial/editorial-update-gate.md` (or `docs/editorial/editorial-update-gate.md`), and `shipflow_data/editorial/astro-content-schema-policy.md` (or `docs/editorial/astro-content-schema-policy.md`) when present.
 5. If no source, goal, or target can be inferred, ask one targeted question. Do not draft generic content from nothing.
 
 ## Mode Detection
@@ -127,13 +127,13 @@ Route to `/sf-explore <idea>` before `/sf-spec` when content intent, audience, s
 
 For public or potentially public content:
 
-1. Read `CONTENT_MAP.md`.
+1. Read `shipflow_data/editorial/content-map.md` when present, else `CONTENT_MAP.md`.
 2. Read `$SHIPFLOW_ROOT/skills/references/editorial-content-corpus.md` when available.
-3. Check `docs/editorial/public-surface-map.md` and `docs/editorial/page-intent-map.md` before changing public pages.
-4. Check `docs/editorial/claim-register.md` before publishing sensitive claims.
-5. Check `docs/editorial/blog-and-article-surface-policy.md` before article or blog output.
-6. Check `docs/editorial/astro-content-schema-policy.md` before editing runtime content.
-7. Produce an `Editorial Update Plan` from `docs/editorial/editorial-update-gate.md` when public content, page intent, README, FAQ, pricing, public docs, public skill pages, or claims are impacted.
+3. Check `shipflow_data/editorial/public-surface-map.md` (or `docs/editorial/public-surface-map.md`) and `shipflow_data/editorial/page-intent-map.md` (or `docs/editorial/page-intent-map.md`) before changing public pages.
+4. Check `shipflow_data/editorial/claim-register.md` (or `docs/editorial/claim-register.md`) before publishing sensitive claims.
+5. Check `shipflow_data/editorial/blog-and-article-surface-policy.md` (or `docs/editorial/blog-and-article-surface-policy.md`) before article or blog output.
+6. Check `shipflow_data/editorial/astro-content-schema-policy.md` (or `docs/editorial/astro-content-schema-policy.md`) before editing runtime content.
+7. Produce an `Editorial Update Plan` from `shipflow_data/editorial/editorial-update-gate.md` (or `docs/editorial/editorial-update-gate.md`) when public content, page intent, README, FAQ, pricing, public docs, public skill pages, or claims are impacted.
 8. Produce a `Claim Impact Plan` when sensitive claims are impacted.
 
 If no declared blog/article surface exists, report `surface missing: blog` and stop before path creation.
@@ -175,7 +175,7 @@ python3 tools/skill_budget_audit.py --skills-root skills --format markdown
 For ShipFlow docs/specs/content-map artifacts:
 
 ```bash
-python3 tools/shipflow_metadata_lint.py specs README.md shipflow-spec-driven-workflow.md CONTENT_MAP.md docs/technical docs/editorial docs/skill-launch-cheatsheet.md
+python3 tools/shipflow_metadata_lint.py specs README.md shipflow-spec-driven-workflow.md shipflow_data/editorial/content-map.md shipflow_data/business/business.md shipflow_data/business/product.md shipflow_data/business/branding.md shipflow_data/business/gtm.md shipflow_data/technical/context.md docs/technical docs/editorial docs/skill-launch-cheatsheet.md
 ```
 
 For public site or runtime content:
@@ -187,8 +187,8 @@ npm --prefix site run build
 For public-claim and leak scans:
 
 ```bash
-rg -n "secret|token|credential|private key|BEGIN .*KEY" README.md CONTENT_MAP.md docs site/src skills
-rg -n "surface missing: blog|Editorial Update Plan|Claim Impact Plan|Astro content schema|claim register" CONTENT_MAP.md docs/editorial skills site/src/content/skills
+rg -n "secret|token|credential|private key|BEGIN .*KEY" README.md shipflow_data/editorial/content-map.md CONTENT_MAP.md docs site/src skills
+rg -n "surface missing: blog|Editorial Update Plan|Claim Impact Plan|Astro content schema|claim register" shipflow_data/editorial/content-map.md CONTENT_MAP.md docs/editorial shipflow_data/editorial skills site/src/content/skills
 ```
 
 Use `sf-browser` when public visual or route behavior needs observed browser evidence. Use `sf-prod` only for deployed truth and `sf-auth-debug` only for auth/session flows.

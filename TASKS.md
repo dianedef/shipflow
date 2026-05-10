@@ -85,6 +85,7 @@
 | 🟢 | Renforcer `sf-audit` master pour charger explicitement les corpus éditorial/technique quand l'audit touche des surfaces publiques, claims ou docs mappées | 💤 deferred |
 | 🟢 | Ajouter une micro-intégration `technical-docs-corpus` à `sf-content`/`sf-repurpose` quand les opportunités ou handoffs touchent des docs techniques internes | 💤 deferred |
 | 🟢 | Idée à cadrer : créer une brique partagée de journaux opérationnels append-only (`OPERATIONS_LOG.md` / `DEPENDENCY_LOG.md`) pour tracer les runs importants sans remplacer `specs/`, `bugs/`, `TASKS.md` ni `CHANGELOG.md` | 💤 deferred |
+| 🟢 | Cadrer plus tard le mécanisme de synchronisation `project repo -> master` pour `shipflow_data` (symlink, copie, index généré, ingestion web app ou autre) dans une spec dédiée | 💤 deferred |
 
 ---
 

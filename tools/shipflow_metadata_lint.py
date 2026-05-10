@@ -16,6 +16,7 @@ from pathlib import Path
 BASE_DEFAULT_TARGETS = (
     "specs",
     "docs",
+    "shipflow_data",
     "AGENT.md",
     "CONTEXT.md",
     "CONTEXT-FUNCTION-TREE.md",
@@ -174,14 +175,26 @@ def should_lint(path: Path, fields: dict[str, str], all_markdown: bool) -> bool:
     if path.name in {
         "AGENT.md",
         "CONTEXT.md",
+        "shipflow_data/AGENT.md",
         "CONTEXT-FUNCTION-TREE.md",
         "CONTENT_MAP.md",
+        "shipflow_data/editorial/content-map.md",
         "BUSINESS.md",
         "BRANDING.md",
         "PRODUCT.md",
         "ARCHITECTURE.md",
         "GTM.md",
         "GUIDELINES.md",
+        "shipflow_data/business/business.md",
+        "shipflow_data/business/product.md",
+        "shipflow_data/business/branding.md",
+        "shipflow_data/business/gtm.md",
+        "shipflow_data/technical/code-docs-map.md",
+        "shipflow_data/technical/README.md",
+        "shipflow_data/technical/context.md",
+        "shipflow_data/editorial/README.md",
+        "shipflow_data/workflow/TASKS.md",
+        "shipflow_data/workflow/specs",
     }:
         return True
     if "specs" in path.parts:

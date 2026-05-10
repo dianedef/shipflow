@@ -35,7 +35,7 @@ When the verified work creates, renames, or changes runtime-discoverable ShipFlo
 - Recent commits (session): !`git log --oneline -10 2>/dev/null || echo "no commits"`
 - ShipFlow development mode: !`rg -n "ShipFlow Development Mode|development_mode|validation_surface|ship_before_preview_test|post_ship_verification|deployment_provider" CLAUDE.md SHIPFLOW.md 2>/dev/null || echo "No project development mode documented"`
 - Master TASKS.md: !`cat ${SHIPFLOW_DATA_DIR:-$HOME/shipflow_data}/TASKS.md 2>/dev/null || echo "No master TASKS.md"`
-- Local TASKS.md (if exists): !`cat TASKS.md 2>/dev/null || echo "No local TASKS.md"`
+- Local TASKS.md (if exists): !`cat TASKS.md 2>/dev/null || cat shipflow_data/workflow/TASKS.md 2>/dev/null || echo "No local TASKS.md"`
 - CLAUDE.md (constraints): !`head -60 CLAUDE.md 2>/dev/null || echo "no CLAUDE.md"`
 
 ## Your task

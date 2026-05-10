@@ -30,7 +30,7 @@ Default to `report=user`: concise, outcome-first, and using the compact chantier
 - Current branch: !`git branch --show-current 2>/dev/null || echo "unknown"`
 - ShipFlow development mode: !`rg -n "ShipFlow Development Mode|development_mode|validation_surface|ship_before_preview_test|post_ship_verification|deployment_provider" CLAUDE.md SHIPFLOW.md 2>/dev/null || echo "No project development mode documented"`
 - Recent commits (style reference): !`git log --oneline -5 2>/dev/null || echo "no commits"`
-- Master TASKS.md: !`cat ${SHIPFLOW_DATA_DIR:-$HOME/shipflow_data}/TASKS.md 2>/dev/null || cat TASKS.md 2>/dev/null || echo "No TASKS.md"`
+- Master TASKS.md: !`cat ${SHIPFLOW_DATA_DIR:-$HOME/shipflow_data}/TASKS.md 2>/dev/null || cat shipflow_data/workflow/TASKS.md 2>/dev/null || cat TASKS.md 2>/dev/null || echo "No TASKS.md"`
 - Existing CHANGELOG: !`head -20 CHANGELOG.md 2>/dev/null || echo "no CHANGELOG.md"`
 
 ## Your task
@@ -161,7 +161,7 @@ If a check fails:
 ## Step 5 — Full-mode bookkeeping (only in full mode)
 
 Only for mode `full`:
-- update master TASKS.md and local TASKS.md when relevant
+- update local project tracker and, when configured, the master `${SHIPFLOW_DATA_DIR:-$HOME/shipflow_data}/TASKS.md` when relevant
 - update CHANGELOG.md with meaningful grouped entries
 - save useful decisions to memory
 - summarize work in terms of the user story or user-facing outcome when that can be inferred from the task

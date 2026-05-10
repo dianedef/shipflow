@@ -210,7 +210,7 @@ Report rule: every applicable report ends with a `Chantier` block. Conditional s
 /sf-audit-seo global
 ```
 
-**Domain applicability**: Not all audits apply to all projects. Global mode reads `~/shipflow_data/PROJECTS.md` and skips inapplicable domains (e.g., no SEO for `my-robots`, no Deps for `BuildFlowz`).
+**Domain applicability**: Not all audits apply to all projects. Global mode reads `~/shipflow_data/PROJECTS.md` (or local equivalent) and skips inapplicable domains (e.g., no SEO for `my-robots`, no Deps for `BuildFlowz`).
 
 **8 domains**: Code, Design, Copy, SEO, GTM, Translate, Deps, Perf.
 
@@ -297,7 +297,7 @@ Run any skill from `~/` (no project markers) and it asks **"Which project(s)?"**
 - Do not hide uncertainty. If proof is partial, metadata should say `confidence: medium|low`, `status: draft|partial|reviewed`, or `risk_level: medium|high`.
 - Application content keeps its project schema. This includes `src/content/**`, blog posts, SEO pages, framework docs, MDX content, and any file parsed by the app runtime.
 - Existing ShipFlow artifacts without metadata should be migrated to the standard schema during adoption or the next time the relevant skill touches them.
-- `shipflow_data` is the control plane for trackers and registry files. Per-project business, brand, guideline, spec, research, and decision docs should live in the project repo, not in `shipflow_data`.
+- `shipflow_data` is the control plane for trackers and registry files. Per-project business, brand, guideline, spec, research, and decision docs should live in the project-local governance folders inside `shipflow_data` unless a project explicitly documents an exception.
 
 ### Honest closure and shipping
 - `sf-end`, `sf-review`, and `sf-ship` must distinguish "work tracked and summarized" from "product actually validated".
@@ -342,18 +342,18 @@ Provide explicit arguments and prompts don't appear:
 
 ### Architecture
 ```
-~/TASKS.md              # Master tracker (symlink to shipflow_data)
+~/TASKS.md              # Optional legacy symlink (cross-project coordinator)
 ~/AUDIT_LOG.md          # Audit history (symlink to shipflow_data)
 ~/shipflow_data/
-├── TASKS.md            # Source of truth (12 projects)
+├── TASKS.md            # Cross-project coordination view (optional)
 ├── AUDIT_LOG.md        # Cross-project audit scores
 └── PROJECTS.md         # Project registry + domain matrix (8 domains)
 ```
 
 ### Rules
-1. **Master file first**: `/sf-tasks`, `/sf-priorities`, `/sf-backlog` always update `~/TASKS.md`
-2. **Local files too**: If a project has its own `TASKS.md`, update both
-3. **Dashboard sync**: Update the Dashboard table when project phases change
+1. **Project files first**: `/sf-tasks` updates local project trackers (`TASKS.md` or `shipflow_data/workflow/TASKS.md`) as the execution source.
+2. **Coordinator sync second**: If this workspace uses master files, sync project status into `~/TASKS.md` for cross-project visibility.
+3. **Dashboard sync**: Update the Dashboard table when project phases change (when master is used)
 4. **Prefix items**: Backlog entries include project name (e.g., `- tubeflow: Add dark mode`)
 
 ### TASKS vs BACKLOG convention

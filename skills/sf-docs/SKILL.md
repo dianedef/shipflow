@@ -21,13 +21,13 @@ Before producing the final report, load `$SHIPFLOW_ROOT/skills/references/chanti
 
 - Current directory: !`pwd`
 - Project CLAUDE.md: !`head -80 CLAUDE.md 2>/dev/null || echo "no CLAUDE.md"`
-- Business context: !`head -40 BUSINESS.md 2>/dev/null || echo "no BUSINESS.md"`
-- Brand voice: !`head -40 BRANDING.md 2>/dev/null || echo "no BRANDING.md"`
-- Product context: !`head -40 PRODUCT.md 2>/dev/null || echo "no PRODUCT.md"`
-- Architecture context: !`head -40 ARCHITECTURE.md 2>/dev/null || echo "no ARCHITECTURE.md"`
-- GTM context: !`head -40 GTM.md 2>/dev/null || echo "no GTM.md"`
+- Business context: !`if [ -f shipflow_data/business/business.md ]; then head -40 shipflow_data/business/business.md; else head -40 BUSINESS.md 2>/dev/null || echo "no BUSINESS.md (and no shipflow_data/business/business.md)"; fi`
+- Brand voice: !`if [ -f shipflow_data/business/branding.md ]; then head -40 shipflow_data/business/branding.md; else head -40 BRANDING.md 2>/dev/null || echo "no BRANDING.md (and no shipflow_data/business/branding.md)"; fi`
+- Product context: !`if [ -f shipflow_data/business/product.md ]; then head -40 shipflow_data/business/product.md; else head -40 PRODUCT.md 2>/dev/null || echo "no PRODUCT.md (and no shipflow_data/business/product.md)"; fi`
+- Architecture context: !`if [ -f shipflow_data/technical/context.md ]; then head -40 shipflow_data/technical/context.md; else head -40 ARCHITECTURE.md 2>/dev/null || echo "no ARCHITECTURE.md (and no shipflow_data/technical/context.md)"; fi`
+- GTM context: !`if [ -f shipflow_data/business/gtm.md ]; then head -40 shipflow_data/business/gtm.md; else head -40 GTM.md 2>/dev/null || echo "no GTM.md (and no shipflow_data/business/gtm.md)"; fi`
 - Guidelines: !`head -40 GUIDELINES.md 2>/dev/null || echo "no GUIDELINES.md"`
-- Content map: !`head -40 CONTENT_MAP.md 2>/dev/null || echo "no CONTENT_MAP.md"`
+- Content map: !`if [ -f shipflow_data/editorial/content-map.md ]; then head -40 shipflow_data/editorial/content-map.md; else head -40 CONTENT_MAP.md 2>/dev/null || echo "no CONTENT_MAP.md (and no shipflow_data/editorial/content-map.md)"; fi`
 - Package.json: !`cat package.json 2>/dev/null | head -40 || echo "no package.json"`
 - Existing README: !`head -20 README.md 2>/dev/null || echo "no README.md"`
 - Project structure: !`find . -maxdepth 3 -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.astro" -o -name "*.vue" -o -name "*.py" \) 2>/dev/null | grep -v node_modules | grep -v .git | grep -v dist | sort | head -40`
@@ -52,7 +52,7 @@ Before producing the final report, load `$SHIPFLOW_ROOT/skills/references/chanti
 La documentation est une surface produit active :
 - quand une feature change, vérifier README, docs, guides, exemples, FAQ, onboarding, pricing, changelog, support copy, screenshots, `.env.example` et API docs si pertinents
 - quand une conversation révèle une preuve produit, une règle workflow durable, une objection client récurrente, ou une clarification utile, ne pas la laisser seulement dans le chat; router via `CONTENT_MAP.md`, puis mettre à jour la surface publique ou technique pertinente
-- quand une demande touche du contenu public, une promesse publique, une FAQ, une page site, un README affichable publiquement, une page skill publique, un prix ou un claim, charger `skills/references/editorial-content-corpus.md` puis `docs/editorial/`
+- quand une demande touche du contenu public, une promesse publique, une FAQ, une page site, un README affichable publiquement, une page skill publique, un prix ou un claim, charger `skills/references/editorial-content-corpus.md` puis `shipflow_data/editorial/` (ou `docs/editorial/`)
 - vérifier le `claim register` pour les claims sensibles et la `page intent` map pour les routes publiques avant de changer la copie
 - préserver l'`Astro content schema` et le frontmatter de `runtime content`; ne pas ajouter de metadata ShipFlow à `site/src/content/**` si `site/src/content.config.ts` ne l'accepte pas
 - ne pas documenter des capacités non prouvées par le code ou les specs
@@ -147,9 +147,9 @@ Bug workflow distinction:
 - Docs must not present `BUGS.md` as the full bug source-of-truth location.
 
 Location rule:
-- `shipflow_data` hosts tracking and registry files, not the canonical copy of per-project decision documents.
-- `BUSINESS.md`, `BRANDING.md`, `PRODUCT.md`, `ARCHITECTURE.md`, `GTM.md`, `CONTENT_MAP.md`, `GUIDELINES.md`, specs, research, and decision records should live in the project repository they govern.
-- During docs audit/update, do not "centralize" project decision docs into `shipflow_data` unless the user explicitly wants an inventory or backup copy. Prefer updating the in-repo source of truth.
+- `shipflow_data` hosts tracking and registry files, and is the preferred location for project governance artifacts in this architecture phase.
+- `shipflow_data/business/*`, `shipflow_data/editorial/*`, and `shipflow_data/technical/*` are preferred locations for those document families.
+- During docs audit/update, do not duplicate project decision docs across root and `shipflow_data`. Keep one canonical location and avoid creating parallel legacy copies.
 
 When adopting ShipFlow in an existing project, migrate old ShipFlow docs without metadata by adding the standard frontmatter. Preserve the body and only infer fields that are evident; use `unknown` or `medium|low` confidence instead of inventing proof.
 
@@ -272,7 +272,7 @@ Run focused checks for the affected docs:
 
 ```bash
 rg -n "Maintenance Rule|Validation|Owned Files|Entrypoints" docs/technical templates/artifacts/technical_module_context.md
-python3 tools/shipflow_metadata_lint.py docs/technical templates/artifacts/technical_module_context.md skills/references/technical-docs-corpus.md
+python3 tools/shipflow_metadata_lint.py docs/technical docs/editorial templates/artifacts/technical_module_context.md skills/references/technical-docs-corpus.md
 test ! -e AGENTS.md || { test -L AGENTS.md && test "$(readlink AGENTS.md)" = "AGENT.md"; }
 ```
 
@@ -288,7 +288,7 @@ This mode treats public content drift as a documentation risk when README, publi
 
 ### Flow
 
-1. Load `$SHIPFLOW_ROOT/skills/references/editorial-content-corpus.md`, `CONTENT_MAP.md` when present, and `docs/editorial/README.md` when present. If `docs/editorial/README.md` is missing, treat it as a first-run bootstrap trigger, not an immediate read failure.
+1. Load `$SHIPFLOW_ROOT/skills/references/editorial-content-corpus.md`, `shipflow_data/editorial/content-map.md` when present (fallback `CONTENT_MAP.md`), and `docs/editorial/README.md` when present. If `docs/editorial/README.md` is missing, treat it as a first-run bootstrap trigger, not an immediate read failure.
 2. Classify the request:
    - `editorial` or `docs/editorial` with missing docs -> scaffold from `templates/artifacts/editorial_content_context.md`.
    - missing `docs/editorial/README.md` with public surfaces -> bootstrap the baseline editorial governance layer, then audit it.
@@ -300,21 +300,21 @@ This mode treats public content drift as a documentation risk when README, publi
    - if blog/article work is requested but no declared blog route exists, report `surface missing: blog`
    - preserve runtime content schemas; do not add ShipFlow metadata to runtime content unless the schema accepts it
 4. For first-run bootstrap or scaffolding, create or update only the requested editorial governance docs plus shared maps when needed:
-   - `docs/editorial/README.md`
-   - `docs/editorial/public-surface-map.md`
-   - `docs/editorial/page-intent-map.md`
-   - `docs/editorial/claim-register.md`
-   - `docs/editorial/editorial-update-gate.md`
-   - `docs/editorial/astro-content-schema-policy.md`
-   - `docs/editorial/blog-and-article-surface-policy.md`
+   - `shipflow_data/editorial/README.md` (or `docs/editorial/README.md`)
+   - `shipflow_data/editorial/public-surface-map.md` (or `docs/editorial/public-surface-map.md`)
+   - `shipflow_data/editorial/page-intent-map.md` (or `docs/editorial/page-intent-map.md`)
+   - `shipflow_data/editorial/claim-register.md` (or `docs/editorial/claim-register.md`)
+   - `shipflow_data/editorial/editorial-update-gate.md` (or `docs/editorial/editorial-update-gate.md`)
+   - `shipflow_data/editorial/astro-content-schema-policy.md` (or `docs/editorial/astro-content-schema-policy.md`)
+   - `shipflow_data/editorial/blog-and-article-surface-policy.md` (or `docs/editorial/blog-and-article-surface-policy.md`)
    - `templates/artifacts/editorial_content_context.md` when the template itself is missing or stale
 5. For audit, verify:
-   - `CONTENT_MAP.md` points to the editorial governance layer
+   - `shipflow_data/editorial/content-map.md` (or `CONTENT_MAP.md`) points to the editorial governance layer
    - public surfaces in `site/src/pages/`, README, FAQ/pricing/docs overview, and public skill pages are represented or explicitly excluded
-   - `docs/editorial/claim-register.md` covers sensitive public claims and unsupported public claims are marked `needs proof`, `claim mismatch`, or `blocked`
-   - `docs/editorial/page-intent-map.md` records route intent, CTA, source contracts, and shared-file risk
-   - `docs/editorial/editorial-update-gate.md` defines `Editorial Update Plan`, `Claim Impact Plan`, `no editorial impact`, and `pending final copy`
-   - `docs/editorial/astro-content-schema-policy.md` protects Astro content schema and runtime content frontmatter
+   - `shipflow_data/editorial/claim-register.md` (or `docs/editorial/claim-register.md`) covers sensitive public claims and unsupported public claims are marked `needs proof`, `claim mismatch`, or `blocked`
+   - `shipflow_data/editorial/page-intent-map.md` (or `docs/editorial/page-intent-map.md`) records route intent, CTA, source contracts, and shared-file risk
+   - `shipflow_data/editorial/editorial-update-gate.md` (or `docs/editorial/editorial-update-gate.md`) defines `Editorial Update Plan`, `Claim Impact Plan`, `no editorial impact`, and `pending final copy`
+   - `shipflow_data/editorial/astro-content-schema-policy.md` (or `docs/editorial/astro-content-schema-policy.md`) protects Astro content schema and runtime content frontmatter
    - blog/article requests without a declared route produce `surface missing: blog`
    - `editorial_content_context` artifacts pass `$SHIPFLOW_ROOT/tools/shipflow_metadata_lint.py`
 6. For changed public content, output an `Editorial Update Plan` in the format from `docs/editorial/editorial-update-gate.md`.
@@ -324,7 +324,7 @@ This mode treats public content drift as a documentation risk when README, publi
 - The Editorial Reader diagnoses impact; an executor or integrator applies updates.
 - Shared editorial files are sequential by default.
 - Do not publish internal-only technical details or private operational data into public pages.
-- Do not strengthen public claims beyond `BUSINESS.md`, `PRODUCT.md`, `BRANDING.md`, `GTM.md`, specs, verified behavior, and claim evidence.
+- Do not strengthen public claims beyond `shipflow_data/business/business.md` (or `BUSINESS.md`), `shipflow_data/business/product.md` (or `PRODUCT.md`), `shipflow_data/business/branding.md` (or `BRANDING.md`), `shipflow_data/business/gtm.md` (or `GTM.md`), specs, verified behavior, and claim evidence.
 - Do not change Astro runtime content frontmatter unless the local schema accepts it.
 
 ### Validation
@@ -751,7 +751,7 @@ SHIPFLOW_ROOT="${SHIPFLOW_ROOT:-$HOME/shipflow}"
 
 ```bash
 SHIPFLOW_ROOT="${SHIPFLOW_ROOT:-$HOME/shipflow}"
-"$SHIPFLOW_ROOT/tools/shipflow_metadata_lint.py" AGENT.md CONTEXT.md CONTEXT-FUNCTION-TREE.md CONTENT_MAP.md BUSINESS.md BRANDING.md PRODUCT.md ARCHITECTURE.md GTM.md GUIDELINES.md specs docs
+"$SHIPFLOW_ROOT/tools/shipflow_metadata_lint.py" AGENT.md CONTEXT.md CONTEXT-FUNCTION-TREE.md shipflow_data/editorial/content-map.md shipflow_data/business/business.md shipflow_data/business/product.md shipflow_data/business/branding.md shipflow_data/business/gtm.md shipflow_data/technical/context.md specs docs
 ```
 
    - Si `CLAUDE.md` est officialisé dans le repo, l'ajouter explicitement au scope de validation au lieu de l'imposer partout par défaut.
