@@ -308,16 +308,17 @@ wait_for_url_or_timeout() {
     local waited=0
     local max_wait=45
     while [ "$waited" -lt "$max_wait" ]; do
-        if ! kill -0 "$REMOTE_SSH_PID" 2>/dev/null; then
-            break
-        fi
         if extract_auth_url >/dev/null 2>&1; then
             return 0
+        fi
+        if ! kill -0 "$REMOTE_SSH_PID" 2>/dev/null; then
+            break
         fi
         sleep 1
         waited=$((waited + 1))
     done
-    return 1
+
+    extract_auth_url >/dev/null 2>&1
 }
 
 check_remote_ssh() {
