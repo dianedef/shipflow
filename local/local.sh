@@ -825,8 +825,8 @@ run_turso_login_menu() {
     local_screen_header "Login Turso distant"
     echo -e "${BLUE}Connexion actuelle:${NC} ${GREEN}$REMOTE_HOST${NC}"
     echo ""
-    echo -e "${BLUE}Ce flow lance Turso sur le serveur et ouvre le login dans ton navigateur local.${NC}"
-    echo -e "${YELLOW}Si Turso utilise un callback localhost, ShipFlow ouvre le tunnel SSH temporaire automatiquement.${NC}"
+    echo -e "${BLUE}Ce flow lance ${GREEN}turso auth login --headless${BLUE} sur le serveur et ouvre ou affiche l'URL locale.${NC}"
+    echo -e "${YELLOW}Turso ne suit pas exactement le même modèle callback que Blacksmith/Supabase; le mode headless est le chemin remote officiel.${NC}"
     echo ""
     project_dir="$(prompt_turso_project_dir)"
 

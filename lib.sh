@@ -8560,7 +8560,8 @@ turso_show_login_guide() {
     echo -e "     ${GREEN}urls${NC} détecte les env Flox Turso et te propose la bonne liste."
     echo -e "     ${BLUE}En manuel seulement:${NC} ${GREEN}shipflow-turso-login --project-dir /home/<user>/<projet>${NC}"
     echo ""
-    echo -e "${BLUE}Ce flow lance Turso sur le serveur, ouvre le navigateur local, et crée un tunnel SSH callback si Turso en a besoin.${NC}"
+    echo -e "${BLUE}Ce flow lance Turso en mode headless sur le serveur, ouvre ou affiche l'URL locale, puis vérifie l'auth.${NC}"
+    echo -e "${YELLOW}Turso ne suit pas toujours le modèle callback de Blacksmith/Supabase; le mode headless est le chemin remote recommandé.${NC}"
 }
 
 turso_show_contentflow_checks() {

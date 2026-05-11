@@ -168,11 +168,12 @@ Si Turso n'est disponible que dans un environnement Flox projet côté serveur :
 shipflow-turso-login --project-dir /home/<user>/<projet>
 ```
 
-Le helper lance `turso auth login` sur le serveur. Si Turso affiche une URL
-avec callback `127.0.0.1:<port>/callback`, ShipFlow ouvre un tunnel SSH local
-temporaire vers ce port, comme pour Blacksmith. Si Turso utilise un mode
-headless/device sans callback localhost, le helper ouvre ou affiche l'URL et
-attend la fin du login sans tunnel.
+Le helper lance `turso auth login --headless` sur le serveur, ouvre ou affiche
+l'URL dans votre navigateur local, puis vous demande de revenir au terminal pour
+vérifier `turso auth whoami` côté serveur. Turso ne suit pas toujours le même
+modèle callback que Blacksmith/Supabase; le mode headless est le chemin remote
+officiel. Un mode callback avancé reste disponible avec
+`shipflow-turso-login --browser-callback`, mais ce n'est pas le défaut.
 
 Pour transférer une session Turso CLI déjà authentifiée depuis le poste local
 vers le serveur ShipFlow configuré sans refaire le login distant, utilisez :

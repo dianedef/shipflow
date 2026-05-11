@@ -24,7 +24,7 @@ LOGIN_TIMEOUT_SECONDS="${SHIPFLOW_TURSO_LOGIN_TIMEOUT_SECONDS:-600}"
 REMOTE_HOST=""
 SSH_IDENTITY_FILE=""
 PROJECT_DIR="${SHIPFLOW_TURSO_REMOTE_PROJECT_DIR:-}"
-FORCE_HEADLESS=0
+FORCE_HEADLESS=1
 TMP_DIR=""
 LOGIN_OUTPUT_FILE=""
 TUNNEL_LOG_FILE=""
@@ -36,13 +36,14 @@ usage() {
 Usage: shipflow-turso-login [options]
 
 Run this from your local machine. It starts Turso CLI auth on the configured
-remote ShipFlow server. If Turso exposes a localhost callback URL, ShipFlow
-opens a temporary SSH -L tunnel and opens or prints the auth URL locally. If
-Turso uses headless auth, ShipFlow prints/opens the headless URL and waits.
+remote ShipFlow server. Turso's supported remote/WSL mode is headless, so this
+helper uses `turso auth login --headless` by default, opens or prints the auth
+URL locally, then asks you to confirm before it verifies `turso auth whoami`.
 
 Options:
   --project-dir <path>   Run remote Turso through `flox activate -d <path> --`.
-  --headless             Force `turso auth login --headless`.
+  --headless             Use `turso auth login --headless` (default).
+  --browser-callback     Try browser callback/tunnel mode instead.
   -h, --help             Show this help.
 
 Examples:
@@ -125,6 +126,10 @@ parse_args() {
                 ;;
             --headless)
                 FORCE_HEADLESS=1
+                shift
+                ;;
+            --browser-callback)
+                FORCE_HEADLESS=0
                 shift
                 ;;
             --project-dir)
@@ -258,6 +263,17 @@ open_browser_or_print() {
     else
         echo -e "${YELLOW}⚠ Impossible d'ouvrir automatiquement le navigateur.${NC}"
         echo -e "${YELLOW}  Ouvre l'URL Turso ci-dessus manuellement dans ton navigateur local.${NC}"
+    fi
+}
+
+prompt_headless_verification() {
+    echo ""
+    echo -e "${YELLOW}Après avoir terminé le login Turso dans ton navigateur, reviens ici.${NC}"
+    echo -e "${YELLOW}Appuie sur Entrée pour vérifier l'auth côté serveur.${NC}"
+    if [ -r /dev/tty ]; then
+        read -r _ < /dev/tty || true
+    else
+        read -r _ || true
     fi
 }
 
@@ -425,8 +441,15 @@ run_turso_login() {
     open_browser_or_print "$auth_url"
     echo -e "${YELLOW}⏳ Finalise le login Turso dans le navigateur...${NC}"
 
-    if ! wait_remote_login_completion "$LOGIN_TIMEOUT_SECONDS"; then
-        return 1
+    if [ "$FORCE_HEADLESS" -eq 1 ]; then
+        prompt_headless_verification
+        if kill -0 "$REMOTE_SSH_PID" 2>/dev/null; then
+            wait "$REMOTE_SSH_PID" || true
+        fi
+    else
+        if ! wait_remote_login_completion "$LOGIN_TIMEOUT_SECONDS"; then
+            return 1
+        fi
     fi
 
     echo -e "${BLUE}👤 Vérification Turso distante...${NC}"
@@ -436,6 +459,10 @@ run_turso_login() {
     fi
 
     echo -e "${RED}✗ Login terminé mais auth Turso non confirmée sur le serveur.${NC}"
+    if [ "$FORCE_HEADLESS" -eq 1 ]; then
+        echo -e "${YELLOW}  Si Turso ne persiste pas l'auth après ce lien headless, utilise le fallback:${NC}"
+        echo -e "  ${CYAN}urls → d) Turso → f) Fallback: copier la session Turso locale${NC}"
+    fi
     return 1
 }
 
