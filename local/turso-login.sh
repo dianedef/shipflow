@@ -467,6 +467,7 @@ run_turso_login() {
     echo -e "${YELLOW}⏳ Finalise le login Turso dans le navigateur...${NC}"
 
     if [ "$FORCE_HEADLESS" -eq 1 ]; then
+        echo -e "${BLUE}🔐 En attente du token/code Turso côté terminal local...${NC}"
         headless_token="$(prompt_headless_token_or_verification)"
         if [ -n "$headless_token" ]; then
             echo -e "${BLUE}🔐 Configuration du token Turso côté serveur...${NC}"
