@@ -494,9 +494,9 @@ sf-explore -> exploration_report -> sf-spec -> sf-ready -> sf-start -> sf-verify
 For spec-first work, the spec is also the chantier registry. It keeps a
 `Skill Run History` and a `Current Chantier Flow`, so you can open the spec and
 see which lifecycle skills have run, which model was used, what result they
-recorded, and what the next ShipFlow command is. `TASKS.md`, `AUDIT_LOG.md`,
-and `PROJECTS.md` stay operational trackers; they do not become the per-chantier
-history.
+recorded, and what the next ShipFlow command is. `shipflow_data/workflow/TASKS.md`,
+`shipflow_data/workflow/AUDIT_LOG.md`, and master `PROJECTS.md` stay operational
+trackers; they do not become the per-chantier history.
 
 Fast path for a small, explicit fix:
 
@@ -538,6 +538,8 @@ ShipFlow also separates decision contracts by role:
 - `shipflow_data/editorial/` for content governance: public content impact, public claims, page intent, and runtime content schema boundaries
 - `shipflow_data/technical/architecture.md` for how the system is organized
 - `shipflow_data/technical/guidelines.md` for how contributors should work inside it
+
+Legacy root files such as `BUSINESS.md`, `PRODUCT.md`, `BRANDING.md`, `GTM.md`, `ARCHITECTURE.md`, `CONTENT_MAP.md`, `CONTEXT.md`, `CONTEXT-FUNCTION-TREE.md`, `GUIDELINES.md`, `TASKS.md`, and `AUDIT_LOG.md` are migration sources only. They are not compliant final locations once a project adopts ShipFlow.
 
 ## Documentation Frame
 
@@ -639,17 +641,17 @@ ShipFlow-owned files are resolved from `${SHIPFLOW_ROOT:-$HOME/shipflow}` even w
 
 For legacy projects, use the migration playbook in [`shipflow-metadata-migration-guide.md`](./shipflow-metadata-migration-guide.md) before normalizing old docs.
 
-By default it checks `shipflow_data/`, `docs/`, `AGENT.md`, and legacy root artifact names such as `BUSINESS.md`, `CONTEXT.md`, or `CONTENT_MAP.md`. Legacy root ShipFlow artifacts fail compliance and must be moved to their canonical `shipflow_data/` location. Pass explicit files or folders to validate a narrower scope.
+By default it checks `shipflow_data/`, `docs/`, `AGENT.md`, and legacy root artifact names such as `BUSINESS.md`, `CONTEXT.md`, `CONTENT_MAP.md`, `TASKS.md`, or `AUDIT_LOG.md`. Legacy root ShipFlow artifacts and project-local trackers fail layout compliance and must be moved to their canonical `shipflow_data/` location. Pass explicit files or folders to validate a narrower scope.
 
 For internal ShipFlow files, this schema is mandatory for the active official artifact set. That set now includes `AGENT.md`, `shipflow_data/technical/context.md`, `shipflow_data/technical/context-function-tree.md`, `shipflow_data/editorial/content-map.md`, and the decision contracts under `shipflow_data/business/`, `shipflow_data/technical/architecture.md`, `shipflow_data/technical/guidelines.md`, and `shipflow_data/business/gtm.md`, including the project competitors/inspirations and affiliate program registries when present. `CLAUDE.md` is supported as an optional active artifact when a project explicitly adopts it as the canonical repository guidance for Claude or multi-agent contributors. In that case, add ShipFlow frontmatter and include it explicitly in metadata checks. For legacy project adoption, the default migration scope is intentionally narrower: active context docs when they exist, active decision contracts when they exist, and `shipflow_data/workflow/specs/*.md`. Historical ad hoc docs can stay out of scope until they are promoted into the active ShipFlow workflow.
 
-Operational tracking files are intentionally excluded from the mandatory artifact schema: `TASKS.md`, `AUDIT_LOG.md`, and `PROJECTS.md` are trackers/registries, not decision contracts. Keep them fast to edit. If a task entry contains a durable decision, spec, or business rule, extract that durable content into a dedicated artifact with metadata instead of adding frontmatter to the tracker itself.
+Operational tracking files are intentionally excluded from the mandatory artifact schema: `shipflow_data/workflow/TASKS.md`, `shipflow_data/workflow/AUDIT_LOG.md`, and `${SHIPFLOW_DATA_DIR:-$HOME/shipflow_data}/PROJECTS.md` are trackers/registries, not decision contracts. Keep them fast to edit. If a task entry contains a durable decision, spec, or business rule, extract that durable content into a dedicated artifact with metadata instead of adding frontmatter to the tracker itself.
 
 Location rule:
 - Project roots should keep only `README.md`, `AGENT.md`, `AGENTS.md` as a symlink to `AGENT.md`, optional `CLAUDE.md`, and project/tool-native docs that are not ShipFlow governance artifacts.
 - Canonical ShipFlow artifacts are stored under project-local `shipflow_data/` in `technical/`, `business/`, `editorial/`, `workflow/`, and `archives/`.
 - The external `${SHIPFLOW_DATA_DIR:-$HOME/shipflow_data}` remains the cross-project control plane for shared trackers and registries.
-- For adopted project repos, keep the same canonical shape by policy; root `BUSINESS.md`, `PRODUCT.md`, `BRANDING.md`, `GTM.md`, `ARCHITECTURE.md`, `CONTENT_MAP.md`, `CONTEXT.md`, `CONTEXT-FUNCTION-TREE.md`, and `GUIDELINES.md` are migration sources, not compliant final locations.
+- For adopted project repos, keep the same canonical shape by policy; root `BUSINESS.md`, `PRODUCT.md`, `BRANDING.md`, `GTM.md`, `ARCHITECTURE.md`, `CONTENT_MAP.md`, `CONTEXT.md`, `CONTEXT-FUNCTION-TREE.md`, `GUIDELINES.md`, `TASKS.md`, and `AUDIT_LOG.md` are migration sources, not compliant final locations.
 
 Application runtime content keeps the schema required by the application. Blog posts, Astro content collections, MDX pages, and app-rendered docs must keep their framework-compatible frontmatter. ShipFlow can enrich compatible fields, but it must not break the app parser.
 
@@ -730,11 +732,11 @@ Operational rule:
 
 Use both files on purpose:
 
-- `TASKS.md` = active, prioritized, executable work
+- `shipflow_data/workflow/TASKS.md` = active, prioritized, executable work
 - `BACKLOG.md` = deferred ideas, parking lot, non-committed items
 
 Promotion rule:
-- move an item from `BACKLOG.md` to `TASKS.md` only when it is ready to be worked on now (clear enough, prioritized enough, and scoped enough)
+- move an item from `BACKLOG.md` to `shipflow_data/workflow/TASKS.md` only when it is ready to be worked on now (clear enough, prioritized enough, and scoped enough)
 
 ## Repository Layout
 

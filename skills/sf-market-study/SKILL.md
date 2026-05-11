@@ -25,24 +25,24 @@ Because this skill has process role `source-de-chantier`, evaluate the standard 
 
 - Current directory: !`pwd`
 - Project CLAUDE.md: !`head -40 CLAUDE.md 2>/dev/null || echo "no CLAUDE.md"`
-- Business context: !`if [ -f shipflow_data/business/business.md ]; then head -60 shipflow_data/business/business.md; else head -60 BUSINESS.md 2>/dev/null || echo "no shipflow_data/business/business.md (and no legacy BUSINESS.md) — run /sf-init or /sf-docs update"; fi`
+- Business context: !`if [ -f shipflow_data/business/business.md ]; then head -60 shipflow_data/business/business.md; else head -60 BUSINESS.md 2>/dev/null || echo "no shipflow_data/business/business.md (root BUSINESS.md is migration source only) — run /sf-init or /sf-docs migrate-layout"; fi`
 - Competitors/inspirations registry: !`if [ -f shipflow_data/business/project-competitors-and-inspirations.md ]; then head -80 shipflow_data/business/project-competitors-and-inspirations.md; else echo "no optional shipflow_data/business/project-competitors-and-inspirations.md"; fi`
 - Affiliate programs registry: !`if [ -f shipflow_data/business/affiliate-programs.md ]; then head -80 shipflow_data/business/affiliate-programs.md; else echo "no optional shipflow_data/business/affiliate-programs.md"; fi`
 - DataForSEO MCP available: !`echo "dfs-mcp tools available — use mcp__dfs-mcp__* tools"`
 
 ## Pre-check : contexte business
 
-Avant de commencer, vérifier le contexte chargé ci-dessus. Si BUSINESS.md est absent :
+Avant de commencer, vérifier le contexte chargé ci-dessus. Si `shipflow_data/business/business.md` est absent :
 
 **Afficher un avertissement :**
 ```
 ⚠ Contexte manquant :
-- [BUSINESS.md manquant] L'étude de marché sera plus pertinente avec le contexte business du projet.
+- [shipflow_data/business/business.md manquant] L'étude de marché sera plus pertinente avec le contexte business canonique du projet.
 
-→ Lancer /sf-init pour générer ce fichier, ou /sf-docs update pour le mettre à jour.
+→ Lancer /sf-init pour générer ce fichier, ou /sf-docs migrate-layout si un ancien BUSINESS.md existe à la racine.
 ```
 
-Continuer dans tous les cas — une étude de marché peut aussi servir à construire le BUSINESS.md initial.
+Continuer dans tous les cas — une étude de marché peut aussi servir à construire le contexte business initial.
 
 ---
 
@@ -71,7 +71,7 @@ market: "[countries/languages]"
 value_proposition: "[one-line promise]"
 docs_impact: "yes"
 depends_on:
-  - artifact: "BUSINESS.md"
+  - artifact: "shipflow_data/business/business.md"
     artifact_version: "[version or unknown]"
     required_status: "reviewed"
 evidence:
@@ -80,7 +80,7 @@ next_review: "[YYYY-MM-DD]"
 ---
 ```
 
-Si `BUSINESS.md` existe, lire son frontmatter complet et reporter sa `artifact_version` dans `depends_on`. Si la version est absente, utiliser `artifact_version: "unknown"` et signaler un `metadata gap`. Si l'étude sert à créer le premier `BUSINESS.md`, mettre `depends_on: []` et `status: draft`.
+Si `shipflow_data/business/business.md` existe, lire son frontmatter complet et reporter sa `artifact_version` dans `depends_on`. Si la version est absente, utiliser `artifact_version: "unknown"` et signaler un `metadata gap`. Si l'étude sert à créer le premier business context, mettre `depends_on: []` et `status: draft`. Un root `BUSINESS.md` est une source de migration, pas un emplacement conforme.
 
 Les registres `shipflow_data/business/project-competitors-and-inspirations.md` et `shipflow_data/business/affiliate-programs.md` sont optionnels, mais gouvernés quand ils existent :
 - Si une étude identifie des concurrents, alternatives, inspirations ou anti-patterns qui vont influencer le positionnement, recommander ou mettre à jour `shipflow_data/business/project-competitors-and-inspirations.md` avec `artifact: competitive_intelligence`.

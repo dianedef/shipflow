@@ -1,10 +1,10 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "0.4.4"
+artifact_version: "0.5.0"
 project: ShipFlow
 created: "2026-04-27"
-updated: "2026-05-08"
+updated: "2026-05-11"
 status: draft
 source_skill: sf-start
 scope: chantier-tracking
@@ -14,7 +14,7 @@ risk_level: medium
 security_impact: none
 docs_impact: yes
 linked_systems:
-  - specs/
+  - shipflow_data/workflow/specs/
   - skills/*/SKILL.md
   - skills/shipflow/SKILL.md
   - skills/sf-deploy/SKILL.md
@@ -24,12 +24,12 @@ linked_systems:
   - skills/references/final-report-timestamp.md
   - skills/references/master-workflow-lifecycle.md
 depends_on:
-  - artifact: "specs/specs-as-chantier-registry.md"
+  - artifact: "shipflow_data/workflow/specs/specs-as-chantier-registry.md"
     artifact_version: "1.0.0"
     required_status: "ready"
 supersedes: []
 evidence:
-  - "Spec specs-as-chantier-registry.md defines specs/ as the global chantier registry."
+  - "Spec specs-as-chantier-registry.md defines shipflow_data/workflow/specs/ as the global chantier registry."
   - "shipflow added as the primary helper router; selected owner skills own durable state and chantier tracing."
   - "sf-deploy added as a lifecycle release orchestrator."
   - "sf-maintain promoted from recurring maintenance source-de-chantier to lifecycle master skill."
@@ -44,7 +44,7 @@ next_step: "/sf-verify Specs as chantier registry"
 
 # Chantier Tracking Doctrine
 
-`specs/` is the global registry for spec-first chantiers. Do not create a separate registry in `TASKS.md`, `AUDIT_LOG.md`, `PROJECTS.md`, or `shipflow_data`.
+`shipflow_data/workflow/specs/` is the global registry for spec-first chantiers. Do not create a separate registry in `TASKS.md`, `AUDIT_LOG.md`, `PROJECTS.md`, or root `specs/`.
 
 ## Two-Axis Classification
 
@@ -118,7 +118,7 @@ This block coexists with the compact `Chantier` block. If the source skill is al
 
 ## Spec Write Rules
 
-- Before writing, identify exactly one `specs/*.md` file with ShipFlow frontmatter.
+- Before writing, identify exactly one `shipflow_data/workflow/specs/*.md` file with ShipFlow frontmatter. Root `specs/*.md` files are migration sources only and should be routed through `/sf-docs migrate-layout`.
 - If matching is ambiguous, stop and ask for an explicit spec instead of guessing.
 - Preserve all existing metadata and contract sections.
 - Add `Skill Run History` if it is missing, using this table:

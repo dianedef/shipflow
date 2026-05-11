@@ -1,10 +1,10 @@
 ---
 artifact: gtm_context
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.2.0"
 project: "shipflow"
 created: "2026-04-26"
-updated: "2026-04-26"
+updated: "2026-05-11"
 status: reviewed
 source_skill: manual
 scope: gtm
@@ -20,19 +20,19 @@ docs_impact: yes
 evidence:
   - "Current repo demonstrates the mechanics of the framework but not yet validated acquisition or conversion data"
 linked_artifacts:
-  - "BUSINESS.md"
-  - "BRANDING.md"
-  - "PRODUCT.md"
+  - "shipflow_data/business/business.md"
+  - "shipflow_data/business/branding.md"
+  - "shipflow_data/business/product.md"
 depends_on:
-  - artifact: "BUSINESS.md"
-    artifact_version: "1.0.0"
+  - artifact: "shipflow_data/business/business.md"
+    artifact_version: "1.2.0"
     required_status: "reviewed"
-  - artifact: "BRANDING.md"
-    artifact_version: "1.0.0"
+  - artifact: "shipflow_data/business/branding.md"
+    artifact_version: "1.1.0"
     required_status: "reviewed"
 supersedes: []
 next_review: "2026-05-26"
-next_step: "/sf-docs audit GTM.md"
+next_step: "/sf-docs audit shipflow_data/business/gtm.md"
 ---
 
 # GTM Context
@@ -68,7 +68,7 @@ next_step: "/sf-docs audit GTM.md"
 ## Conversion Path
 
 - First contact through docs, examples, or technical content.
-- Interest through the concrete mechanics: `AGENT.md`, `CONTEXT.md`, specs, verification, lintable metadata.
+- Interest through the concrete mechanics: `AGENT.md`, `shipflow_data/technical/context.md`, `shipflow_data/workflow/specs/`, verification, lintable metadata.
 - Conversion through confidence that the framework improves reliability of real work, not toy demos.
 - The buying motion should stay simple and compatible with a solo-founder audience.
 

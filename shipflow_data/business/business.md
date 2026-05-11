@@ -1,10 +1,10 @@
 ---
 artifact: business_context
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.2.0"
 project: "shipflow"
 created: "2026-04-26"
-updated: "2026-04-26"
+updated: "2026-05-11"
 status: reviewed
 source_skill: manual
 scope: business
@@ -21,13 +21,13 @@ evidence:
   - "README.md describes ShipFlow as a server-first environment manager plus structured AI workflow system"
   - "Repository contains workflow, verification, audit, docs, and metadata tooling rather than a narrow single-purpose CLI"
 linked_artifacts:
-  - "PRODUCT.md"
-  - "GTM.md"
-  - "BRANDING.md"
+  - "shipflow_data/business/product.md"
+  - "shipflow_data/business/gtm.md"
+  - "shipflow_data/business/branding.md"
 depends_on: []
 supersedes: []
 next_review: "2026-05-26"
-next_step: "/sf-docs audit BUSINESS.md"
+next_step: "/sf-docs audit shipflow_data/business/business.md"
 ---
 
 # Business Context

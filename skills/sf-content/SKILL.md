@@ -43,7 +43,7 @@ It orchestrates existing owner skills:
 
 ```text
 sf-veille / sf-research / sf-market-study
-  -> CONTENT_MAP + editorial corpus
+  -> shipflow_data/editorial/content-map.md + editorial corpus
   -> sf-explore or sf-spec when needed
   -> sf-repurpose / sf-redact / sf-enrich
   -> sf-audit-copy / sf-audit-copywriting / sf-audit-seo
@@ -79,7 +79,7 @@ Rejected scope:
 ## Entry Rules
 
 1. Resolve the input as one or more of: content goal, source, target surface, file path, mode keyword, or ship request.
-2. Load `shipflow_data/editorial/content-map.md` if present, otherwise fallback to `CONTENT_MAP.md`.
+2. Load `shipflow_data/editorial/content-map.md` if present. Root `CONTENT_MAP.md` is a migration source only; if it is the only map, continue for context but recommend `/sf-docs migrate-layout`.
 3. Load `$SHIPFLOW_ROOT/skills/references/editorial-content-corpus.md` when the work touches public content, README public promises, docs, FAQ, pricing, support copy, public skill pages, blog/article intent, claims, or runtime content.
 4. Check `shipflow_data/editorial/claim-register.md` (or `docs/editorial/claim-register.md`), `shipflow_data/editorial/page-intent-map.md` (or `docs/editorial/page-intent-map.md`), `shipflow_data/editorial/editorial-update-gate.md` (or `docs/editorial/editorial-update-gate.md`), and `shipflow_data/editorial/astro-content-schema-policy.md` (or `docs/editorial/astro-content-schema-policy.md`) when present.
 5. If the work touches competitor comparisons, alternatives, inspiration-led positioning, affiliate links, partner recommendations, sponsorship, or disclosure, check `shipflow_data/business/project-competitors-and-inspirations.md` and `shipflow_data/business/affiliate-programs.md` when present. Their absence is acceptable; their presence requires ShipFlow metadata compliance.
@@ -100,7 +100,7 @@ If several modes match, choose the earliest missing lifecycle phase:
 
 ```text
 source unclear -> veille/research/explore
-surface unclear -> CONTENT_MAP/editorial gate/spec
+surface unclear -> content-map/editorial gate/spec
 source ready -> repurpose
 draft needed -> redact
 existing content needs improvement -> enrich
@@ -128,7 +128,7 @@ Route to `/sf-explore <idea>` before `/sf-spec` when content intent, audience, s
 
 For public or potentially public content:
 
-1. Read `shipflow_data/editorial/content-map.md` when present, else `CONTENT_MAP.md`.
+1. Read `shipflow_data/editorial/content-map.md` when present. If only root `CONTENT_MAP.md` exists, treat it as migration debt and recommend `/sf-docs migrate-layout`.
 2. Read `$SHIPFLOW_ROOT/skills/references/editorial-content-corpus.md` when available.
 3. Check `shipflow_data/editorial/public-surface-map.md` (or `docs/editorial/public-surface-map.md`) and `shipflow_data/editorial/page-intent-map.md` (or `docs/editorial/page-intent-map.md`) before changing public pages.
 4. Check `shipflow_data/editorial/claim-register.md` (or `docs/editorial/claim-register.md`) before publishing sensitive claims.
@@ -176,7 +176,7 @@ python3 tools/skill_budget_audit.py --skills-root skills --format markdown
 For ShipFlow docs/specs/content-map artifacts:
 
 ```bash
-python3 tools/shipflow_metadata_lint.py specs README.md shipflow-spec-driven-workflow.md shipflow_data/editorial/content-map.md shipflow_data/business/business.md shipflow_data/business/product.md shipflow_data/business/branding.md shipflow_data/business/gtm.md shipflow_data/business/project-competitors-and-inspirations.md shipflow_data/business/affiliate-programs.md shipflow_data/technical/context.md docs/technical docs/editorial docs/skill-launch-cheatsheet.md
+python3 tools/shipflow_metadata_lint.py shipflow_data/workflow/specs README.md shipflow-spec-driven-workflow.md shipflow_data/editorial/content-map.md shipflow_data/business/business.md shipflow_data/business/product.md shipflow_data/business/branding.md shipflow_data/business/gtm.md shipflow_data/business/project-competitors-and-inspirations.md shipflow_data/business/affiliate-programs.md shipflow_data/technical/context.md shipflow_data/technical shipflow_data/editorial docs/skill-launch-cheatsheet.md
 ```
 
 For public site or runtime content:
@@ -188,8 +188,8 @@ npm --prefix site run build
 For public-claim and leak scans:
 
 ```bash
-rg -n "secret|token|credential|private key|BEGIN .*KEY" README.md shipflow_data/editorial/content-map.md CONTENT_MAP.md docs site/src skills
-rg -n "surface missing: blog|Editorial Update Plan|Claim Impact Plan|Astro content schema|claim register" shipflow_data/editorial/content-map.md CONTENT_MAP.md docs/editorial shipflow_data/editorial skills site/src/content/skills
+rg -n "secret|token|credential|private key|BEGIN .*KEY" README.md shipflow_data/editorial/content-map.md shipflow_data site/src skills
+rg -n "surface missing: blog|Editorial Update Plan|Claim Impact Plan|Astro content schema|claim register" shipflow_data/editorial/content-map.md shipflow_data/editorial skills site/src/content/skills
 ```
 
 Use `sf-browser` when public visual or route behavior needs observed browser evidence. Use `sf-prod` only for deployed truth and `sf-auth-debug` only for auth/session flows.

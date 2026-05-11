@@ -1,10 +1,10 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.3.0"
 project: ShipFlow
 created: "2026-05-01"
-updated: "2026-05-02"
+updated: "2026-05-11"
 status: active
 source_skill: sf-start
 scope: technical-docs-corpus
@@ -14,13 +14,13 @@ risk_level: medium
 security_impact: yes
 docs_impact: yes
 linked_systems:
-  - docs/technical/
-  - docs/technical/code-docs-map.md
+  - shipflow_data/technical/
+  - shipflow_data/technical/code-docs-map.md
   - templates/artifacts/technical_module_context.md
   - skills/sf-docs/SKILL.md
 depends_on:
-  - artifact: "docs/technical/code-docs-map.md"
-    artifact_version: "1.0.0"
+  - artifact: "shipflow_data/technical/code-docs-map.md"
+    artifact_version: "1.1.0"
     required_status: reviewed
 supersedes: []
 evidence:
@@ -34,11 +34,11 @@ next_step: "/sf-docs technical audit"
 
 ## Purpose
 
-This reference tells ShipFlow skills how to use the internal `docs/technical/` layer without loading the whole repository or turning agent entry files into mega-docs.
+This reference tells ShipFlow skills how to use the internal `shipflow_data/technical/` layer without loading the whole repository or turning agent entry files into mega-docs.
 
 ## Loading Rule
 
-1. Read `docs/technical/code-docs-map.md` first for any code-changing task when it exists; if it is missing, report a technical governance bootstrap trigger and route to `/sf-docs technical`.
+1. Read `shipflow_data/technical/code-docs-map.md` first for any code-changing task when it exists; if it is missing, report a technical governance bootstrap trigger and route to `/sf-docs technical`. Legacy `docs/technical/code-docs-map.md` is a migration source only.
 2. Match changed or target paths to the map when present.
 3. Load only the primary technical doc and necessary secondary docs.
 4. Produce a `Documentation Update Plan` after every code-changing execution wave and again during end verification.
@@ -48,8 +48,8 @@ This reference tells ShipFlow skills how to use the internal `docs/technical/` l
 
 `sf-docs technical` or `sf-docs technical audit` should:
 
-- treat a missing `docs/technical/code-docs-map.md` as a first-run bootstrap trigger, not as an immediate read failure
-- create baseline `docs/technical/README.md` and `docs/technical/code-docs-map.md` governance scaffolding for code projects when safe
+- treat a missing `shipflow_data/technical/code-docs-map.md` as a first-run bootstrap trigger, not as an immediate read failure
+- create baseline `shipflow_data/technical/README.md` and `shipflow_data/technical/code-docs-map.md` governance scaffolding for code projects when safe
 - record an explicit `non-coverage` reason when no major code area can be mapped
 - verify that every major code area in `code-docs-map.md` has a primary technical doc or explicit non-coverage reason
 - scaffold missing subsystem docs from `templates/artifacts/technical_module_context.md`
@@ -61,12 +61,12 @@ This reference tells ShipFlow skills how to use the internal `docs/technical/` l
 
 ## Documentation Update Plan
 
-Use the format defined in `docs/technical/code-docs-map.md`. The owner role is usually `executor` for the subsystem doc and `integrator` for shared files such as `code-docs-map.md`, `AGENT.md`, `CONTEXT.md`, `GUIDELINES.md`, and `shipflow-spec-driven-workflow.md`.
+Use the format defined in `shipflow_data/technical/code-docs-map.md`. The owner role is usually `executor` for the subsystem doc and `integrator` for shared files such as `code-docs-map.md`, `AGENT.md`, `shipflow_data/technical/context.md`, `shipflow_data/technical/guidelines.md`, and `shipflow-spec-driven-workflow.md`.
 
 ## Safety Rules
 
 - The Reader diagnoses impact; it does not silently edit docs unless explicitly assigned.
-- `docs/technical/` is internal-only in v1.
+- `shipflow_data/technical/` is internal-only in v1.
 - Do not copy secrets, tokens, private URLs, raw logs, cookies, or credentials into technical docs.
 - Do not add per-file `last_verified_against` fields in v1.
 - If `AGENTS.md` exists, it must be a symlink to `AGENT.md`.

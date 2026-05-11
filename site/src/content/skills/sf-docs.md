@@ -14,6 +14,7 @@ when_to_use:
   - "When the repo needs a new README, guide, or audit of existing docs"
   - "When implementation changed user-facing behavior or contracts"
   - "When the documentation surface feels inconsistent or stale"
+  - "When legacy ShipFlow files at the project root need to move into the canonical shipflow_data layout"
 what_you_give:
   - "A target file, doc mode, or documentation goal"
   - "The current repo and decision-doc context"
@@ -24,6 +25,7 @@ what_you_get:
 example_prompts:
   - "/sf-docs readme"
   - "/sf-docs audit"
+  - "/sf-docs migrate-layout"
   - "/sf-docs update docs after onboarding changes"
 limits:
   - "It can improve documentation quality, but only the code proves real behavior"
@@ -43,5 +45,7 @@ order: 350
 `sf-docs` should look for bug-workflow drift as part of a normal docs audit. That means checking whether `TEST_LOG.md`, `BUGS.md`, dossier templates, and public skill pages still describe the same operating model.
 
 If one page still implies the old tracker behavior, the docs result should call out the mismatch instead of silently accepting it.
+
+`sf-docs migrate-layout` owns the cleanup of legacy ShipFlow governance files that were left at a project root. Files such as `BUSINESS.md`, `PRODUCT.md`, `GTM.md`, `CONTENT_MAP.md`, `CONTEXT.md`, `GUIDELINES.md`, `TASKS.md`, and `AUDIT_LOG.md` are migration sources only; their compliant destinations live under `shipflow_data/business/`, `shipflow_data/editorial/`, `shipflow_data/technical/`, or `shipflow_data/workflow/`.
 
 When public or internal skill documentation changes, `sf-docs` should also treat the skill budget audit as part of documentary coherence. The skill catalog has to remain understandable to humans and discoverable by Codex and Claude Code.

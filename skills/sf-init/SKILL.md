@@ -157,7 +157,7 @@ Never leave the section with pipe-delimited placeholders after init. Pick the co
 
 **Check first**:
 - prefer updating `shipflow_data/workflow/TASKS.md` when present
-- if `TASKS.md` exists as a real file, leave it as legacy local content unless the user requests migration
+- if root `TASKS.md` exists as a real file, treat it as legacy local content: do not overwrite it, report layout migration debt, and route to `/sf-docs migrate-layout` unless an external project tool explicitly requires the root file
 - if a legacy ShipFlow-created `TASKS.md` symlink points into `shipflow_data`, remove the symlink only; do not move or overwrite real project files.
 
 If it does not exist:
@@ -251,7 +251,7 @@ Path rule:
 
 Créer les fichiers de contexte business/marque dans le dossier `shipflow_data/` du repo du projet. Ces documents sont des contrats de décision du projet et leur source canonique doit rester dans le corpus gouverné par ShipFlow, au plus près du code, des specs et de la documentation qu'ils gouvernent.
 
-`shipflow_data` reste réservé au tracking partagé (`TASKS.md`, `AUDIT_LOG.md`, `PROJECTS.md`). Les artefacts de gouvernance projet vivent dans `shipflow_data/business/*`, `shipflow_data/editorial/*` et `shipflow_data/technical/*` quand disponibles.
+`shipflow_data/workflow` porte le tracking local (`TASKS.md`, `AUDIT_LOG.md`, specs, bugs, reviews, audits). Les artefacts de gouvernance projet vivent dans `shipflow_data/business/*`, `shipflow_data/editorial/*` et `shipflow_data/technical/*` quand disponibles.
 
 **Pour chaque fichier** : vérifier d'abord s'il existe déjà dans le projet. Si oui, sauter.
 
@@ -259,7 +259,7 @@ Créer les fichiers de contexte business/marque dans le dossier `shipflow_data/`
 
 Les registres `shipflow_data/business/project-competitors-and-inspirations.md` et `shipflow_data/business/affiliate-programs.md` sont optionnels. `sf-init` ne les crée pas par défaut pour tous les projets. Si l'un d'eux existe déjà, reporter son statut et le faire valider par `/sf-docs update` ou le linter ShipFlow. Si l'utilisateur demande explicitement une initialisation marché/affiliation, utiliser les templates `templates/artifacts/competitive_intelligence.md` et `templates/artifacts/affiliate_program_registry.md`; sinon reporter `absent optionnel`.
 
-#### 5a. BUSINESS.md
+#### 5a. shipflow_data/business/business.md
 
 Utiliser **AskUserQuestion** pour recueillir le contexte business :
 - Question : "Décris ton projet en une phrase — qu'est-ce que ça fait et pour qui ?"
@@ -318,7 +318,7 @@ next_step: "/sf-docs update"
 
 Si l'utilisateur donne une réponse courte, compléter intelligemment à partir du stack détecté et du contenu existant. Marquer clairement les sections devinées avec `<!-- à confirmer -->`.
 
-#### 5b. BRANDING.md
+#### 5b. shipflow_data/business/branding.md
 
 Utiliser **AskUserQuestion** :
 - Question : "Quel ton pour ce projet ?"
@@ -344,15 +344,15 @@ scope: "branding"
 owner: "[user or team if known]"
 confidence: "low"
 risk_level: "medium"
-target_audience: "[from BUSINESS.md if known]"
-value_proposition: "[from BUSINESS.md if known]"
+target_audience: "[from shipflow_data/business/business.md if known]"
+value_proposition: "[from shipflow_data/business/business.md if known]"
 market: "[country/language/niche or unknown]"
 docs_impact: "yes"
 security_impact: "none"
 evidence:
   - "[tone selected by user]"
 depends_on:
-  - artifact: BUSINESS.md
+  - artifact: shipflow_data/business/business.md
     artifact_version: "0.1.0"
     required_status: "draft|reviewed"
 supersedes: []
@@ -381,7 +381,7 @@ next_step: "/sf-docs update"
 [Anti-patterns de communication — ex: "jamais condescendant, jamais corporate bullshit"]
 ```
 
-#### 5c. GUIDELINES.md
+#### 5c. shipflow_data/technical/guidelines.md
 
 Générer automatiquement depuis ce qui a été détecté en Step 1 + CLAUDE.md. Pas de question à l'utilisateur — c'est technique.
 
@@ -454,6 +454,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ```
 
 **Local tracker** — create or update `[project_dir]/shipflow_data/workflow/TASKS.md` if present.
+
+**Local audit log** — create or update `[project_dir]/shipflow_data/workflow/AUDIT_LOG.md` when an audit index is needed. Do not create root `AUDIT_LOG.md`; if it exists, treat it as layout migration debt unless an external project tool requires it.
 
 **Master TASKS.md (optional)** — when cross-project sync is enabled, add a section to `${SHIPFLOW_DATA_DIR:-$HOME/shipflow_data}/TASKS.md`:
 
@@ -582,7 +584,7 @@ This project uses a local codebase MCP server for efficient context management.
 See `${SHIPFLOW_ROOT:-$HOME/shipflow}/tools/codebase-mcp/README.md` for full tool reference.
 ```
 
-#### 5d. CONTENT_MAP.md
+#### 5d. shipflow_data/editorial/content-map.md
 
 Générer automatiquement depuis les dossiers détectés (`src/content`, `content`, `docs`, `app`, `pages`, routes marketing, collections Astro/MDX, changelog, FAQ/support si présents). Utiliser `templates/artifacts/content_map.md` comme structure.
 
@@ -609,7 +611,7 @@ Load these ShipFlow-owned references from `$SHIPFLOW_ROOT` before creating or au
 Detect:
 - code areas: `package.json`, lockfiles, `src/`, `app/`, `pages/`, `components/`, `lib/`, `convex/`, `supabase/`, `server/`, `api/`, `*.sh`, `*.py`, `*.ts`, `*.tsx`, `*.js`, `*.jsx`, `*.astro`, `*.vue`, or framework config files
 - public surfaces: public routes, `site/`, `src/pages/`, `app/`, `pages/`, `docs/`, README public promises, FAQ, pricing, support copy, public skill pages, blog/article intent, `src/content`, `content/`, Astro/MDX runtime content, newsletter/social surfaces
-- existing governance files: `shipflow_data/technical/README.md` (ou `docs/technical/README.md`), `shipflow_data/technical/code-docs-map.md` (ou `docs/technical/code-docs-map.md`), `shipflow_data/editorial/README.md` (ou `docs/editorial/README.md`), `shipflow_data/editorial/content-map.md` (ou `CONTENT_MAP.md`)
+- existing governance files: `shipflow_data/technical/README.md` (legacy source: `docs/technical/README.md`), `shipflow_data/technical/code-docs-map.md` (legacy source: `docs/technical/code-docs-map.md`), `shipflow_data/editorial/README.md` (legacy source: `docs/editorial/README.md`), `shipflow_data/editorial/content-map.md` (legacy source: `CONTENT_MAP.md`)
 - agent entrypoint state: `AGENT.md` and `AGENTS.md`
 
 #### Technical governance bootstrap
@@ -622,7 +624,7 @@ If code areas are detected and `shipflow_data/technical/` can be written:
 - when no major code area can be mapped precisely, still create `shipflow_data/technical/code-docs-map.md` with an explicit `non-coverage` reason and next step `/sf-docs technical`
 - do not create a mega-doc during init; route subsystem detail to `/sf-docs technical`
 
-If `shipflow_data/technical/` already exists (or legacy `docs/technical/` exists):
+If `shipflow_data/technical/` already exists (or legacy migration source `docs/technical/` exists):
 - do not overwrite it
 - report `shipflow_data/technical: already existed` or `shipflow_data/technical: needs audit`
 - name `/sf-docs technical` as the recovery command when the map is missing, stale, or incomplete
@@ -655,7 +657,7 @@ If public surfaces are detected but `shipflow_data/editorial/` cannot be created
 
 `AGENT.md` is the canonical agent routing entrypoint.
 
-- If `AGENT.md` is missing, create a baseline project-specific entrypoint that points to `CLAUDE.md`, `shipflow_data/technical/context.md` when present (fallback `CONTEXT.md`), `shipflow_data/technical/code-docs-map.md` (fallback `docs/technical/code-docs-map.md`), `shipflow_data/editorial/content-map.md` (fallback `CONTENT_MAP.md`), and `README.md`.
+- If `AGENT.md` is missing, create a baseline project-specific entrypoint that points to `CLAUDE.md`, `shipflow_data/technical/context.md`, `shipflow_data/technical/code-docs-map.md`, `shipflow_data/editorial/content-map.md`, and `README.md`. If only legacy sources such as root `CONTEXT.md`, root `CONTENT_MAP.md`, or `docs/technical/code-docs-map.md` exist, mention them as layout migration debt and route to `/sf-docs migrate-layout`.
 - If `AGENTS.md` is missing and symlinks are supported, create `AGENTS.md -> AGENT.md` as compatibility only.
 - If `AGENTS.md` exists as a symlink to `AGENT.md`, report it as OK.
 - If `AGENTS.md` exists as a real file or points elsewhere, report `AGENTS.md: compatibility conflict` and ask before converting or preserving it as external-tool-specific guidance.
@@ -681,7 +683,8 @@ PROJECT INITIALIZED: [name]
 Stack:       [detected stack]
 Path:        [project path]
 CLAUDE.md:   [created / skipped / already existed]
-TASKS.md:    [created / skipped / already existed]
+shipflow_data/workflow/TASKS.md:    [created / skipped / already existed / legacy root migration debt]
+shipflow_data/workflow/AUDIT_LOG.md: [created / skipped / already existed / legacy root migration debt]
 shipflow_data/business/business.md: [created / skipped / already existed]
 shipflow_data/business/branding.md: [created / skipped / already existed]
 shipflow_data/business/project-competitors-and-inspirations.md: [absent optional / created on request / already existed / needs audit]
@@ -709,7 +712,7 @@ Next steps:
 ## Important
 
 - Never overwrite an existing CLAUDE.md without asking.
-- Never overwrite an existing TASKS.md.
+- Never overwrite an existing root `TASKS.md` or root `AUDIT_LOG.md`; migrate with `/sf-docs migrate-layout` after collision checks.
 - If the project is already in PROJECTS.md, update the row instead of adding a duplicate.
 - Detect the stack from actual files, not just project name.
 - The generated CLAUDE.md should match the style of existing project CLAUDE.md files in the workspace.

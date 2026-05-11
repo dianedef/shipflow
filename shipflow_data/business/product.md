@@ -1,10 +1,10 @@
 ---
 artifact: product_context
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.2.0"
 project: "shipflow"
 created: "2026-04-26"
-updated: "2026-04-26"
+updated: "2026-05-11"
 status: reviewed
 source_skill: manual
 scope: product
@@ -19,18 +19,18 @@ security_impact: yes
 docs_impact: yes
 evidence:
   - "Repo artifacts strongly emphasize context routing, specs, readiness, verification, audits, and environment operations"
-  - "CONTENT_MAP.md and sf-repurpose skill add a content routing layer for documentation and marketing reuse"
+  - "shipflow_data/editorial/content-map.md and sf-repurpose skill add a content routing layer for documentation and marketing reuse"
 linked_artifacts:
-  - "BUSINESS.md"
-  - "ARCHITECTURE.md"
-  - "GUIDELINES.md"
+  - "shipflow_data/business/business.md"
+  - "shipflow_data/technical/architecture.md"
+  - "shipflow_data/technical/guidelines.md"
 depends_on:
-  - artifact: "BUSINESS.md"
-    artifact_version: "1.0.0"
+  - artifact: "shipflow_data/business/business.md"
+    artifact_version: "1.2.0"
     required_status: "reviewed"
 supersedes: []
 next_review: "2026-05-26"
-next_step: "/sf-docs audit PRODUCT.md"
+next_step: "/sf-docs audit shipflow_data/business/product.md"
 ---
 
 # Product Context
@@ -99,4 +99,4 @@ next_step: "/sf-docs audit PRODUCT.md"
 - The tool can be mistaken for “just a PM2 server script with helpers” if the AI framing layer is underexplained.
 - The tool can be mistaken for “just a prompting method” if the environment-delivery layer is underexplained.
 - Documentation volume can grow faster than its clarity if doc roles are not kept exclusive.
-- Content repurposing can drift into generic marketing if `CONTENT_MAP.md`, `PRODUCT.md`, `BRANDING.md`, and `GTM.md` are not kept current.
+- Content repurposing can drift into generic marketing if `shipflow_data/editorial/content-map.md`, `shipflow_data/business/product.md`, `shipflow_data/business/branding.md`, and `shipflow_data/business/gtm.md` are not kept current.

@@ -1,10 +1,10 @@
 ---
 artifact: brand_context
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: "shipflow"
 created: "2026-04-26"
-updated: "2026-04-26"
+updated: "2026-05-11"
 status: reviewed
 source_skill: manual
 scope: brand
@@ -19,15 +19,15 @@ evidence:
   - "Current repository guidance consistently favors clarity, rigor, constraints, and explicit validation"
   - "The framework distinguishes implemented, verified, assumed, stale, and partial rather than optimistic framing"
 linked_artifacts:
-  - "BUSINESS.md"
-  - "GTM.md"
+  - "shipflow_data/business/business.md"
+  - "shipflow_data/business/gtm.md"
 depends_on:
-  - artifact: "BUSINESS.md"
-    artifact_version: "1.0.0"
+  - artifact: "shipflow_data/business/business.md"
+    artifact_version: "1.2.0"
     required_status: "reviewed"
 supersedes: []
 next_review: "2026-05-26"
-next_step: "/sf-docs audit BRANDING.md"
+next_step: "/sf-docs audit shipflow_data/business/branding.md"
 ---
 
 # Brand Context

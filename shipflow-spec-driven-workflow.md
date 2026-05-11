@@ -1,7 +1,7 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "0.16.0"
+artifact_version: "0.17.0"
 project: ShipFlow
 created: "2026-04-22"
 updated: "2026-05-11"
@@ -26,8 +26,8 @@ linked_systems:
   - templates/artifacts/
   - tools/shipflow_metadata_lint.py
   - skills/references/canonical-paths.md
-  - docs/technical/
-  - docs/editorial/
+  - shipflow_data/technical/
+  - shipflow_data/editorial/
   - skills/references/editorial-content-corpus.md
   - skills/references/reporting-contract.md
   - skills/references/master-workflow-lifecycle.md
@@ -37,7 +37,7 @@ supersedes: []
 evidence:
   - "Document title and body define ShipFlow V3 workflow doctrine and artifact metadata rules"
   - "Updated on 2026-04-26 to clarify the documentation frame, context layer, metadata doctrine, and artifact boundaries"
-  - "Updated on 2026-04-26 to add CONTENT_MAP.md as the content architecture and repurposing artifact"
+  - "Updated on 2026-04-26 to add the content architecture and repurposing artifact"
   - "Updated on 2026-04-27 to define canonical ShipFlow path resolution for tools and references"
   - "Updated on 2026-04-29 to formalize the ShipFlow language doctrine: English internal contracts, user-facing interaction in the user's active language."
   - "Updated on 2026-05-01 to add the internal technical documentation layer and Documentation Update Plan gate."
@@ -60,6 +60,7 @@ evidence:
   - "Updated on 2026-05-06 to add sf-design as the master design lifecycle entrypoint."
   - "Updated on 2026-05-08 to clarify sf-bug as a bug lifecycle executor that continues through owner skills and bounded subagents when safe."
   - "Updated on 2026-05-11 to add competitive intelligence and affiliate program registries as project-local business artifacts."
+  - "Updated on 2026-05-11 to make project governance artifacts canonical under shipflow_data/, including workflow specs."
 next_review: "unknown"
 next_step: "/sf-docs audit shipflow-spec-driven-workflow.md"
 ---
@@ -72,10 +73,10 @@ ShipFlow V3 shifts iteration upstream.
 
 The current documentation frame is already solid on three axes:
 
-- technical: `CLAUDE.md`, `CONTEXT.md`, `CONTEXT-FUNCTION-TREE.md`, `CONTENT_MAP.md`, `GUIDELINES.md`, and `specs/`
+- technical: `CLAUDE.md`, `shipflow_data/technical/context.md`, `shipflow_data/technical/context-function-tree.md`, `shipflow_data/editorial/content-map.md`, `shipflow_data/technical/guidelines.md`, and `shipflow_data/workflow/specs/`
 - workflow: `sf-spec`, `sf-ready`, `sf-start`, `sf-verify`, `sf-docs`, and versioned metadata
-- product/business: `BUSINESS.md`, `BRANDING.md`, versioned docs, and `depends_on` relationships
-- editorial coherence: `CONTENT_MAP.md`, `docs/editorial/`, public content, claims, page intent, and Astro content schema policy
+- product/business: `shipflow_data/business/business.md`, `shipflow_data/business/branding.md`, versioned docs, and `depends_on` relationships
+- editorial coherence: `shipflow_data/editorial/content-map.md`, `shipflow_data/editorial/`, public content, claims, page intent, and Astro content schema policy
 
 The recent progress is structural rather than cosmetic:
 
@@ -202,25 +203,25 @@ The goal is not to remove iteration. The goal is to move ambiguity reduction bef
 
 ## Technical Documentation Layer
 
-ShipFlow maintains an internal code-proximate technical documentation layer under `docs/technical/`.
+ShipFlow maintains an internal code-proximate technical documentation layer under `shipflow_data/technical/`.
 
-- `docs/technical/README.md` indexes subsystem technical docs.
-- `docs/technical/code-docs-map.md` maps code paths to primary technical docs, secondary docs, required validation, and docs update triggers.
+- `shipflow_data/technical/README.md` indexes subsystem technical docs.
+- `shipflow_data/technical/code-docs-map.md` maps code paths to primary technical docs, secondary docs, required validation, and docs update triggers.
 - `templates/artifacts/technical_module_context.md` is the standard template for subsystem docs.
 - `skills/references/technical-docs-corpus.md` tells skills how to load the layer without polluting context.
 
-This layer does not replace `ARCHITECTURE.md`, `CONTEXT.md`, `GUIDELINES.md`, specs, or decision records. It gives agents the closest durable technical context for a code area.
+This layer does not replace `shipflow_data/technical/architecture.md`, `shipflow_data/technical/context.md`, `shipflow_data/technical/guidelines.md`, specs, or decision records. It gives agents the closest durable technical context for a code area.
 
 ### Documentation Update Gate
 
-After every code-changing execution wave, the Reader must produce a `Documentation Update Plan` from `docs/technical/code-docs-map.md`. End verification must produce or re-check the plan again.
+After every code-changing execution wave, the Reader must produce a `Documentation Update Plan` from `shipflow_data/technical/code-docs-map.md`. End verification must produce or re-check the plan again.
 
 ```markdown
 ## Documentation Update Plan
 
 - Code changed: `path/or/pattern`
 - Subsystem: `name`
-- Primary technical doc: `docs/technical/example.md`
+- Primary technical doc: `shipflow_data/technical/example.md`
 - Secondary docs: `...`
 - Required action: `none | review | update | create`
 - Priority: `low | medium | high`
@@ -232,22 +233,22 @@ After every code-changing execution wave, the Reader must produce a `Documentati
 
 The Reader diagnoses impact; an executor or integrator applies updates. A mapped code change must either update the impacted technical doc or record a no-impact justification. There is no stale-doc shipping exception for mapped technical docs.
 
-Shared files are sequential integration files by default: `docs/technical/code-docs-map.md`, `AGENT.md`, `CONTEXT.md`, `GUIDELINES.md`, `shipflow-spec-driven-workflow.md`, and `tools/shipflow_metadata_lint.py`. Parallel documentation work is allowed only when a ready spec defines disjoint file ownership.
+Shared files are sequential integration files by default: `shipflow_data/technical/code-docs-map.md`, `AGENT.md`, `shipflow_data/technical/context.md`, `shipflow_data/technical/guidelines.md`, `shipflow-spec-driven-workflow.md`, and `tools/shipflow_metadata_lint.py`. Parallel documentation work is allowed only when a ready spec defines disjoint file ownership.
 
-`AGENT.md` remains the canonical agent entrypoint. `AGENTS.md`, when present, is a compatibility symlink to `AGENT.md`, not a second maintained Markdown source. `docs/technical/` remains internal-only in v1 and must not be published to the public site.
+`AGENT.md` remains the canonical agent entrypoint. `AGENTS.md`, when present, is a compatibility symlink to `AGENT.md`, not a second maintained Markdown source. `shipflow_data/technical/` remains internal-only in v1 and must not be published to the public site.
 
 ## Editorial Content Governance Layer
 
-ShipFlow maintains a public-content governance layer under `docs/editorial/`.
+ShipFlow maintains a public-content governance layer under `shipflow_data/editorial/`.
 
-- `CONTENT_MAP.md` remains the canonical content routing map.
-- `docs/editorial/README.md` indexes public-content governance docs.
-- `docs/editorial/public-surface-map.md` maps public pages, README, FAQ, docs overview, public skill pages, and future content surfaces.
-- `docs/editorial/page-intent-map.md` records route intent, CTA, source contracts, and shared-file risk.
-- `docs/editorial/claim-register.md` bounds public claims about security, privacy, compliance, AI reliability, automation, speed, savings, availability, pricing, and business outcomes.
-- `docs/editorial/editorial-update-gate.md` defines the `Editorial Update Plan`, `Claim Impact Plan`, `no editorial impact`, and `pending final copy` statuses.
-- `docs/editorial/astro-content-schema-policy.md` protects Astro content schema and runtime content boundaries.
-- `docs/editorial/blog-and-article-surface-policy.md` requires agents to report `surface missing: blog` when no blog/article surface is declared.
+- `shipflow_data/editorial/content-map.md` remains the canonical content routing map.
+- `shipflow_data/editorial/README.md` indexes public-content governance docs.
+- `shipflow_data/editorial/public-surface-map.md` maps public pages, README, FAQ, docs overview, public skill pages, and future content surfaces.
+- `shipflow_data/editorial/page-intent-map.md` records route intent, CTA, source contracts, and shared-file risk.
+- `shipflow_data/editorial/claim-register.md` bounds public claims about security, privacy, compliance, AI reliability, automation, speed, savings, availability, pricing, and business outcomes.
+- `shipflow_data/editorial/editorial-update-gate.md` defines the `Editorial Update Plan`, `Claim Impact Plan`, `no editorial impact`, and `pending final copy` statuses.
+- `shipflow_data/editorial/astro-content-schema-policy.md` protects Astro content schema and runtime content boundaries.
+- `shipflow_data/editorial/blog-and-article-surface-policy.md` requires agents to report `surface missing: blog` when no blog/article surface is declared.
 
 When a wave changes visible behavior, public content, README guidance, public docs, FAQ, pricing, support copy, public skill promises, or claims, the Editorial Reader produces an `Editorial Update Plan`. Sensitive claims also get a `Claim Impact Plan`.
 
@@ -257,7 +258,7 @@ The Editorial Reader is read-only. It diagnoses public-content impact; an execut
 
 Future projects should not rerun ShipFlow's shipped technical or editorial governance specs as manual per-project chantiers. Those specs are source doctrine. The normal project workflow uses lightweight project-local corpora:
 
-- `sf-init` bootstraps `docs/technical/`, `docs/technical/code-docs-map.md`, `CONTENT_MAP.md`, and applicable `docs/editorial/` files, or reports `skipped`, `needs audit`, or `blocked` with a recovery command.
+- `sf-init` bootstraps `shipflow_data/technical/`, `shipflow_data/technical/code-docs-map.md`, `shipflow_data/editorial/content-map.md`, and applicable `shipflow_data/editorial/` files, or reports `skipped`, `needs audit`, or `blocked` with a recovery command.
 - `sf-docs` owns ongoing corpus creation, first-run bootstrap, update, and audit. Use `/sf-docs technical`, `/sf-docs editorial`, or `/sf-docs update` to adopt missing governance layers in existing projects.
 - `sf-build` consumes the corpora through a Governance Corpus Gate before implementation and before closure/ship when public-content impact is relevant. Missing or stale corpus state routes to `sf-docs` or blocks instead of relying on chat memory.
 
@@ -295,7 +296,7 @@ Audit skills keep findings first. In user mode, they summarize top findings, pro
 
 ## Specs As Chantier Registry
 
-`specs/` is the global registry for spec-first chantiers. A chantier spec is not only an implementation contract; it also keeps the durable run history for the skills that acted on that chantier.
+`shipflow_data/workflow/specs/` is the global registry for spec-first chantiers. A chantier spec is not only an implementation contract; it also keeps the durable run history for the skills that acted on that chantier.
 
 Each chantier spec should expose:
 
@@ -379,7 +380,7 @@ Location rule:
   - historical completed context
 - Do not copy completed historical entries from the master tracker into the local active backlog.
 - Per-project decision artifacts belong in the project repository that they govern.
-- `BUSINESS.md`, `BRANDING.md`, `CONTENT_MAP.md`, `GUIDELINES.md`, project competitor/inspiration registries, affiliate/referral/partner registries, specs, research, and decision records should be edited and versioned in the repo they affect, not duplicated into `shipflow_data`.
+- `shipflow_data/business/business.md`, `shipflow_data/business/branding.md`, `shipflow_data/editorial/content-map.md`, `shipflow_data/technical/guidelines.md`, project competitor/inspiration registries, affiliate/referral/partner registries, specs, research, and decision records should be edited and versioned in the repo they affect, not duplicated into an external master data directory.
 - If `shipflow_data` needs visibility, add a reference or inventory entry, not a second canonical copy.
 
 Skill-aligned artifact templates live in `templates/artifacts/`. They should encode the structures expected by the active skills (`sf-spec`, `sf-ready`, `sf-verify`, `sf-review`, `sf-research`) instead of replacing those conventions. The current templates cover:
@@ -415,7 +416,7 @@ The linter is intentionally dependency-free. It checks the default ShipFlow arti
 
 When a skill runs from a project repository, ShipFlow-owned docs, tools, references, templates, and skill-local `references/*` still resolve from `${SHIPFLOW_ROOT:-$HOME/shipflow}`. Only project artifacts and source files resolve from the current project root.
 
-This decision-contract layer is wired into the active ShipFlow workflow: agent routing (`AGENT.md`), project orientation (`CONTEXT.md`), documentation doctrine (`README.md`, this file, `shipflow-metadata-migration-guide.md`), the `sf-docs` skill, and `tools/shipflow_metadata_lint.py`.
+This decision-contract layer is wired into the active ShipFlow workflow: agent routing (`AGENT.md`), project orientation (`shipflow_data/technical/context.md`), documentation doctrine (`README.md`, this file, `shipflow-metadata-migration-guide.md`), the `sf-docs` skill, and `tools/shipflow_metadata_lint.py`.
 
 ## Language Doctrine
 
@@ -458,7 +459,7 @@ Specialized context docs can extend this layer when a repo contains a large proc
 
 `shipflow_data/editorial/content-map.md` extends the context layer for content-heavy projects. It maps blog surfaces, docs, landing pages, FAQs, semantic clusters, pillar pages, and cross-surface update rules so content skills can route output without rediscovering the repository structure in every thread.
 
-`docs/editorial/` extends that map with content governance: public content impact, claim register, page intent, editorial update gates, Astro content schema policy, and blog/article surface stop conditions.
+`shipflow_data/editorial/` extends that map with content governance: public content impact, claim register, page intent, editorial update gates, Astro content schema policy, and blog/article surface stop conditions.
 
 This layer exists to reduce repeated discovery work in fresh threads. It is not a substitute for reading code. If a context doc and the code disagree, the code wins and the context doc should be updated.
 
@@ -471,7 +472,7 @@ ShipFlow also separates decision contracts by role to avoid turning one document
 - `shipflow_data/business/branding.md` defines voice, trust posture, vocabulary, and claims boundaries.
 - `shipflow_data/business/gtm.md` defines public promise, acquisition channels, proof points, objections, and funnel assumptions.
 - `shipflow_data/editorial/content-map.md` defines content surfaces, semantic clusters, pillar pages, and repurposing destinations.
-- `docs/editorial/` defines public-content governance, claims, page intent, and runtime content schema boundaries.
+- `shipflow_data/editorial/` defines public-content governance, claims, page intent, and runtime content schema boundaries.
 - `shipflow_data/technical/architecture.md` defines system organization, flows, boundaries, and structural invariants.
 - `shipflow_data/technical/guidelines.md` defines engineering and documentation rules for contributors.
 
@@ -484,8 +485,8 @@ In practice, this clarifies the product surface:
 - `shipflow_data/business/branding.md` = how we speak
 - `shipflow_data/business/gtm.md` = how we present and distribute it
 - `shipflow_data/editorial/content-map.md` = where content lives / how ideas move across surfaces
-- `docs/editorial/` = content governance / claims / page intent / Astro content
-- `ARCHITECTURE.md` = how it is organized
+- `shipflow_data/editorial/` = content governance / claims / page intent / Astro content
+- `shipflow_data/technical/architecture.md` = how it is organized
 - `shipflow_data/technical/guidelines.md` = how we work inside it
 
 Documentation role map:
@@ -495,7 +496,7 @@ Documentation role map:
 - `shipflow_data/technical/context.md` -> operational map of the system
 - `shipflow_data/technical/context-function-tree.md` -> structural index for large procedural files
 - `shipflow_data/editorial/content-map.md` -> editorial map for blog, docs, landing pages, semantic clusters, and repurposing destinations
-- `docs/editorial/` -> content governance for public content, claims, page intent, editorial update gates, and Astro runtime-content schema boundaries
+- `shipflow_data/editorial/` -> content governance for public content, claims, page intent, editorial update gates, and Astro runtime-content schema boundaries
 - `CLAUDE.md` -> critical repository constraints and rules
 - `shipflow-spec-driven-workflow.md` -> ShipFlow work doctrine
 - `shipflow-metadata-migration-guide.md` -> frontmatter migration procedure
@@ -575,10 +576,10 @@ Specs should record the artifact versions they depend on:
 
 ```yaml
 depends_on:
-  - artifact: BUSINESS.md
+  - artifact: shipflow_data/business/business.md
     artifact_version: "1.2.0"
     required_status: reviewed
-  - artifact: BRANDING.md
+  - artifact: shipflow_data/business/branding.md
     artifact_version: "1.0.0"
     required_status: reviewed
   - artifact: docs/API.md
@@ -594,7 +595,7 @@ The metadata must not pretend certainty. If an artifact is inferred from old fil
 
 ShipFlow treats business documentation as technical documentation because agents use it to make technical choices.
 
-`BUSINESS.md`, `BRANDING.md`, `GUIDELINES.md`, personas, market studies, pricing notes, positioning docs, and GTM docs influence:
+`shipflow_data/business/business.md`, `shipflow_data/business/branding.md`, `shipflow_data/technical/guidelines.md`, personas, market studies, pricing notes, positioning docs, and GTM docs influence:
 
 - what user story a feature should serve
 - what copy and UX should promise
@@ -642,7 +643,7 @@ evidence:
   - "user interview notes"
   - "current product positioning"
 linked_artifacts:
-  - "BRANDING.md"
+  - "shipflow_data/business/branding.md"
   - "shipflow-spec-driven-workflow.md"
 depends_on: []
 supersedes: []

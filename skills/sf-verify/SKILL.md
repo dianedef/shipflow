@@ -157,7 +157,7 @@ Vérifier que les artefacts ShipFlow utilisés pour implémenter le travail sont
 
 **Dépendances documentaires versionnées**
 - Lire `depends_on` dans le frontmatter de la spec.
-- Pour chaque dépendance business ou technique (`shipflow_data/business/business.md`, `shipflow_data/business/branding.md`, `shipflow_data/technical/guidelines.md`, docs API, architecture, pricing, personas, GTM docs, onboarding, support docs; fallback legacy root docs when named in an older spec) :
+- Pour chaque dépendance business ou technique (`shipflow_data/business/business.md`, `shipflow_data/business/branding.md`, `shipflow_data/business/product.md`, `shipflow_data/business/gtm.md`, `shipflow_data/technical/architecture.md`, `shipflow_data/technical/guidelines.md`, docs API, pricing, personas, onboarding, support docs) :
   - vérifier que `artifact_version` est renseigné, ou explicitement `unknown` avec dette signalée
   - vérifier que `required_status` est renseigné quand la spec l'exige
   - ouvrir le fichier référencé si présent et lire son frontmatter ShipFlow quand il existe
@@ -170,7 +170,7 @@ Vérifier que les artefacts ShipFlow utilisés pour implémenter le travail sont
 
 **Implémentation contre contrat périmé**
 - Déterminer si le code a été implémenté contre une spec dont les dépendances documentaires ont changé depuis la version référencée.
-- Nommer explicitement les docs concernées : chemins canoniques `shipflow_data/...` ou fallback legacy (`BUSINESS.md`, `BRANDING.md`, `GUIDELINES.md`), docs API, architecture docs, pricing/persona/GTM docs.
+- Nommer explicitement les docs concernées : chemins canoniques `shipflow_data/...`, docs API, architecture docs, pricing/persona/GTM docs. Si une spec ancienne nomme `BUSINESS.md`, `BRANDING.md`, `GUIDELINES.md` ou un autre fichier racine ShipFlow, signaler une dette `layout migration` au lieu de considérer ce chemin comme conforme.
 - Le rapport doit dire : `implemented against current docs`, `implemented against outdated docs`, `dependency version unknown`, ou `not applicable`.
 
 **Résultat** : metadata valides / dette metadata / contrat documentaire périmé avec preuves
@@ -259,7 +259,7 @@ Règle de verdict:
 
 ### Step 6.1 — Vérifier la doctrine de langue ShipFlow
 
-Quand le scope touche des artefacts ShipFlow, des skills, des specs, des rapports, des docs techniques, des prompts utilisateur ou de la copie visible produit, lire `shipflow_data/technical/guidelines.md` (fallback legacy `GUIDELINES.md`) et `shipflow-spec-driven-workflow.md` si présents, puis vérifier :
+Quand le scope touche des artefacts ShipFlow, des skills, des specs, des rapports, des docs techniques, des prompts utilisateur ou de la copie visible produit, lire `shipflow_data/technical/guidelines.md` si présent. Un root `GUIDELINES.md` est une source de migration seulement; le signaler comme dette `layout migration` s'il est le seul contexte disponible. Lire aussi `shipflow-spec-driven-workflow.md` si présent, puis vérifier :
 - les contrats internes ShipFlow attendus sont en anglais : `SKILL.md` instructions, workflow rules, YAML/frontmatter keys, stable section headings, acceptance criteria, stop conditions, validation notes, technical decision docs
 - les questions, progress updates, rapports finaux, onboarding copy et product-visible text sont dans la langue active de l'utilisateur ou du projet
 - si la langue active est le français, le texte user-facing utilise un français naturel avec accents corrects; l'absence d'accents est acceptable seulement pour identifiants techniques, commandes, slugs ou formats ASCII-only

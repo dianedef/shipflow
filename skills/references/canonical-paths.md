@@ -1,10 +1,10 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: ShipFlow
 created: "2026-04-27"
-updated: "2026-04-27"
+updated: "2026-05-11"
 status: active
 source_skill: sf-start
 scope: canonical-path-resolution
@@ -22,6 +22,7 @@ depends_on: []
 supersedes: []
 evidence:
   - "Repeated skill path-resolution failures when running from project repositories"
+  - "Project governance layout decision moved ShipFlow artifacts out of project roots and into shipflow_data/."
 next_review: "2026-05-27"
 next_step: "/sf-verify canonical path policy"
 ---
@@ -53,11 +54,33 @@ ShipFlow skills often run from a project repository, but ShipFlow-owned tools an
   - `CLAUDE.md`
   - `README.md`
   - `AGENTS.md` (must be a compatibility symlink to `AGENT.md`)
+  - `CHANGELOG.md` (optional public/project changelog)
 
 - `shipflow_data/` remains the project-local governance corpus for this phase; the external `${SHIPFLOW_DATA_DIR:-$HOME/shipflow_data}` remains out of scope as project-document source of truth.
 - `shipflow_data/workflow/` holds project-level workflow artifacts such as `specs/`, `bugs/`, `audits/`, `reviews/`, `verification/`, and project-local operational trackers.
-- Files like `TASKS.md`, `AUDIT_LOG.md`, and `PROJECTS.md` are still master-tracker artifacts in `${SHIPFLOW_DATA_DIR:-$HOME/shipflow_data}` unless a project explicitly adopts local equivalents in its `shipflow_data/workflow/`.
+- Project-local `TASKS.md` and `AUDIT_LOG.md` live at `shipflow_data/workflow/TASKS.md` and `shipflow_data/workflow/AUDIT_LOG.md`. Root `TASKS.md` and `AUDIT_LOG.md` are legacy project tracker locations unless an external project tool explicitly requires them.
+- `PROJECTS.md` remains a master-tracker artifact in `${SHIPFLOW_DATA_DIR:-$HOME/shipflow_data}` unless a project explicitly defines a local registry need.
+- Legacy root ShipFlow governance files such as `BUSINESS.md`, `PRODUCT.md`, `BRANDING.md`, `GTM.md`, `ARCHITECTURE.md`, `CONTENT_MAP.md`, `CONTEXT.md`, `CONTEXT-FUNCTION-TREE.md`, `GUIDELINES.md`, `TASKS.md`, and `AUDIT_LOG.md` are migration sources only. They are not compliant project artifact locations.
 - If a ShipFlow-owned file is missing from `$SHIPFLOW_ROOT`, report a ShipFlow installation gap. Do not report it missing just because it is absent from the project repository.
+
+## Canonical Project Artifact Map
+
+| Legacy root file | Canonical project path |
+| --- | --- |
+| `BUSINESS.md` | `shipflow_data/business/business.md` |
+| `PRODUCT.md` | `shipflow_data/business/product.md` |
+| `BRANDING.md` | `shipflow_data/business/branding.md` |
+| `GTM.md` | `shipflow_data/business/gtm.md` |
+| `INSPIRATION.md` | `shipflow_data/business/project-competitors-and-inspirations.md` |
+| `AFFILIATES.md` | `shipflow_data/business/affiliate-programs.md` |
+| `CONTEXT.md` | `shipflow_data/technical/context.md` |
+| `CONTEXT-FUNCTION-TREE.md` | `shipflow_data/technical/context-function-tree.md` |
+| `ARCHITECTURE.md` | `shipflow_data/technical/architecture.md` |
+| `GUIDELINES.md` | `shipflow_data/technical/guidelines.md` |
+| `CONTENT_MAP.md` | `shipflow_data/editorial/content-map.md` |
+| `TASKS.md` | `shipflow_data/workflow/TASKS.md` |
+| `AUDIT_LOG.md` | `shipflow_data/workflow/AUDIT_LOG.md` |
+| `specs/*.md` | `shipflow_data/workflow/specs/*.md` |
 
 ## Command Pattern
 

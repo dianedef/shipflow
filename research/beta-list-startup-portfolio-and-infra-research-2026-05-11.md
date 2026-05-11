@@ -5,12 +5,12 @@ created: "2026-05-11"
 updated: "2026-05-11"
 status: reviewed
 source_skill: sf-research
-scope: "Betalist startup roundup + Flutter/Flutter blog + Sentry + Blacksmith + DataForSEO + Web-Analytics"
+scope: "Betalist startup roundup + DataForSEO + Web-Analytics"
 confidence: "medium"
 risk_level: "low"
 security_impact: "yes"
 docs_impact: "yes"
-source_count: 34
+source_count: 30
 evidence:
   - "https://betalist.com/startups/diffhook"
   - "https://betalist.com/startups/mindry"
@@ -40,27 +40,23 @@ evidence:
   - "https://betalist.com/startups/vitality-ai-health"
   - "https://betalist.com/startups/impulse-ai"
   - "https://web-analytics.ai/"
-  - "https://docs.blacksmith.sh/blacksmith-caching/dependencies-actions"
-  - "https://docs.blacksmith.sh/blacksmith-observability/logs"
-  - "https://docs.sentry.io/platforms/dart/guides/flutter/"
-  - "https://blog.flutter.dev/thats-a-wrap-everything-flutter-at-google-cloud-next-1f4d3c6c6a6e"
   - "https://dataforseo.com/help-center/live-vs-standard-method/amp"
 next_step: "Prioritize the startup list into an evaluation shortlist, then run technical due diligence on 3-5 highest-value candidates against fit, cost, and risk before any pilots."
 ---
 
-# Research: BetaList + Infrastructure/Dev Tool Stack Signals (2026-05-11)
+# Research: BetaList + Data/Analytics Signals (2026-05-11)
 
-> Generated 2026-05-11 — Sources: 34
+> Generated 2026-05-11 — Sources: 30
 
 ## Executive Summary
 
-The provided links split into three buckets: a fresh BetaList startup stream (mostly AI assistants, observability, creator tools, and infra utilities), plus platform updates/docs for Flutter/Sentry, plus concrete infrastructure tooling evidence from Blacksmith. Most startup entries feature around Apr–May 2026 and are positioned as early-stage commercial offerings with productized marketing claims.
+The provided links split into two buckets: a fresh BetaList startup stream (mostly AI assistants, observability, creator tools, and infra utilities), plus data/analytics tooling signals from Web-Analytics.ai and DataForSEO. Most startup entries feature around Apr-May 2026 and are positioned as early-stage commercial offerings with productized marketing claims.
 
-For immediate decisions, treat these startup entries as **lead data, not verified production signals**, and validate security/compliance and pricing/availability before piloting. The non-startup sources are more dependable for implementation: Blacksmith claims transparent caching/log observability improvements, and Sentry gives concrete Flutter integration steps.
+For immediate decisions, treat these startup entries as **lead data, not verified production signals**, and validate security/compliance and pricing/availability before piloting. The non-startup sources are useful as product references: Web-Analytics.ai shows a plain-language analytics workflow, while DataForSEO gives older context on API method tradeoffs.
 
 ## Background
 
-The user provided mostly outbound links, likely to evaluate whether these startups are worth tracking for potential adoption or comparison. Separately, several docs links are about execution plumbing: error/perf observability, network traversal tooling, and API strategy.
+The user provided mostly outbound links, likely to evaluate whether these startups are worth tracking for potential adoption or comparison. Separately, the remaining non-startup links are about analytics and API strategy.
 
 ## Current State (2026)
 
@@ -72,11 +68,9 @@ The user provided mostly outbound links, likely to evaluate whether these startu
 - **Health/consumer AI and personal productivity also present**: Betula (AI assistant), Vitality AI Health, rembr, and Photo Poodle are examples.
 - **Feature dates cluster in Apr-May 2026**: multiple BetaList pages explicitly show dates around April 17–26 and May 2, 2026.
 
-### Platform and infra baseline
+### Data and analytics baseline
 
-- **Flutter ecosystem**: Google announced notable Flutter-related news at Cloud Next 2026, including Full-stack Dart preview announcements and generative UI direction (GenUI), indicating sustained investment in Flutter + AI adjacent capabilities.
-- **Sentry Flutter SDK**: current page exposes install and verification snippets for Dart/Flutter; latest package shown as `sentry_flutter` version **9.14.0**.
-- **Blacksmith**: docs now emphasize 4x faster colocated caching and richer CI log search/filtering with built-in field filters and query syntax.
+- **Web-Analytics.ai**: positions itself around plain-language weekly analytics briefings and anomaly alerts, useful as a benchmark for analytics-summary workflows.
 - **DataForSEO article age**: the referenced content states “5 years ago” and is not specifically dated 2026, so any cost/latency comparison from it should be treated as older context.
 
 ## Options / Approaches
@@ -105,12 +99,12 @@ The user provided mostly outbound links, likely to evaluate whether these startu
 ### Option 3: Technical stack-aligned decision
 - **Pros**: Leverages the most dependable sources and reduces integration mismatch.
 - **Cons**: Requires engineering bandwidth and may narrow option set.
-- **Best for**: teams already running Flutter and GitHub Actions.
+- **Best for**: teams evaluating analytics summaries or SEO/API data workflows.
 - **Example**:
   ```yaml
-priorities:
-    - observability: sentry_flutter + logs/tracing/replay where needed
-    - CI efficiency: Blacksmith cache actions + log query playbooks
+  priorities:
+    - analytics: compare Web-Analytics.ai style summaries with internal reporting needs
+    - API data: treat DataForSEO live-vs-standard article as historical context pending current docs
   ```
 
 ## Best Practices
@@ -118,52 +112,13 @@ priorities:
 1. Separate **marketing claims** from **implementation evidence**. Startup pages are useful for intent but not compliance proof.
 2. For any new production tooling, require: security review, permission model clarity, rollback path, and pricing floor/overage analysis.
 3. Validate startup claims against primary docs and direct pricing pages before contacting sales.
-4. For observability and CI, use documented query patterns and explicit feature toggles (e.g., Blacksmith logs filters, Sentry sampling settings).
-5. Prefer current release pages/API docs over older third-party summaries.
-
-## Code Examples
-
-### Sentry Flutter setup (official docs)
-```bash
-brew install getsentry/tools/sentry-wizard && sentry-wizard -i flutter
-```
-
-```dart
-import 'package:flutter/widgets.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
-
-await SentryFlutter.init(
-  (options) {
-    options.dsn = '___PUBLIC_DSN___';
-    options.sendDefaultPii = true;
-    options.tracesSampleRate = 1.0;
-    options.profilesSampleRate = 1.0;
-    options.enableLogs = true;
-    options.replay.onErrorSampleRate = 1.0;
-    options.replay.sessionSampleRate = 0.1;
-  },
-  appRunner: () => runApp(SentryWidget(child: MyApp())),
-);
-```
-
-```dart
-try {
-  throw StateError('Sentry Test Exception');
-} catch (exception, stackTrace) {
-  await Sentry.captureException(exception, stackTrace: stackTrace);
-}
-```
-
-### Blacksmith logs query syntax (docs-derived)
-```text
-branch:main level:error,warn
-```
+4. Prefer current release pages/API docs over older third-party summaries.
 
 ## Recommendations
 
 1. **Classify all BetaList entries as discovery signals** until validated with primary docs, contracts, and live tests.
 2. **Prioritize three candidates for next-week follow-up**: myGEOscore, Conscriba, and AutoKap.
-3. **Apply infra baseline immediately** if in Flutter/GitHub ecosystem: Blacksmith caching/logs + Sentry Flutter configuration.
+3. **Use Web-Analytics.ai as a product reference** for lightweight executive analytics summaries and anomaly alerts.
 4. **Treat the DataForSEO article as historical context** only unless a newer publish/version is retrieved.
 
 ## Sources
@@ -195,10 +150,6 @@ branch:main level:error,warn
 - [Vitality AI Health](https://betalist.com/startups/vitality-ai-health) — wearables + lab + records aggregation.
 - [Impulse AI](https://betalist.com/startups/impulse-ai) — one-day production AI model path claims.
 - [Web-Analytics.ai](https://web-analytics.ai/) — plain-language weekly insights and anomaly alerts.
-- [Blacksmith dependency cache](https://docs.blacksmith.sh/blacksmith-caching/dependencies-actions) — colocated cache behavior and pricing notes.
-- [Blacksmith CI logs](https://docs.blacksmith.sh/blacksmith-observability/logs) — searchable CI log filtering and no-cost feature statement.
-- [Sentry for Flutter](https://docs.sentry.io/platforms/dart/guides/flutter/) — SDK setup, DSN/tracing, and verify snippet.
-- [Flutter at Cloud Next 2026](https://blog.flutter.dev/thats-a-wrap-everything-flutter-at-google-cloud-next-1f4d3c6c6a6e) — Full-stack Dart preview mention and AI-related sessions.
 - [DataForSEO Live vs Standard](https://dataforseo.com/help-center/live-vs-standard-method/amp) — older API mode comparison.
 
 ## Chantier potentiel

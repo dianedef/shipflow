@@ -1,10 +1,10 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "0.2.0"
+artifact_version: "0.3.1"
 project: ShipFlow
 created: "2026-05-10"
-updated: "2026-05-10"
+updated: "2026-05-11"
 status: draft
 source_skill: sf-docs
 scope: blacksmith-ci-observability-and-apk-builds
@@ -20,13 +20,16 @@ linked_systems:
   - Tauri mobile builds
   - Flutter Android builds
   - socialflow/.github/workflows/dev-builds.yml
+  - voiceflowz/.github/workflows/android-build.yml
 depends_on: []
 supersedes: []
 evidence:
   - "Official Blacksmith docs reviewed on 2026-05-10: Quickstart, Instance Types, Logs, Run History, SSH Access, Monitors, Metrics, Test Analytics, Actions cache, Sticky Disks, Static IP, Network & IP Allowlisting, Testboxes."
+  - "Official Blacksmith docs rechecked on 2026-05-11: Actions cache, Logs, Run History, and Testboxes pages still support the current guidance; legacy useblacksmith cache forks are archived and upstream GitHub actions are preferred."
   - "Local SocialFlow workflow observed with Android debug APK build on blacksmith-2vcpu-ubuntu-2404."
+  - "Local VoiceFlowz workflow observed with Flutter Android CI and Firestore deploy jobs on blacksmith-2vcpu-ubuntu-2404."
   - "Operator confirmed on 2026-05-10 that Blacksmith SSH Access has been authorized."
-next_review: "2026-06-10"
+next_review: "2026-06-11"
 next_step: "/sf-spec Blacksmith APK build observability"
 ---
 
@@ -90,7 +93,9 @@ Copy the full command from the job. The SSH port can differ between jobs, so do 
 
 If the job finishes too quickly, add a failure-only keepalive step or configure a Blacksmith Monitor with VM retention before the next run you want to inspect. Once Blacksmith has shut down a runner, the ephemeral `*.vm.blacksmith.sh` hostname may stop resolving and SSH is no longer possible.
 
-## Known Project Example
+## Known Project Examples
+
+### SocialFlow
 
 `socialflow/.github/workflows/dev-builds.yml` already contains an `android-debug` job that:
 
@@ -102,6 +107,23 @@ If the job finishes too quickly, add a failure-only keepalive step or configure 
 - uploads APK outputs from `src-tauri/gen/android/app/build/outputs/**/*.apk`
 
 This is the right workflow shape for daily phone testing. The Blacksmith-specific improvement is mostly observability and runner sizing, not a different APK delivery mechanism.
+
+### VoiceFlowz
+
+`voiceflowz/.github/workflows/android-build.yml` contains two jobs that already run on Blacksmith:
+
+- `build` / `Analyze, Test, Build APK` runs on `blacksmith-2vcpu-ubuntu-2404`.
+- `firebase` / `Deploy Firestore Rules and Indexes` runs on `blacksmith-2vcpu-ubuntu-2404`.
+- The Android job uses current upstream GitHub actions: `actions/checkout@v6`, `actions/setup-java@v5`, `subosito/flutter-action@v2`, and `actions/upload-artifact@v7`.
+- The Android job runs `flutter pub get`, `flutter analyze`, `flutter test`, `flutter build apk --debug`, checks `build/app/outputs/flutter-apk/app-debug.apk`, and uploads `voiceflowz-debug-apk`.
+- The Android job injects Firebase client configuration and Sentry build/runtime identifiers through GitHub Secrets and Dart defines.
+- The Firestore job uses GitHub OIDC with `google-github-actions/auth@v3`, installs `firebase-tools@15.17.0`, validates required secrets, and deploys Firestore rules/indexes.
+
+VoiceFlowz is therefore already integrated with Blacksmith for the current Android APK and Firestore deploy needs. The remaining Blacksmith-specific improvements are operational:
+
+- Add a manual failure-only keepalive step only when live SSH debugging is needed for a significant bug.
+- Use Logs queries such as `repo:voiceflowz workflow:"Flutter Android CI" level:error,warn` and `repo:voiceflowz job_name:"Analyze, Test, Build APK" "Execution failed"` when debugging failed runs.
+- Check Metrics before moving VoiceFlowz from `blacksmith-2vcpu-ubuntu-2404` to a larger runner.
 
 ## Useful Blacksmith Features
 
@@ -144,6 +166,12 @@ repo:socialflow "OutOfMemory"
 repo:socialflow "SIGKILL"
 repo:socialflow "NDK"
 repo:socialflow "tauri android build"
+repo:voiceflowz branch:main level:error,warn
+repo:voiceflowz workflow:"Flutter Android CI" level:error,warn
+repo:voiceflowz job_name:"Analyze, Test, Build APK" level:error,warn
+repo:voiceflowz step_name:"Build debug APK" "Execution failed"
+repo:voiceflowz "SENTRY_DSN"
+repo:voiceflowz "app-debug.apk"
 ```
 
 Current docs describe this as a dashboard capability. No public `blacksmith logs` CLI command was found in the official pages reviewed on 2026-05-10.
@@ -188,6 +216,43 @@ Recommended workflow step for debug-only retention:
 ```
 
 Place this near the end of the job you want to debug, after the build and artifact-upload steps. It still runs when an earlier step failed because the step condition is `failure()`. Do not add this to successful builds. It burns runner minutes and delays workflow completion.
+
+### Manual Keepalive Pattern
+
+Do not keep failed runners alive by default in daily workflows. A 30-minute `sleep` keeps the Blacksmith runner billable and delays completion for every failure. Use a manual keepalive only when a native Android, SDK, Gradle, signing, or environment failure cannot be diagnosed from Logs, Run History, artifact checks, and Metrics.
+
+Preferred pattern:
+
+```yaml
+on:
+  workflow_dispatch:
+    inputs:
+      keepalive_on_failure:
+        description: "Keep the runner alive after failure for SSH debugging"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+```
+
+Add the retention step near the end of the specific job:
+
+```yaml
+- name: Keep runner available for SSH debugging
+  if: failure() && github.event_name == 'workflow_dispatch' && inputs.keepalive_on_failure == 'true'
+  run: |
+    echo "Manual keepalive enabled. Use the Blacksmith Setup runner SSH command."
+    sleep 1800
+```
+
+Rules:
+
+- Default must stay `false`.
+- Do not enable this for normal push or pull request runs.
+- Do not combine it with Slack or VM retention unless the operator explicitly asks.
+- Before using it, record the target run, failing step, and query tried in Blacksmith Logs.
 
 ## Monitors
 

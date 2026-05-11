@@ -26,8 +26,12 @@ BASE_DEFAULT_TARGETS = (
     "ARCHITECTURE.md",
     "GTM.md",
     "GUIDELINES.md",
+    "TASKS.md",
+    "AUDIT_LOG.md",
 )
 LEGACY_ROOT_CANONICAL = {
+    "AUDIT_LOG.md": "shipflow_data/workflow/AUDIT_LOG.md",
+    "AFFILIATES.md": "shipflow_data/business/affiliate-programs.md",
     "ARCHITECTURE.md": "shipflow_data/technical/architecture.md",
     "BRANDING.md": "shipflow_data/business/branding.md",
     "BUSINESS.md": "shipflow_data/business/business.md",
@@ -36,7 +40,9 @@ LEGACY_ROOT_CANONICAL = {
     "CONTEXT.md": "shipflow_data/technical/context.md",
     "GTM.md": "shipflow_data/business/gtm.md",
     "GUIDELINES.md": "shipflow_data/technical/guidelines.md",
+    "INSPIRATION.md": "shipflow_data/business/project-competitors-and-inspirations.md",
     "PRODUCT.md": "shipflow_data/business/product.md",
+    "TASKS.md": "shipflow_data/workflow/TASKS.md",
 }
 VALID_STATUSES = {"draft", "reviewed", "ready", "active", "stale", "superseded"}
 VALID_CONFIDENCE = {"low", "medium", "high", "unknown"}
@@ -209,6 +215,8 @@ def read_frontmatter(path: Path) -> tuple[dict[str, str], list[str]]:
 
 
 def should_lint(path: Path, fields: dict[str, str], all_markdown: bool) -> bool:
+    if len(path.parts) == 1 and path.name in LEGACY_ROOT_CANONICAL:
+        return True
     if path.name in SKIP_ARTIFACT_TRACKERS:
         return False
     if all_markdown:

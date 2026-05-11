@@ -122,7 +122,7 @@ If `spec-first` and no matching `Status: ready` spec exists:
   - fresh external docs verdict when the task depends on external documented behavior: dependency/service, local version when available, Context7 or official docs source, and whether the implementation path is supported
   - abuse cases / misuse cases and security constraints when present
   - validation commands and stop conditions
-- For every business or technical contract listed in `depends_on` (`shipflow_data/business/business.md`, `shipflow_data/business/branding.md`, `shipflow_data/technical/guidelines.md`, docs API, architecture, pricing, personas, GTM docs, onboarding/support docs; fallback legacy root docs when named in an older spec):
+- For every business or technical contract listed in `depends_on` (`shipflow_data/business/business.md`, `shipflow_data/business/branding.md`, `shipflow_data/business/product.md`, `shipflow_data/business/gtm.md`, `shipflow_data/technical/architecture.md`, `shipflow_data/technical/guidelines.md`, docs API, pricing, personas, onboarding/support docs):
   - preserve the referenced `artifact_version` and `required_status` in the execution context
   - read the current file when it is present and its version/status may affect the implementation
   - stop and route back to `/sf-ready` if the current document is `stale`, has a newer incompatible `artifact_version`, or contradicts the spec
@@ -146,6 +146,7 @@ If `spec-first` and no matching `Status: ready` spec exists:
 - If the spec is missing any of the above, stop and route back to `/sf-ready` or `/sf-spec`
 - If a non-trivial spec lacks `Minimal Behavior Contract`, `Success Behavior`, `Error Behavior`, implementation approach, adversarial gaps, or explicit constraints, stop and route back to `/sf-ready` or `/sf-spec`
 - If the spec is missing required metadata/version context, treat it as a contract gap. Continue only for trivial/local work where the missing metadata cannot change product or security semantics; otherwise route back to `/sf-ready`.
+- If the spec names root legacy governance files such as `BUSINESS.md`, `CONTEXT.md`, or `GUIDELINES.md`, treat them as legacy references and add a layout migration note. Do not create new root governance files.
 - If the implementation path would satisfy the listed tasks but miss the user story outcome, stop and reroute instead of coding the wrong thing efficiently
 - If the remaining ambiguity is product-meaningful or security-meaningful, ask the user instead of "picking a sensible default"
 - Read only the files needed to implement plus the linked systems that must be sanity-checked

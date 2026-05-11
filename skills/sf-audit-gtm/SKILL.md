@@ -31,8 +31,8 @@ Default to `report=user`: concise, findings-first, and focused on top issues, pr
 
 - Current directory: !`pwd`
 - Project CLAUDE.md: !`head -100 CLAUDE.md 2>/dev/null || echo "no CLAUDE.md"`
-- Business context: !`if [ -f shipflow_data/business/business.md ]; then head -60 shipflow_data/business/business.md; else head -60 BUSINESS.md 2>/dev/null || echo "no shipflow_data/business/business.md (and no legacy BUSINESS.md) — run /sf-init or /sf-docs update"; fi`
-- Brand voice: !`if [ -f shipflow_data/business/branding.md ]; then head -60 shipflow_data/business/branding.md; else head -60 BRANDING.md 2>/dev/null || echo "no shipflow_data/business/branding.md (and no legacy BRANDING.md) — run /sf-init or /sf-docs update"; fi`
+- Business context: !`if [ -f shipflow_data/business/business.md ]; then head -60 shipflow_data/business/business.md; else head -60 BUSINESS.md 2>/dev/null || echo "no shipflow_data/business/business.md (root BUSINESS.md is migration source only) — run /sf-init or /sf-docs migrate-layout"; fi`
+- Brand voice: !`if [ -f shipflow_data/business/branding.md ]; then head -60 shipflow_data/business/branding.md; else head -60 BRANDING.md 2>/dev/null || echo "no shipflow_data/business/branding.md (root BRANDING.md is migration source only) — run /sf-init or /sf-docs migrate-layout"; fi`
 - Business metadata: !`for pair in "shipflow_data/business/business.md BUSINESS.md" "shipflow_data/business/branding.md BRANDING.md" "shipflow_data/business/project-competitors-and-inspirations.md -" "shipflow_data/business/affiliate-programs.md -" "shipflow_data/technical/guidelines.md GUIDELINES.md"; do set -- $pair; if [ -f "$1" ]; then f="$1"; elif [ "$2" != "-" ] && [ -f "$2" ]; then f="$2"; else echo "$1: missing optional or no fallback"; continue; fi; printf '%s: ' "$f"; sed -n '1,40p' "$f" | grep -E '^(metadata_schema_version|artifact_version|status|updated|confidence|next_review):' | tr '\n' ' '; printf '\n'; done`
 - All pages: !`find src/pages src/app -name "*.astro" -o -name "*.tsx" -o -name "*.vue" 2>/dev/null | grep -v node_modules | sort`
 - Analytics: !`grep -ri "analytics\|gtag\|plausible\|umami\|posthog\|vercel/analytics" src/ 2>/dev/null | head -10 || echo "no analytics found"`
@@ -41,15 +41,15 @@ Default to `report=user`: concise, findings-first, and focused on top issues, pr
 
 ## Pre-check : contexte business/marque
 
-Avant de commencer, vérifier le contexte chargé ci-dessus. Si BUSINESS.md ou BRANDING.md est absent :
+Avant de commencer, vérifier le contexte chargé ci-dessus. Si `shipflow_data/business/business.md` ou `shipflow_data/business/branding.md` est absent :
 
 **Afficher un avertissement en tête de rapport :**
 ```
 ⚠ Contexte manquant :
-- [BUSINESS.md manquant] L'audit GTM ne peut pas évaluer l'alignement produit-marché sans connaître l'audience cible et le business model.
-- [BRANDING.md manquant] L'audit ne peut pas vérifier la cohérence de la promesse de marque.
+- [shipflow_data/business/business.md manquant] L'audit GTM ne peut pas évaluer l'alignement produit-marché sans connaître l'audience cible et le business model.
+- [shipflow_data/business/branding.md manquant] L'audit ne peut pas vérifier la cohérence de la promesse de marque.
 
-→ Lancer /sf-init pour générer ces fichiers, ou /sf-docs update pour les mettre à jour.
+→ Lancer /sf-init pour générer ces fichiers, ou /sf-docs migrate-layout si d'anciens fichiers racine existent.
 ```
 
 Si les fichiers existent mais semblent incomplets, signaler. Continuer l'audit dans tous les cas.
@@ -58,7 +58,7 @@ Si les fichiers existent mais semblent incomplets, signaler. Continuer l'audit d
 
 ## Metadata versioning doctrine
 
-`BUSINESS.md`, `BRANDING.md`, and `GUIDELINES.md` are ShipFlow decision contracts when present. `shipflow_data/business/project-competitors-and-inspirations.md` and `shipflow_data/business/affiliate-programs.md` are optional ShipFlow decision contracts: absence is acceptable, but presence requires metadata compliance and should affect scoring when the audit touches differentiation, competitor positioning, affiliate monetization, public recommendations, or disclosure. Before scoring:
+`shipflow_data/business/business.md`, `shipflow_data/business/branding.md`, and `shipflow_data/technical/guidelines.md` are ShipFlow decision contracts when present. Root `BUSINESS.md`, `BRANDING.md`, and `GUIDELINES.md` are migration sources only. `shipflow_data/business/project-competitors-and-inspirations.md` and `shipflow_data/business/affiliate-programs.md` are optional ShipFlow decision contracts: absence is acceptable, but presence requires metadata compliance and should affect scoring when the audit touches differentiation, competitor positioning, affiliate monetization, public recommendations, or disclosure. Before scoring:
 - Read their frontmatter or first metadata block and report `artifact_version`, `status`, `updated`, `confidence`, and `next_review` when available.
 - If a contract is missing `artifact_version`, `status`, or `updated`, add a proof gap: `business doc metadata incomplete`.
 - If an optional competitor/inspiration or affiliate registry exists and lacks ShipFlow metadata, add a proof gap: `optional business registry metadata incomplete`.
@@ -109,13 +109,13 @@ Audit ALL commercial projects in the workspace for go-to-market readiness.
 
    Agent prompt must include:
    - `cd [path]` then read `CLAUDE.md` for project context
-   - The absolute date, exact project path, and the GTM context already surfaced by this skill (`BUSINESS.md`, `BRANDING.md`, analytics, auth/payment hints, env hints)
+   - The absolute date, exact project path, and the GTM context already surfaced by this skill (`shipflow_data/business/business.md`, `shipflow_data/business/branding.md`, analytics, auth/payment hints, env hints)
    - The complete **PROJECT MODE** section from this skill (all 8 phases: Positioning Map → Conversion Funnel Map → Page-by-Page GTM → Trust Architecture → Analytics & Measurement → Launch Readiness → Fix → Report)
    - The **Tracking** section from this skill
    - Rule: **read-only analysis** — no code fixes, only update AUDIT_LOG.md and TASKS.md
    - Rule: before scoring, identify funnel links, measurement dependencies, and downstream conversion consequences
    - Rule: call out user-story drift, unproven claims, documentation mismatch, and risky business/security promises explicitly
-   - Rule: read/report `BUSINESS.md`, `BRANDING.md`, `GUIDELINES.md`, and optional business registry metadata versions when present; flag missing, stale, low-confidence, or unversioned contracts as proof gaps before scoring
+   - Rule: read/report `shipflow_data/business/business.md`, `shipflow_data/business/branding.md`, `shipflow_data/technical/guidelines.md`, and optional business registry metadata versions when present; flag missing, stale, low-confidence, or unversioned contracts as proof gaps before scoring
    - Rule: do not ask follow-up questions; if context is missing, state assumptions / confidence limits and continue
    - Required sub-report sections: `Scope understood`, `User story / promise`, `Business metadata versions`, `Context read`, `Linked systems & consequences`, `Documentation coherence`, `Risky assumptions / proof gaps`, `Findings`, `Confidence / missing context`
 
