@@ -1,10 +1,10 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "1.12.4"
+artifact_version: "1.12.6"
 project: ShipFlow
 created: "2026-05-01"
-updated: "2026-05-11"
+updated: "2026-05-14"
 status: reviewed
 source_skill: sf-start
 scope: skill-runtime-and-lifecycle
@@ -71,6 +71,7 @@ evidence:
   - "sf-bug clarified as a bug lifecycle executor through owner skills and bounded subagents, not a simple next-command router."
   - "Shared Sentry observability reference added for runtime evidence, release/environment correlation, redaction, and performance overhead checks."
   - "Sentry reference clarified: skills never have direct Sentry dashboard access; bounded local PM2 logs and redacted Doppler presence/scope checks are acceptable supporting evidence when no Sentry pointer is supplied or visible."
+  - "Model routing clarified: GPT-5.5 is the Codex/OpenAI premium default for ambiguous, cross-project, governance-heavy, transverse audit, prioritization, prompt/docs migration, and business-risk synthesis work; GPT-5.3-Codex is the default for long implementation, multi-file coding, refactors, hard debugging, and terminal-heavy agentic execution; main-thread model changes are recommendations unless the runtime actually applies an override."
 next_review: "2026-06-01"
 next_step: "/sf-docs technical audit skills"
 ---
@@ -162,6 +163,8 @@ intake
   -> post-verify closure
   -> bounded ship/deploy/release routing
 ```
+
+Model routing is a lifecycle gate, not a promise that the active conversation can switch its own runtime model. Master skills use `skills/sf-model/references/model-routing.md` for the policy. In Codex/OpenAI, `gpt-5.5` is the premium default for ambiguous, cross-project, governance-heavy, transverse audit, task-prioritization, prompt/docs migration, and business-risk synthesis work; `gpt-5.3-codex` is the default for long implementation, multi-file coding, refactors, hard debugging, and terminal-heavy agentic execution; fast/economy models remain the default for small reversible deltas. Delegated subagent missions should include model, reasoning or alias behavior, fallback, and model application status when the runtime supports or rejects overrides.
 
 Release confidence flow:
 

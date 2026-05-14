@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "0.3.9"
+artifact_version: "0.3.10"
 project: "shipflow"
 created: "2026-04-25"
-updated: "2026-05-09"
+updated: "2026-05-14"
 status: draft
 source_skill: sf-docs
 scope: documentation
@@ -25,6 +25,14 @@ evidence: []
 next_step: "/sf-docs audit CHANGELOG.md"
 ---
 # ShipFlow Changelog
+
+## [2026-05-14]
+
+### Changed
+- `sf-model`, `sf-start`, and shared master lifecycle references now treat `gpt-5.5` as the Codex/OpenAI premium default for ambiguous, cross-project, governance-heavy, transverse audit, task-prioritization, prompt/docs migration, and business-risk synthesis work.
+- `gpt-5.3-codex` is now documented as the Codex/OpenAI default for long implementation, multi-file coding, refactors, hard debugging, and terminal-heavy agentic execution.
+- Delegated subagent mission contracts now require model, reasoning or alias behavior, fallback, and model application status when model overrides are available.
+- README, workflow doctrine, launch cheatsheet, and technical lifecycle docs now clarify that the main conversation can recommend or route to a better model, but must not claim it can always switch its own active runtime model mid-thread.
 
 ## [2026-05-09]
 

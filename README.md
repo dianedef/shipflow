@@ -418,6 +418,8 @@ Optional model-selection step:
 sf-model -> choose model / reasoning / fallbacks before execution
 ```
 
+`sf-model` is advisory for the active conversation and prescriptive for delegated missions when the runtime supports model overrides. In Codex/OpenAI, `gpt-5.5` is the default premium choice for ambiguous, cross-project, governance-heavy, transverse audit, task-prioritization, prompt/docs migration, and business-risk synthesis work; `gpt-5.3-codex` is the default for long implementation, multi-file coding, refactors, hard debugging, and terminal-heavy agentic execution; keep `gpt-5.4-mini` or `gpt-5.3-codex-spark` for small reversible changes. The active main thread must not claim it can always switch its own model mid-run: it can recommend a next-run model, route through `sf-model`, or pass a selected model to a subagent when that override is actually supported.
+
 Direct build entrypoint for non-trivial feature/code/docs work:
 
 ```text

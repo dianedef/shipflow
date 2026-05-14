@@ -20,6 +20,7 @@ what_you_give:
 what_you_get:
   - "An implementation start path"
   - "Either direct execution or a reroute to stronger contract work"
+  - "A model and topology choice before coding, with GPT-5.5 favored for ambiguous governance work, GPT-5.3-Codex favored for long implementation, and faster models preserved for small local deltas"
   - "A chantier trace when a unique spec-first workstream is in scope"
   - "Focused validation tied to the task being built"
   - "A route to sf-browser when non-auth browser evidence is needed"

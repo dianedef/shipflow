@@ -139,6 +139,13 @@ Before file work, validation, closure preparation, or ship preparation, choose t
 
 Record the choice when it affects trust, cost, evidence, or handoff.
 
+The model decision has two runtime layers:
+
+- Main conversation: recommend or route to the best model, but do not claim the active thread can always switch its own model mid-run.
+- Delegated subagents: when the runtime supports model overrides, include model, reasoning or alias behavior, fallback, and application status in each bounded mission.
+
+Use `gpt-5.5` by default in Codex/OpenAI for ambiguous, cross-project, governance-heavy, transverse audit, task-prioritization, prompt/docs migration, and business-risk synthesis work. Keep fast/economy models for small, local, reversible tasks.
+
 ### 5. Execution Through Owners
 
 Master skills orchestrate; owner skills own specialist internals.

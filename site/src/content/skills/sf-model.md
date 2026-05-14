@@ -2,7 +2,7 @@
 title: "sf-model"
 slug: "sf-model"
 tagline: "Choose the right model for the task instead of overpaying or underpowering the work."
-summary: "A model-selection skill for matching task type, cost, latency, and reliability needs before execution starts."
+summary: "A model-selection skill for matching task type, cost, latency, reliability, and subagent routing needs before execution starts."
 category: "Plan & Decide"
 audience:
   - "Founders balancing quality, speed, and cost in agent work"
@@ -20,6 +20,7 @@ what_you_give:
 what_you_get:
   - "A model recommendation"
   - "A clearer tradeoff between speed and depth"
+  - "A clear note on whether the model choice is applied, a subagent override, or only a next-run recommendation"
   - "A better execution setup before work begins"
 example_prompts:
   - "/sf-model for migration planning"
@@ -27,6 +28,7 @@ example_prompts:
   - "/sf-model which model for this audit"
 limits:
   - "It helps choose a model; it does not improve the task framing by itself"
+  - "It cannot guarantee that the already-running main conversation can switch its own active model mid-thread"
   - "The best model still depends on the quality of the downstream workflow"
 related_skills:
   - "sf-context"

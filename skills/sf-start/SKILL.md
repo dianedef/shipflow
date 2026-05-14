@@ -175,8 +175,9 @@ Pick:
 
 Prefer simple Codex/OpenAI defaults:
 - `gpt-5.4-mini` for small, clear, local work
-- `gpt-5.3-codex` for long agentic implementation and multi-file coding work
-- `gpt-5.4` for ambiguity, architecture, or high error cost
+- `gpt-5.3-codex` as the default for long agentic implementation, multi-file coding, refactors, hard debugging, and terminal-heavy execution
+- `gpt-5.5` for ambiguity, architecture, cross-project governance, transverse audits, task prioritization, prompt/docs migrations, business-risk synthesis, and high error cost
+- `gpt-5.4` for bounded premium architecture or tradeoffs where `gpt-5.5` is likely overkill
 - `gpt-5.3-codex-spark` for highly local fast-iteration work, especially UI-focused deltas
 
 Prefer simple Claude Code defaults:
@@ -222,6 +223,8 @@ If `multi-agent` is chosen:
   - owned files
   - model
   - reasoning effort
+  - fast or cheap fallback
+  - whether the model override is applied by the runtime or only recommended
   - read-only context files
   - validations to run
   - dependency order if not parallel-safe

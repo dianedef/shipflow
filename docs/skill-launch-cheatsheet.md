@@ -80,6 +80,8 @@ Use a focused skill directly when you intentionally want one owner lane: checks,
 | Framework migration | `sf-migrate [package[@version]]` | Use a structured package target such as `astro@5`, a package name, or no argument for discovery. |
 | Orientation and routing | `sf-status`, `sf-help`, `sf-model`, `sf-resume` | Use for git dashboard, workflow help, model choice, or concise context transfer. |
 
+Model routing note: `sf-model` recommends the right model for the current scope. In Codex/OpenAI, default to `gpt-5.5` for ambiguous, cross-project, governance-heavy, audit/prioritization, prompt/docs migration, or business-risk synthesis work; default to `gpt-5.3-codex` for long implementation, multi-file coding, refactors, hard debugging, and terminal-heavy agentic execution; keep fast/economy models for small local deltas. The main thread may only recommend a model switch unless the runtime supports applying the override; subagent missions should name the selected model when overrides are available.
+
 ## Explicit Mode Switches
 
 | Skill | Explicit modes currently documented |

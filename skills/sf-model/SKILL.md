@@ -39,6 +39,18 @@ Le but de `sf-model` est de répondre à six questions :
 
 Lire `references/model-routing.md` avant de décider.
 
+## Runtime application boundary
+
+`sf-model` chooses a model policy; it does not guarantee that the already-running main conversation can mutate its own runtime model mid-thread.
+
+Use this distinction in every recommendation:
+
+- `current conversation`: recommend the best model and continue only when the current runtime is acceptable for the risk.
+- `subagent override`: when the runtime supports delegated model overrides, tell the caller to pass the selected `model` and `reasoning_effort` or Claude alias into the subagent mission.
+- `next run`: when the main runtime should change, recommend the exact model/alias for the operator's next session or command.
+
+Never report a model override as applied unless the runtime actually exposed and used that override. If model override support is unavailable or unknown, mark it as `recommended, not applied`.
+
 ### Step 1 — Identifier le runtime et le scope
 
 Déterminer d'abord le runtime réel ou demandé :
@@ -90,9 +102,10 @@ Utiliser la matrice provider-aware de `references/model-routing.md` et choisir :
 - un `Cheap fallback`
 
 Règles de décision Codex/OpenAI :
-- préférer `gpt-5.5` pour les tâches ambiguës, transverses, ou à fort coût d'erreur
+- préférer `gpt-5.5` pour les tâches ambiguës, transverses, tool-heavy, ou à fort coût d'erreur
+- préférer `gpt-5.5` pour audits transverses, priorisation automatique de tâches, migrations prompts/docs, synthèse de risques business, et mises à jour cohérentes de trackers/fiches projets
 - préférer `gpt-5.4` quand il faut rester premium mais avec un meilleur contrôle du coût
-- préférer `gpt-5.3-codex` pour le vrai travail agentique de code quand le problème est surtout d'implémenter, refactorer, debugger et tenir une longue boucle d'exécution
+- préférer `gpt-5.3-codex` par défaut pour les implémentations longues, multi-fichiers, les refactors, le debugging difficile et les longues boucles agentiques terminal/code
 - préférer `gpt-5.4-mini` pour les boucles rapides, le triage, les petites modifs, l'exploration et les tâches répétitives
 - préférer `gpt-5.3-codex-spark` pour les itérations UI ciblées ou les modifications locales qui doivent aller vite
 - éviter `gpt-5.2` par défaut sauf besoin explicite de continuité ou préférence empirique utilisateur
@@ -156,6 +169,9 @@ When to downgrade:
 
 Next step:
 - /sf-start [scope]
+
+Runtime application:
+- [current conversation acceptable / switch recommended for next run / subagent override applied / subagent override recommended, not applied]
 ```
 
 ### Rules

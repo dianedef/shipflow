@@ -75,9 +75,15 @@ Each delegated mission must include:
 - assigned mission
 - owned files or surfaces
 - forbidden files or surfaces
+- selected model or alias
+- reasoning effort, or the Claude alias behavior when using Claude Code
+- fast or cheap fallback when the selected model is unavailable or too costly
+- model application status: `override applied`, `recommended only`, or `not supported by runtime`
 - validation commands
 - report mode
 - stop conditions
+
+Do not claim that a subagent used a model override unless the runtime actually accepted that override. If the orchestration layer cannot set the subagent model, keep the recommendation in the mission text and report the run as degraded when that matters for risk, cost, or evidence.
 
 ## Short Confirmations
 
