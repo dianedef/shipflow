@@ -68,6 +68,8 @@ When subagents are available, the default topology for master-skill work that re
 
 Use one bounded subagent at a time. A small scope may use a mini-contract, but small scope is not an exception to delegation. If file work or validation is needed and subagents are available, the master should delegate sequentially instead of doing routine diffs or patches in the master conversation.
 
+For Codex/OpenAI subagents, the default bounded mission model is `gpt-5.4-mini`. Escalate only when the mission profile requires it: `gpt-5.3-codex-spark` for micro-code or targeted UI/local edits, `gpt-5.3-codex` for long implementation or multi-file code work, and `gpt-5.5` for transverse audits, risky arbitration, architecture/product decisions, or business-risk synthesis.
+
 Each delegated mission must include:
 
 - project root

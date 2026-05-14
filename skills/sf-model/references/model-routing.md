@@ -75,6 +75,17 @@ This reference must stay short. If a question depends on "latest", exact availab
 - If the user already ran `sf-spec` and `sf-ready`, the clearer contract usually reduces the need for the largest model.
 - If two choices are close, choose by latency, cost, agentic execution fit, and how costly a wrong decision would be.
 
+## Subagent defaults
+
+When ShipFlow delegates bounded work to subagents, use the smallest model that fits the delegated mission:
+
+| Subagent mission | Codex/OpenAI default | Reasoning |
+| --- | --- | --- |
+| Default small bounded mission, triage, read, docs check, lightweight validation | `gpt-5.4-mini` | `low` or `medium` |
+| Micro-code or targeted UI/local edit | `gpt-5.3-codex-spark` | `low` or `medium` |
+| Long implementation, multi-file coding, refactor, hard debugging, terminal-heavy execution | `gpt-5.3-codex` | `medium` or `high` |
+| Transverse audit, risky arbitration, product/architecture decision, business-risk synthesis | `gpt-5.5` | `medium` or `high` |
+
 ## Runtime application rule
 
 - The main conversation can recommend a better model, route through `sf-model`, or tell the operator which model to use next; it must not claim that it can always switch its own active runtime model mid-thread.

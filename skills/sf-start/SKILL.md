@@ -179,6 +179,7 @@ Prefer simple Codex/OpenAI defaults:
 - `gpt-5.5` for ambiguity, architecture, cross-project governance, transverse audits, task prioritization, prompt/docs migrations, business-risk synthesis, and high error cost
 - `gpt-5.4` for bounded premium architecture or tradeoffs where `gpt-5.5` is likely overkill
 - `gpt-5.3-codex-spark` for highly local fast-iteration work, especially UI-focused deltas
+- `gpt-5.4-mini` as the default for small bounded subagent missions unless the mission profile calls for a specialized model
 
 Prefer simple Claude Code defaults:
 - `haiku` for tiny triage, classification, and cheap side work

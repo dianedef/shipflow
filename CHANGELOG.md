@@ -30,6 +30,7 @@ next_step: "/sf-docs audit CHANGELOG.md"
 
 ### Changed
 - `sf-model`, `sf-start`, and shared master lifecycle references now treat `gpt-5.5` as the Codex/OpenAI premium default for ambiguous, cross-project, governance-heavy, transverse audit, task-prioritization, prompt/docs migration, and business-risk synthesis work.
+- Small bounded Codex/OpenAI subagent missions now default to `gpt-5.4-mini`, with `gpt-5.3-codex-spark` reserved for micro-code or targeted UI/local edits.
 - `gpt-5.3-codex` is now documented as the Codex/OpenAI default for long implementation, multi-file coding, refactors, hard debugging, and terminal-heavy agentic execution.
 - Delegated subagent mission contracts now require model, reasoning or alias behavior, fallback, and model application status when model overrides are available.
 - README, workflow doctrine, launch cheatsheet, and technical lifecycle docs now clarify that the main conversation can recommend or route to a better model, but must not claim it can always switch its own active runtime model mid-thread.

@@ -137,7 +137,7 @@ Optional model-selection entrypoint before execution:
 sf-model -> choose model / reasoning / fallbacks before sf-start
 ```
 
-`sf-model` chooses a model policy, not a guaranteed mid-thread runtime switch. In Codex/OpenAI, use `gpt-5.5` by default for ambiguous, cross-project, governance-heavy, transverse audit, task-prioritization, prompt/docs migration, and business-risk synthesis work. Use `gpt-5.3-codex` by default for long implementation, multi-file coding, refactors, hard debugging, and terminal-heavy agentic execution. Use fast/economy models for small local deltas. When subagents are available and the runtime accepts model overrides, each bounded mission should state the model, reasoning effort, fallback, and whether the override is applied or only recommended.
+`sf-model` chooses a model policy, not a guaranteed mid-thread runtime switch. In Codex/OpenAI, use `gpt-5.4-mini` by default for small bounded subagent missions, `gpt-5.3-codex-spark` for micro-code or targeted UI/local edits, `gpt-5.3-codex` for long implementation, multi-file coding, refactors, hard debugging, and terminal-heavy agentic execution, and `gpt-5.5` for ambiguous, cross-project, governance-heavy, transverse audit, task-prioritization, prompt/docs migration, and business-risk synthesis work. When subagents are available and the runtime accepts model overrides, each bounded mission should state the model, reasoning effort, fallback, and whether the override is applied or only recommended.
 
 Primary non-technical router entrypoint:
 

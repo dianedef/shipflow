@@ -20,6 +20,7 @@ what_you_give:
 what_you_get:
   - "A model recommendation"
   - "A clearer tradeoff between speed and depth"
+  - "A default subagent model policy: small work on GPT-5.4-mini, long implementation on GPT-5.3-Codex, high-risk reasoning on GPT-5.5"
   - "A clear note on whether the model choice is applied, a subagent override, or only a next-run recommendation"
   - "A better execution setup before work begins"
 example_prompts:

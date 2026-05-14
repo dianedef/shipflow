@@ -6,7 +6,7 @@ project: "shipflow"
 created: "2026-05-14"
 created_at: "2026-05-14 10:05:37 UTC"
 updated: "2026-05-14"
-updated_at: "2026-05-14 19:16:37 UTC"
+updated_at: "2026-05-14 20:56:37 UTC"
 status: ready
 source_skill: sf-spec
 source_model: "GPT-5.5"
@@ -47,6 +47,7 @@ evidence:
   - "User request 2026-05-14: GPT-5.5 should become default for transverse audits, automatic task prioritization, prompt/docs migration, business risk synthesis, and coherent TASKS/project fiche updates."
   - "User question 2026-05-14: model defaults should apply when skills launch subagents, and the main conversation should clarify whether it can choose its own model."
   - "User request 2026-05-14: gpt-5.3-codex should be explicit as the default for long implementation work."
+  - "User confirmation 2026-05-14: ShipFlow generally privileges subagents, so small bounded subagent missions should have an explicit default model."
   - "skills/sf-model/references/model-routing.md currently routes ambiguous/high-error-cost work to gpt-5.5 but needs refreshed defaults for the latest OpenAI model availability."
   - "skills/sf-start/SKILL.md already reads model-routing.md and supports optional per-group model overrides."
   - "skills/references/master-delegation-semantics.md defines bounded sequential subagents and separates delegation from parallelism."
@@ -147,6 +148,7 @@ Mettre a jour la doctrine ShipFlow de routage modele pour faire de GPT-5.5 le de
 - Les audits transverses et maintenances multi-projets devraient utiliser GPT-5.5 par defaut quand l'erreur de priorisation coute cher.
 - Les sous-agents de lecture, audit, docs, migration ou implementation peuvent recevoir des modeles differents si leurs missions ont des profils differents.
 - Les sous-agents ou runs d'implementation longue doivent utiliser `gpt-5.3-codex` par defaut quand le profil dominant est code multi-fichiers, refactor, debugging difficile, ou execution terminal-heavy.
+- Les petites missions bornees en sous-agent doivent utiliser `gpt-5.4-mini` par defaut; les micro-edits code/UI ciblées utilisent `gpt-5.3-codex-spark`.
 - Les petites corrections locales doivent rester sur `gpt-5.4-mini`, `gpt-5.3-codex-spark`, ou equivalent Claude rapide.
 - Les docs publiques et internes doivent expliquer que "choisir son modele" dans la conversation principale signifie recommander/dispatcher, pas toujours changer le runtime actif.
 
@@ -237,6 +239,7 @@ Docs a aligner:
 - [ ] CA 6 : Given une demande qui depend de disponibilite/pricing/latest OpenAI, when la skill fixe une recommandation, then la freshness gate officielle est mentionnee ou le gap est explicite.
 - [ ] CA 7 : Given une demande de parallelisme, when aucun `Execution Batches` ready ne definit les write sets, then les sous-agents paralleles restent bloques meme si GPT-5.5 pourrait mieux raisonner.
 - [ ] CA 8 : Given une implementation longue, multi-fichiers, refactor, hard bug, ou boucle terminal-heavy, when `sf-model` ou `sf-start` choisit le modele Codex/OpenAI, then `gpt-5.3-codex` est le modele primaire par defaut.
+- [ ] CA 9 : Given une petite mission bornee en sous-agent, when aucun profil specialise ne s'applique, then `gpt-5.4-mini` est le modele Codex/OpenAI par defaut.
 
 # Test Strategy
 
@@ -251,6 +254,7 @@ Docs a aligner:
   - "fix local typo" -> fast/cheap.
   - "implementation multi-file ready spec" -> `gpt-5.3-codex` ou equivalent implementation-heavy.
   - "long implementation / refactor / hard debugging" -> `gpt-5.3-codex`.
+  - "small bounded subagent mission" -> `gpt-5.4-mini`.
   - "conversation peut choisir son modele ?" -> reponse nuancee auto-switch vs subagent override.
 
 # Risks
@@ -301,6 +305,7 @@ Docs a aligner:
 | 2026-05-14 18:08:05 | sf-skill-build | GPT-5.5 | Updated model routing, skill contracts, master delegation/lifecycle references, operator docs, and changelog | implemented | /sf-verify shipflow-model-routing-defaults-for-skills-and-subagents |
 | 2026-05-14 18:10:26 | sf-verify | GPT-5.5 | Verified acceptance criteria by metadata lint, diff check, model-routing grep checks, skill budget audit, runtime link checks, and Astro build | verified | /sf-ship shipflow-model-routing-defaults-for-skills-and-subagents |
 | 2026-05-14 19:16:37 | sf-ship | GPT-5.5 | Added explicit gpt-5.3-codex long-implementation default, reran checks, and prepared bounded commit/push | shipped | none |
+| 2026-05-14 20:56:37 | sf-ship | GPT-5.5 | Added explicit gpt-5.4-mini default for small bounded subagent missions and reran targeted checks | shipped | none |
 
 # Current Chantier Flow
 

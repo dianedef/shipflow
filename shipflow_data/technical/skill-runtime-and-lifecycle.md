@@ -1,7 +1,7 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "1.12.6"
+artifact_version: "1.12.7"
 project: ShipFlow
 created: "2026-05-01"
 updated: "2026-05-14"
@@ -72,6 +72,7 @@ evidence:
   - "Shared Sentry observability reference added for runtime evidence, release/environment correlation, redaction, and performance overhead checks."
   - "Sentry reference clarified: skills never have direct Sentry dashboard access; bounded local PM2 logs and redacted Doppler presence/scope checks are acceptable supporting evidence when no Sentry pointer is supplied or visible."
   - "Model routing clarified: GPT-5.5 is the Codex/OpenAI premium default for ambiguous, cross-project, governance-heavy, transverse audit, prioritization, prompt/docs migration, and business-risk synthesis work; GPT-5.3-Codex is the default for long implementation, multi-file coding, refactors, hard debugging, and terminal-heavy agentic execution; main-thread model changes are recommendations unless the runtime actually applies an override."
+  - "Subagent model defaults clarified: GPT-5.4-mini is the default for small bounded Codex/OpenAI subagent missions, GPT-5.3-Codex-Spark for micro-code or targeted UI/local edits, GPT-5.3-Codex for long implementation, and GPT-5.5 for high-risk transverse reasoning."
 next_review: "2026-06-01"
 next_step: "/sf-docs technical audit skills"
 ---
@@ -164,7 +165,7 @@ intake
   -> bounded ship/deploy/release routing
 ```
 
-Model routing is a lifecycle gate, not a promise that the active conversation can switch its own runtime model. Master skills use `skills/sf-model/references/model-routing.md` for the policy. In Codex/OpenAI, `gpt-5.5` is the premium default for ambiguous, cross-project, governance-heavy, transverse audit, task-prioritization, prompt/docs migration, and business-risk synthesis work; `gpt-5.3-codex` is the default for long implementation, multi-file coding, refactors, hard debugging, and terminal-heavy agentic execution; fast/economy models remain the default for small reversible deltas. Delegated subagent missions should include model, reasoning or alias behavior, fallback, and model application status when the runtime supports or rejects overrides.
+Model routing is a lifecycle gate, not a promise that the active conversation can switch its own runtime model. Master skills use `skills/sf-model/references/model-routing.md` for the policy. In Codex/OpenAI, `gpt-5.4-mini` is the default for small bounded subagent missions; `gpt-5.3-codex-spark` fits micro-code or targeted UI/local edits; `gpt-5.3-codex` is the default for long implementation, multi-file coding, refactors, hard debugging, and terminal-heavy agentic execution; `gpt-5.5` is the premium default for ambiguous, cross-project, governance-heavy, transverse audit, task-prioritization, prompt/docs migration, and business-risk synthesis work. Delegated subagent missions should include model, reasoning or alias behavior, fallback, and model application status when the runtime supports or rejects overrides.
 
 Release confidence flow:
 

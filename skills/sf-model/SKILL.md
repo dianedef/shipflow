@@ -107,6 +107,7 @@ Règles de décision Codex/OpenAI :
 - préférer `gpt-5.4` quand il faut rester premium mais avec un meilleur contrôle du coût
 - préférer `gpt-5.3-codex` par défaut pour les implémentations longues, multi-fichiers, les refactors, le debugging difficile et les longues boucles agentiques terminal/code
 - préférer `gpt-5.4-mini` pour les boucles rapides, le triage, les petites modifs, l'exploration et les tâches répétitives
+- utiliser `gpt-5.4-mini` comme défaut des petites missions bornées en sous-agent, sauf si le profil demande `gpt-5.3-codex-spark`, `gpt-5.3-codex`, ou `gpt-5.5`
 - préférer `gpt-5.3-codex-spark` pour les itérations UI ciblées ou les modifications locales qui doivent aller vite
 - éviter `gpt-5.2` par défaut sauf besoin explicite de continuité ou préférence empirique utilisateur
 
