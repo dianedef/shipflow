@@ -65,7 +65,7 @@ evidence:
   - "2026-05-16 budget audit after phase 1: 6 SKILL.md files still exceed 500 lines and 17 bodies exceed about 5000 tokens."
   - "Remaining >500-line skills: sf-init 718 lines, sf-audit-code 653 lines, sf-audit-copywriting 641 lines, sf-help 545 lines, sf-repurpose 523 lines, sf-audit-seo 507 lines."
   - "The user asked why only sf-audit-design appeared visibly changed and then confirmed proceeding with sf-spec for the next compaction pass."
-next_step: "/sf-ship Compact ShipFlow Skill Instructions Phase 2"
+next_step: "none"
 ---
 
 # Spec: Compact ShipFlow Skill Instructions Phase 2
@@ -374,7 +374,7 @@ None for this spec. The phase 2 target set is determined by the fresh post-phase
 | 2026-05-16 13:19:43 UTC | sf-start | GPT-5 Codex | Compacted six remaining >500-line skills into activation surfaces and extracted detailed workflows into skill-local references | implemented | /sf-verify Compact ShipFlow Skill Instructions Phase 2 |
 | 2026-05-16 13:20:19 UTC | sf-verify | GPT-5 Codex | Verified budget audit, metadata lint, runtime sync, focused skill coherence checks, language doctrine, fresh-docs verdict, and documentation coherence | verified | /sf-end Compact ShipFlow Skill Instructions Phase 2 |
 | 2026-05-16 13:20:54 UTC | sf-end | GPT-5 Codex | Closed phase 2 chantier, updated changelog, and preserved next lifecycle step for shipping | closed | /sf-ship Compact ShipFlow Skill Instructions Phase 2 |
-| 2026-05-16 13:38:44 UTC | sf-ship | GPT-5 Codex | Ran pre-ship checks, staged compaction chantier changes, committed, and prepared push | shipped | none |
+| 2026-05-16 13:38:44 UTC | sf-ship | GPT-5 Codex | Ran pre-ship checks, staged compaction chantier changes, committed, and pushed to origin/main | shipped | none |
 
 ## Current Chantier Flow
 
