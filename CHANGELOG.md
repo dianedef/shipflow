@@ -30,6 +30,7 @@ next_step: "/sf-docs audit CHANGELOG.md"
 
 ### Changed
 - Compacted the remaining oversized ShipFlow skills above 500 lines into concise activation contracts with skill-local workflow references, reducing `SKILL.md` line-count risks while preserving chantier, reporting, audit, SEO, copywriting, bootstrap, and source-faithfulness guardrails.
+- Compacted the next non-lifecycle token-risk skill batch (`sf-audit`, `sf-audit-a11y`, `sf-audit-copy`, `sf-audit-gtm`, `sf-auth-debug`, `sf-enrich`, `sf-market-study`, `sf-prod`, `sf-redact`), leaving only lifecycle skills `sf-spec` and `sf-start` in the token-risk list.
 - Documented the phase 2 compaction convention in the skill runtime lifecycle notes.
 
 ## [2026-05-14]
