@@ -1,10 +1,10 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "1.12.8"
+artifact_version: "1.13.0"
 project: ShipFlow
 created: "2026-05-01"
-updated: "2026-05-14"
+updated: "2026-05-16"
 status: reviewed
 source_skill: sf-start
 scope: skill-runtime-and-lifecycle
@@ -16,6 +16,8 @@ docs_impact: yes
 linked_systems:
   - skills/
   - skills/references/
+  - skills/references/skill-instruction-layering.md
+  - skills/references/skill-context-budget.md
   - skills/shipflow/SKILL.md
   - skills/references/entrypoint-routing.md
   - skills/sf-build/SKILL.md
@@ -74,6 +76,8 @@ evidence:
   - "Model routing clarified: GPT-5.5 is the Codex/OpenAI premium default for ambiguous, cross-project, governance-heavy, transverse audit, prioritization, prompt/docs migration, and business-risk synthesis work; GPT-5.3-Codex is the default for long implementation, multi-file coding, refactors, hard debugging, and terminal-heavy agentic execution; main-thread model changes are recommendations unless the runtime actually applies an override."
   - "Subagent model defaults clarified: GPT-5.4-mini is the default for small bounded Codex/OpenAI subagent missions, GPT-5.3-Codex-Spark for micro-code or targeted UI/local edits, GPT-5.3-Codex for long implementation, and GPT-5.5 for high-risk transverse reasoning."
   - "`sf-build agents` clarified as a strict delegated sequential validation gate; parallel agents remain controlled only by ready spec `Execution Batches`."
+  - "Layered skill-instruction contract added for progressive SKILL.md compaction with pilot extraction to skill-local references."
+  - "Pilot compaction applied to sf-docs, sf-audit-design, and sf-verify while preserving chantier/reporting/security/doc-update gates."
 next_review: "2026-06-01"
 next_step: "/sf-docs technical audit skills"
 ---
@@ -84,12 +88,28 @@ next_step: "/sf-docs technical audit skills"
 
 This doc covers ShipFlow skills, lifecycle flow, references, templates, model/topology decisions, and documentation gates. Read it before changing `skills/*/SKILL.md`, shared skill references, or `shipflow-spec-driven-workflow.md`.
 
+## Instruction Layering Policy
+
+ShipFlow skill instructions follow layered progressive disclosure:
+
+- compact activation logic in `skills/*/SKILL.md`
+- shared doctrine in `skills/references/*.md`
+- heavy skill-specific checklists/playbooks in `skills/<skill>/references/*.md`
+
+Use `skills/references/skill-instruction-layering.md` as the canonical placement contract. Use `skills/references/skill-context-budget.md` for body-size and discovery-budget thresholds.
+
+Compaction must preserve operational guardrails: canonical path resolution, chantier trace semantics, reporting contract loading, security/redaction rules, and documentation-update gates.
+
+Phase 2 compaction uses conservative skill-local workflow references for large legacy skill bodies when the detailed behavior is too broad to safely split in the same pass. Future refreshes may split those workflow references further by mode, but the top-level `SKILL.md` remains the activation contract and must name the exact references to load.
+
 ## Owned Files
 
 | Path | Role | Edit notes |
 | --- | --- | --- |
 | `skills/*/SKILL.md` | Executable skill contracts | Keep descriptions compact; route heavy detail to references |
 | `skills/references/*.md` | Shared doctrine and provider-specific references | Resolve from `${SHIPFLOW_ROOT:-$HOME/shipflow}` |
+| `skills/references/skill-instruction-layering.md` | Canonical layering contract for what stays local vs moved to references | Load before compacting long skills |
+| `skills/<skill>/references/*.md` | Skill-local heavy checklists, mode playbooks, and report matrices | Keep top-level SKILL focused on activation and gates |
 | `skills/references/master-delegation-semantics.md` | Shared master/orchestrator delegation, subagent, short-approval, and parallelism doctrine | Load before master skills choose execution topology |
 | `skills/references/master-workflow-lifecycle.md` | Shared master/orchestrator lifecycle skeleton and work item model | Load before master skills resolve intake, readiness, model/topology, validation, verification, closure, or ship/deploy routes |
 | `skills/references/reporting-contract.md` | Shared final-report mode contract | Default user reports are concise; detailed reports require explicit handoff mode |
@@ -232,6 +252,7 @@ sf-content
 - Master/orchestrator skills load `skills/references/master-delegation-semantics.md` before choosing execution topology. Delegated sequential subagents are the default for file, validation, closure, and ship work when subagents are available; `sf-build agents` makes that delegated sequential path a strict validation gate; parallelism means simultaneous subagents and requires ready `Execution Batches`.
 - Master/orchestrator skills load `skills/references/master-workflow-lifecycle.md` before resolving lifecycle flow. The shared skeleton is intake, work item resolution, readiness, model/topology routing, owner-skill execution, validation/evidence, verification, post-verify closure, and bounded ship/deploy/release routing.
 - Skills should load `skills/references/question-contract.md` before user-facing questions. They ask only when the answer changes route, scope, risk, validation, closure, ship posture, public claims, or technical/product/editorial direction; otherwise they proceed by the best-practice default only when it is clear, low-risk, reversible, context-compatible, and verifiable.
+- When long skill bodies are compacted, keep required section labels (`Canonical Paths`, `Trace category`, `Process role`, `Report Modes`) in top-level `SKILL.md`; move only heavy detail to references.
 - Bug work uses one Markdown bug file under `bugs/*.md` as the durable source of truth. `BUGS.md`, when present, is an optional compact/generated/triage view and must not override the bug file.
 - Short natural-language confirmations after diagnosis or proposal continue the current chantier in delegated sequential mode by intent rather than exact keyword, not parallel fan-out.
 - Fresh context is preferred for non-trivial spec-first execution when available.
@@ -290,7 +311,7 @@ python3 tools/skill_budget_audit.py --skills-root skills --format markdown
 bash -n tools/shipflow_sync_skills.sh test_skill_runtime_sync.sh
 bash test_skill_runtime_sync.sh
 tools/shipflow_sync_skills.sh --check --all
-python3 tools/shipflow_metadata_lint.py skills/references/master-delegation-semantics.md skills/references/master-workflow-lifecycle.md skills/references/technical-docs-corpus.md skills/references/editorial-content-corpus.md skills/references/subagent-roles/editorial-reader.md shipflow-spec-driven-workflow.md AGENT.md
+python3 tools/shipflow_metadata_lint.py skills/references/master-delegation-semantics.md skills/references/master-workflow-lifecycle.md skills/references/technical-docs-corpus.md skills/references/editorial-content-corpus.md skills/references/subagent-roles/editorial-reader.md skills/references/skill-instruction-layering.md skills/references/skill-context-budget.md shipflow-spec-driven-workflow.md AGENT.md
 rg -n "Governance Corpus Gate|sf-init.*bootstrap|sf-docs.*maintain|sf-build.*consume|sf-deploy|sf-maintain|sf-content|master-delegation-semantics|master-workflow-lifecycle|bug file|delegated sequential|subagent|parallelism|short natural-language|Execution Batches|reporting-contract|report=user|docs/technical|docs/editorial" skills/sf-init/SKILL.md skills/sf-docs/SKILL.md skills/sf-deploy/SKILL.md skills/sf-maintain/SKILL.md skills/sf-content/SKILL.md specs/sf-build-autonomous-master-skill.md shipflow-spec-driven-workflow.md README.md skills/references/reporting-contract.md skills/references/master-delegation-semantics.md skills/references/master-workflow-lifecycle.md
 ```
 

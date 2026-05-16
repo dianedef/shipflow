@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "0.3.10"
+artifact_version: "0.3.11"
 project: "shipflow"
 created: "2026-04-25"
-updated: "2026-05-14"
+updated: "2026-05-16"
 status: draft
 source_skill: sf-docs
 scope: documentation
@@ -25,6 +25,12 @@ evidence: []
 next_step: "/sf-docs audit CHANGELOG.md"
 ---
 # ShipFlow Changelog
+
+## [2026-05-16]
+
+### Changed
+- Compacted the remaining oversized ShipFlow skills above 500 lines into concise activation contracts with skill-local workflow references, reducing `SKILL.md` line-count risks while preserving chantier, reporting, audit, SEO, copywriting, bootstrap, and source-faithfulness guardrails.
+- Documented the phase 2 compaction convention in the skill runtime lifecycle notes.
 
 ## [2026-05-14]
 

@@ -1,10 +1,10 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "0.2.0"
+artifact_version: "0.3.0"
 project: "shipflow"
 created: "2026-04-29"
-updated: "2026-05-01"
+updated: "2026-05-16"
 status: draft
 source_skill: sf-docs
 scope: skill-context-budget
@@ -122,6 +122,28 @@ description: "Args: file-path, readme, api, components, audit, update, metadata,
 ```
 
 Arguments belong in `argument-hint` and the body, not in long descriptions.
+
+## Body-Size Risk And Layering
+
+Description compliance and body-size compaction are linked but distinct:
+
+- Discovery metadata (`name`, `description`, path) protects startup routing quality.
+- `SKILL.md` body size protects progressive-disclosure quality during execution.
+
+Use `skills/references/skill-instruction-layering.md` as the canonical compaction contract for what must stay local vs what should move to shared or skill-local references.
+
+Current policy state:
+
+- Frontmatter description policy is currently compliant in this repo baseline.
+- Remaining risk is mainly body-size and instruction dilution in long skill bodies.
+- Compaction must preserve guardrails (`Trace category`, `Process role`, chantier/reporting contracts, security/redaction rules, and documentation-update gates).
+
+Practical thresholds stay:
+
+- warning zone: `SKILL.md` over 500 lines
+- progressive-disclosure risk: body estimate over about 5000 tokens
+
+Crossing a threshold is a risk signal, not automatic deletion authority.
 
 ## Audit Command
 
