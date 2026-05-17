@@ -1,6 +1,6 @@
 ---
 name: tmux-capture-conversation
-description: "Capture a current or selected tmux pane to Markdown with inferred title and path."
+description: "Capture tmux panes to cleaned Markdown transcripts."
 argument-hint: [optional --tab N, title, destination]
 ---
 

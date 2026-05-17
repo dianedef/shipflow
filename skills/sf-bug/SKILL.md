@@ -1,6 +1,6 @@
 ---
 name: sf-bug
-description: "Bug loop orchestrator for intake, bug files, fixes, retests, verification, and ship risk."
+description: "Bug lifecycle for intake, dossiers, fixes, retests, and ship risk."
 argument-hint: [optional: BUG-ID | bug summary | --fix BUG-ID | --retest BUG-ID | --verify BUG-ID | --ship BUG-ID]
 ---
 

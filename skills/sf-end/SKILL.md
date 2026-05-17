@@ -1,6 +1,6 @@
 ---
 name: sf-end
-description: "Task closeout with summary, tracker update, and changelog prep before shipping."
+description: "Close tasks with summaries, trackers, and changelog prep."
 argument-hint: [optional summary or notes]
 ---
 

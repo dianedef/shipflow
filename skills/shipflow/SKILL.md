@@ -1,6 +1,6 @@
 ---
 name: shipflow
-description: "Primary router to skills or direct answers."
+description: "Route requests to skills or answers."
 argument-hint: <instruction>
 ---
 

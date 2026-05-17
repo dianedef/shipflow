@@ -1,6 +1,6 @@
 ---
 name: sf-fix
-description: "Bug-first triage and repair routing for errors, regressions, and failing behavior."
+description: "Triage and repair bugs, regressions, and failing behavior."
 argument-hint: <bug description, error message, or failing behavior>
 ---
 

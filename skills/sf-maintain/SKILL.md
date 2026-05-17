@@ -1,6 +1,6 @@
 ---
 name: sf-maintain
-description: "Master maintenance lifecycle from triage through delegated fixes, verification, and ship."
+description: "Orchestrate project maintenance from triage to ship."
 argument-hint: [optional: quick | full | security | deps | docs | audits | global | no-ship | report=agent]
 ---
 

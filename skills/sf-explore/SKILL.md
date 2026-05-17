@@ -1,6 +1,6 @@
 ---
 name: sf-explore
-description: "Exploration mode for clarifying ideas, problems, and requirements before coding."
+description: "Explore ideas, problems, and requirements before coding."
 argument-hint: [optional: sujet ou question à explorer]
 ---
 

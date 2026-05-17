@@ -1,6 +1,6 @@
 ---
 name: sf-market-study
-description: "Market study for demand, competitors, keywords, monetization, and go/no-go verdicts."
+description: "Research demand, competitors, keywords, and monetization."
 argument-hint: <niche or product idea>
 ---
 

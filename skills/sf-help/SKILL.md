@@ -1,6 +1,6 @@
 ---
 name: sf-help
-description: "ShipFlow help for skills, tasks, audits, workflows, modes, prompts, and common commands."
+description: "Answer ShipFlow skills, workflows, modes, and prompt questions."
 argument-hint: <help topic or route question>
 ---
 

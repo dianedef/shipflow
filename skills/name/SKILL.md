@@ -1,6 +1,6 @@
 ---
 name: name
-description: "Name or rename the current session in statusline and session notes."
+description: "Name or rename the current session."
 argument-hint: <session name>
 allowed-tools: Bash(mkdir:*), Bash(ls:*), Bash(echo:*), Bash(cat:*), Bash(tee:*)
 ---

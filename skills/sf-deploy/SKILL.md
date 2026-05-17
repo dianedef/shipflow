@@ -1,6 +1,6 @@
 ---
 name: sf-deploy
-description: "Release orchestrator for checks, ship, deploy, proof, verify, and changelog."
+description: "Orchestrate release checks, ship, deploy, proof, and verify."
 argument-hint: [optional: project, URL, --preview, --prod, skip-check, no-changelog]
 ---
 

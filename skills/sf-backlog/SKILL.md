@@ -1,6 +1,6 @@
 ---
 name: sf-backlog
-description: "Backlog triage for captured ideas, deferred work, active focus, and cleanup."
+description: "Triage backlog ideas, deferred work, and cleanup."
 disable-model-invocation: false
 argument-hint: [optional: add "idea", move "defer", review, clean]
 ---

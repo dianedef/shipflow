@@ -1,10 +1,10 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "1.13.0"
+artifact_version: "1.14.1"
 project: ShipFlow
 created: "2026-05-01"
-updated: "2026-05-16"
+updated: "2026-05-17"
 status: reviewed
 source_skill: sf-start
 scope: skill-runtime-and-lifecycle
@@ -42,13 +42,13 @@ linked_systems:
   - docs/editorial/
 depends_on:
   - artifact: "shipflow-spec-driven-workflow.md"
-    artifact_version: "0.15.1"
+    artifact_version: "0.17.0"
     required_status: draft
   - artifact: "skills/references/technical-docs-corpus.md"
-    artifact_version: "1.1.0"
+    artifact_version: "1.3.0"
     required_status: active
   - artifact: "skills/references/editorial-content-corpus.md"
-    artifact_version: "1.1.0"
+    artifact_version: "1.3.0"
     required_status: active
 supersedes: []
 evidence:
@@ -78,6 +78,8 @@ evidence:
   - "`sf-build agents` clarified as a strict delegated sequential validation gate; parallel agents remain controlled only by ready spec `Execution Batches`."
   - "Layered skill-instruction contract added for progressive SKILL.md compaction with pilot extraction to skill-local references."
   - "Pilot compaction applied to sf-docs, sf-audit-design, and sf-verify while preserving chantier/reporting/security/doc-update gates."
+  - "Skill taxonomy description audit applied compact routing descriptions across 61 skills while preserving names, trace categories, process roles, and runtime visibility."
+  - "sf-verify aligned stale dependency metadata during the skill taxonomy description verification."
 next_review: "2026-06-01"
 next_step: "/sf-docs technical audit skills"
 ---
@@ -101,6 +103,22 @@ Use `skills/references/skill-instruction-layering.md` as the canonical placement
 Compaction must preserve operational guardrails: canonical path resolution, chantier trace semantics, reporting contract loading, security/redaction rules, and documentation-update gates.
 
 Phase 2 compaction uses conservative skill-local workflow references for large legacy skill bodies when the detailed behavior is too broad to safely split in the same pass. Future refreshes may split those workflow references further by mode, but the top-level `SKILL.md` remains the activation contract and must name the exact references to load.
+
+## Skill Discovery Taxonomy
+
+Discovery descriptions are routing triggers, not workflow summaries. Keep them short, one-sentence, and front-loaded with the work type or domain.
+
+Current family boundaries:
+
+- Lifecycle/master: `sf-spec`, `sf-ready`, `sf-start`, `sf-verify`, `sf-end`, `sf-ship`, `sf-build`, `sf-deploy`, `sf-maintain`, `sf-design`, `sf-content`, `sf-skill-build`.
+- Audit/source: `sf-audit*`, `sf-deps`, `sf-perf`.
+- Bug/proof/source: `sf-bug`, `sf-fix`, `sf-test`, `sf-browser`, `sf-auth-debug`, `sf-prod`, `sf-check`, `sf-migrate`.
+- Content/docs/support: `sf-docs`, `sf-redact`, `sf-enrich`, `sf-repurpose`, `sf-changelog`, `sf-scaffold`, `sf-skills-refresh`, `sf-init`.
+- Research/strategy/source: `sf-research`, `sf-market-study`, `sf-veille`.
+- Pilotage: `sf-backlog`, `sf-priorities`, `sf-review`, `sf-tasks`, `continue`.
+- Helper/session/router: `shipflow`, `sf-context`, `sf-model`, `sf-help`, `sf-status`, `sf-resume`, `sf-explore`, `name`, `tmux-capture-conversation`, `clean-conversation-transcript`.
+
+Keep overlap intentional and explicit: master skills orchestrate, specialists prove or repair, support skills document or scaffold, and helper skills route or summarize without owning lifecycle state.
 
 ## Owned Files
 

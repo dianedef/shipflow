@@ -1,6 +1,6 @@
 ---
 name: sf-review
-description: "Session review for changes, docs, summaries, and next steps."
+description: "Review session changes, docs, summaries, and next steps."
 disable-model-invocation: false
 argument-hint: [optional: daily, weekly, sprint, release]
 ---

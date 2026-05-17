@@ -1,6 +1,6 @@
 ---
 name: sf-repurpose
-description: "Source-faithful repurposing analysis for docs, marketing, FAQs, articles, and site updates."
+description: "Repurpose sources into docs, marketing, FAQs, or site updates."
 argument-hint: <source file, transcript, notes, URL, or repurposing goal>
 ---
 

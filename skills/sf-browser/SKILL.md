@@ -1,6 +1,6 @@
 ---
 name: sf-browser
-description: "Non-auth browser checks for pages, visuals, console, and network evidence."
+description: "Check non-auth pages with browser, console, and network proof."
 argument-hint: <URL, route, environment, or visible objective>
 ---
 

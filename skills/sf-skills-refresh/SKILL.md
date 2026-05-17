@@ -1,6 +1,6 @@
 ---
 name: sf-skills-refresh
-description: "Refresh skills with current practice, targeted research, and conservative updates."
+description: "Refresh skills against current practice and conservative updates."
 disable-model-invocation: true
 argument-hint: '[skill-name] (omit to pick multiple)'
 ---

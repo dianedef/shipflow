@@ -1,6 +1,6 @@
 ---
 name: sf-resume
-description: "Conversation resume with concise bullets, task statuses, and close-context guidance."
+description: "Summarize session state, task status, and next actions."
 disable-model-invocation: false
 argument-hint: [optional: court | ultra-court]
 ---

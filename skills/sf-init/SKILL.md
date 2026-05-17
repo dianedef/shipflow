@@ -1,6 +1,6 @@
 ---
 name: sf-init
-description: "Project bootstrap for ShipFlow tracking, stack detection, task files, and registry setup."
+description: "Bootstrap ShipFlow tracking, stack detection, and registries."
 argument-hint: <project path or bootstrap instruction>
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: sf-check
-description: "Project technical checks for typecheck, lint, build, and optional repair."
+description: "Technical checks for typecheck, lint, build, and repair."
 disable-model-invocation: true
 argument-hint: [fix|nofix]
 ---

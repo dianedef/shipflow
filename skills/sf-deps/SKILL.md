@@ -1,6 +1,6 @@
 ---
 name: sf-deps
-description: "Dependency audit for vulnerabilities, drift, licenses, and config."
+description: "Audit dependency security, drift, licenses, and config."
 disable-model-invocation: true
 argument-hint: '["global"] (omit for current project)'
 ---

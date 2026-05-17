@@ -1,6 +1,6 @@
 ---
 name: sf-redact
-description: "Long-form drafting for articles, guides, editorials, and brand voice."
+description: "Draft long-form articles, guides, editorials, and brand voice."
 argument-hint: '<nombre> <format> [sujet] (ex: "3 blog", "1 editorial IA en éducation", "2 informational")'
 ---
 

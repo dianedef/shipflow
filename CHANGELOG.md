@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "0.3.11"
+artifact_version: "0.3.12"
 project: "shipflow"
 created: "2026-04-25"
-updated: "2026-05-16"
+updated: "2026-05-17"
 status: draft
 source_skill: sf-docs
 scope: documentation
@@ -25,6 +25,13 @@ evidence: []
 next_step: "/sf-docs audit CHANGELOG.md"
 ---
 # ShipFlow Changelog
+
+## [2026-05-17]
+
+### Changed
+- Audited the ShipFlow skill taxonomy and compacted 56 skill discovery descriptions, reducing average description length from 70.7 to 51.3 and the absolute discovery estimate from 7988/8000 to 6805/8000 while keeping all skill names, invocation paths, trace categories, and process roles stable.
+- Clarified `sf-docs` discovery wording to expose governance-layout compliance after a local transcript showed README/docs refresh could miss a layout migration gate.
+- Documented the current skill discovery family map in the technical lifecycle notes.
 
 ## [2026-05-16]
 

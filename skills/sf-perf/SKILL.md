@@ -1,6 +1,6 @@
 ---
 name: sf-perf
-description: "Performance audit for bundles, rendering, Core Web Vitals, data fetching, and databases."
+description: "Audit bundles, rendering, Core Web Vitals, data, and databases."
 disable-model-invocation: true
 argument-hint: '[file-path | "global"] (omit for full project)'
 ---

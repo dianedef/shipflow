@@ -1,6 +1,6 @@
 ---
 name: sf-prod
-description: "Production verification for deploy status, Vercel/runtime logs, and live health checks."
+description: "Verify production deploys, logs, health, and live behavior."
 argument-hint: [optional: project name or URL]
 ---
 

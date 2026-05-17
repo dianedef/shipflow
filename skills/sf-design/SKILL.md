@@ -1,6 +1,6 @@
 ---
 name: sf-design
-description: "Master design lifecycle."
+description: "UI/UX design lifecycle."
 argument-hint: <design question | audit | tokens | playground | redesign | migration | page/route>
 ---
 

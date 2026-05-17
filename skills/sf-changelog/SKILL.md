@@ -1,6 +1,6 @@
 ---
 name: sf-changelog
-description: "Changelog generation from git history in grouped Keep a Changelog format."
+description: "Generate grouped Keep a Changelog notes from git history."
 argument-hint: '[since-tag | since-date | "all"] (omit for since last entry)'
 ---
 

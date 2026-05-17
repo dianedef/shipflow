@@ -1,6 +1,6 @@
 ---
 name: sf-skill-build
-description: "Master lifecycle for ShipFlow skill creation and maintenance."
+description: "Maintain ShipFlow skills from spec to validation and ship."
 argument-hint: <new skill idea | existing skill path>
 ---
 

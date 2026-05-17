@@ -1,6 +1,6 @@
 ---
 name: sf-build
-description: "Master user-facing orchestration from story to spec, verify, close, and ship."
+description: "Orchestrate story-to-ship product implementation."
 argument-hint: "[agents|no-agents] <story, bug, or goal>"
 ---
 

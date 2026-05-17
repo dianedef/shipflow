@@ -1,6 +1,6 @@
 ---
 name: sf-audit-design-tokens
-description: "Deep design-token system audit."
+description: "Design-token system audit."
 disable-model-invocation: true
 argument-hint: '[file-path | "global"] (omit for full project)'
 ---

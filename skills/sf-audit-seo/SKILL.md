@@ -1,6 +1,6 @@
 ---
 name: sf-audit-seo
-description: "SEO audit for technical health, metadata, indexing, and intent fit."
+description: "Audit SEO health, metadata, indexing, and intent fit."
 argument-hint: <page, URL, content file, or project>
 ---
 

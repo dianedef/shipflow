@@ -1,6 +1,6 @@
 ---
 name: sf-context
-description: "Task context priming with cached memory and focused file retrieval before implementation."
+description: "Prime task context with cached memory and focused files."
 argument-hint: <what you want to do>
 ---
 

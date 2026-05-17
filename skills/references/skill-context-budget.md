@@ -1,10 +1,10 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "0.3.0"
+artifact_version: "0.3.1"
 project: "shipflow"
 created: "2026-04-29"
-updated: "2026-05-16"
+updated: "2026-05-17"
 status: draft
 source_skill: sf-docs
 scope: skill-context-budget
@@ -29,8 +29,9 @@ evidence:
   - "Local ShipFlow skill inventory measured at about 50 skills and about 12.7k initial-list characters"
   - "User decision 2026-05-01: sf-docs audit should verify skill budget compliance through a dedicated script"
   - "User decision 2026-05-01: keep skill budget reminders scoped to skill documentation and skill refresh workflows, not global agent context"
+  - "2026-05-17 taxonomy audit compacted discovery descriptions to 3127 total description characters and a 51.3 average while preserving routing distinctions."
 next_review: "2026-05-29"
-next_step: "/sf-start raccourcir les descriptions des skills ShipFlow"
+next_step: "/sf-verify Audit And Compact Skill Taxonomy Descriptions"
 ---
 
 # Skill Context Budget
@@ -202,6 +203,6 @@ Interpretation:
 
 ## Current ShipFlow Note
 
-On 2026-04-29, the local ShipFlow install measured about 50 skills and about 12.7k estimated initial-list characters. This is already above the fallback budget and explains the warning observed in Codex/Claude contexts.
+On 2026-05-17, the local ShipFlow install measured 61 skills with 3127 total description characters, average description length 51.3, absolute discovery estimate 6805/8000, and repo-relative discovery estimate 5463/8000.
 
-The first remediation should be description compaction, not deleting skills. Deletion or disabling should come after measuring which skills are rarely used or redundant.
+The current baseline is under the fallback discovery budget with zero hard violations, zero warnings, and zero body-size risks. Future remediation should still prefer targeted description edits and routing analysis before deleting, disabling, renaming, or merging skills.

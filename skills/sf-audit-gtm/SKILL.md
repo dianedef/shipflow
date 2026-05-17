@@ -1,6 +1,6 @@
 ---
 name: sf-audit-gtm
-description: "Go-to-market audit for positioning, funnel coherence, offer clarity, and growth readiness."
+description: "Audit positioning, funnel, offer, and growth readiness."
 argument-hint: '[file-path | "global"] (omit for full project)'
 ---
 

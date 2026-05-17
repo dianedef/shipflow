@@ -1,6 +1,6 @@
 ---
 name: sf-audit-copywriting
-description: "Marketing copy audit for persona, offer, persuasion, and conversion."
+description: "Audit marketing copy, offer, persona, and persuasion."
 argument-hint: <page, URL, content file, funnel, or project>
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: sf-model
-description: "Model routing for ShipFlow tasks, reasoning levels, and fallbacks."
+description: "Route models for ShipFlow tasks and reasoning levels."
 argument-hint: <task description, spec path, ou scope>
 ---
 

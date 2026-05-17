@@ -56,6 +56,7 @@
 | ✅ | Promouvoir `sf-maintain` en skill maître de maintenance projet (`triage -> spec/ready -> délégation bornée -> verify -> ship/deploy`) et aligner docs/help/site | ✅ done |
 | ✅ | Ajouter un helper partagé de synchronisation des skills Claude/Codex (`tools/shipflow_sync_skills.sh`) et l'intégrer à l'installateur, `sf-skill-build`, `sf-check`, `sf-verify` et `sf-ship` | ✅ done |
 | ✅ | Ajouter un contrat partagé de rapports compacts pour les skills (`report=user` par défaut, `report=agent` explicite) et le propager aux skills lifecycle, bug et audit | ✅ done |
+| ✅ | Auditer la taxonomie des skills et compacter les descriptions de découverte sans changer les invocations, rôles ni catégories de trace | ✅ done |
 | ✅ | Renforcer les questions `sf-build` en mode plan avec contexte, racine du problème, enjeu business, options et recommandation best practice | ✅ done |
 | ✅ | Ajouter une cheatsheet publique et Markdown repo des master skills, supporting skills et modes d'arguments, avec page publique `sf-build` | ✅ done |
 | 🟠 | Créer une skill `sf-prs` pour trier les PR GitHub ouvertes (`gh`), vérifier repo/branches/diffs/checks, regrouper Dependabot quand possible, merger les PRs vertes et fermer/commenter les PRs obsolètes selon une politique explicite | 📋 todo |

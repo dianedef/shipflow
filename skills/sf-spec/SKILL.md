@@ -1,6 +1,6 @@
 ---
 name: sf-spec
-description: "Spec creation for clear user stories, contracts, risks, and implementation plans."
+description: "Write specs with user stories, contracts, risks, and plans."
 argument-hint: [optional: description de ce qu'on veut construire]
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: sf-priorities
-description: "Priority analysis and task reordering with impact, effort, blockers, and high-ROI opportunities."
+description: "Prioritize work by impact, effort, blockers, and ROI."
 disable-model-invocation: false
 argument-hint: [optional priority criteria: impact, effort, blockers, high-roi/quick-wins]
 ---

@@ -1,6 +1,6 @@
 ---
 name: sf-audit-copy
-description: "Copy audit for clarity, tone, conversion, message fit, and friction."
+description: "Audit copy clarity, tone, conversion, and friction."
 argument-hint: '[file-path | "global"] (omit for full project)'
 ---
 

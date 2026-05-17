@@ -1,6 +1,6 @@
 ---
 name: sf-ship
-description: "Ship workflow for checks, commits, pushes, and optional full task closeout."
+description: "Ship with checks, commits, pushes, and closure when needed."
 argument-hint: [optional: commit message | "end la tache" for full close | skip-check | all-dirty]
 ---
 

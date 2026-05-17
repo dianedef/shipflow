@@ -1,6 +1,6 @@
 ---
 name: sf-research
-description: "Deep web research with multi-source investigation and a structured Markdown report."
+description: "Research web and local sources into cited Markdown reports."
 disable-model-invocation: true
 argument-hint: <topic>
 ---

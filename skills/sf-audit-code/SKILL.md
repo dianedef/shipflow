@@ -1,6 +1,6 @@
 ---
 name: sf-audit-code
-description: "Code review for correctness, product fit, security, architecture, reliability, and tests."
+description: "Audit code correctness, security, architecture, and tests."
 argument-hint: <file, directory, diff, PR, or project>
 ---
 

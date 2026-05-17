@@ -1,6 +1,6 @@
 ---
 name: sf-audit
-description: "Master audit across product, code, design, SEO, GTM, and performance."
+description: "Audit product, code, design, SEO, GTM, and performance."
 argument-hint: '[file-path | "global"] (omit for full project)'
 ---
 

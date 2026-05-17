@@ -1,6 +1,6 @@
 ---
 name: sf-docs
-description: "Documentation generation and audit for README, API docs, component docs, metadata, and drift."
+description: "Maintain docs, metadata, and governance-layout compliance."
 disable-model-invocation: true
 argument-hint: [file-path | "readme" | "api" | "components" | "audit" | "update" | "metadata" | "migrate-frontmatter" | "migrate-layout" | "technical" | "technical audit" | "editorial" | "editorial audit"]
 ---

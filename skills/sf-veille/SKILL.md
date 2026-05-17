@@ -1,6 +1,6 @@
 ---
 name: sf-veille
-description: "Business veille for URLs or sources, triage, and tracker actions."
+description: "Triage business veille sources into actions."
 disable-model-invocation: true
 argument-hint: <URLs or paste content>
 ---

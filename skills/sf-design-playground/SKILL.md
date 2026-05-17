@@ -1,6 +1,6 @@
 ---
 name: sf-design-playground
-description: "Live design-token playground scaffolding."
+description: "Scaffold a live design-token playground."
 disable-model-invocation: true
 argument-hint: '[route-path] (default: /design-system)'
 ---

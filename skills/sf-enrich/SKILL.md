@@ -1,6 +1,6 @@
 ---
 name: sf-enrich
-description: "Content enrichment with fresh research, user focus, and conversion fit."
+description: "Enrich content with research, user focus, and conversion fit."
 argument-hint: <file-path or folder>
 ---
 

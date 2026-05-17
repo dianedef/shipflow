@@ -1,6 +1,6 @@
 ---
 name: sf-tasks
-description: "Task tracker update for completed work, remaining items, and suggested next steps."
+description: "Update task trackers and suggest next steps."
 disable-model-invocation: false
 argument-hint: [optional focus area or task type]
 ---

@@ -1,6 +1,6 @@
 ---
 name: sf-start
-description: "Task execution from kickoff through implementation with spec-first guardrails."
+description: "Execute ready specs or clear local tasks with guardrails."
 argument-hint: <task description or TASKS.md item>
 ---
 
